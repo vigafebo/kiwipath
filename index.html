@@ -462,7 +462,8 @@ async function startApp(session){
       }).subscribe();
   } catch(error) {
     console.error("KiwiPath initialization:",error);
-    showAuth("Não foi possível carregar o espaço compartilhado. Confira as permissões do banco no Supabase.");
+    const detail = error?.message || error?.details || error?.hint || "Erro desconhecido";
+    showAuth("Falha ao carregar dados: " + String(detail).slice(0,220));
   }
 }
 
