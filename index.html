@@ -178,10 +178,39 @@ footer{padding-top:28px;text-align:center;color:var(--muted);font-size:10px}
 h1{font-size:28px}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+.auth-screen{position:fixed;inset:0;z-index:100;background:var(--cream);display:grid;place-items:center;padding:20px}
+.auth-card{width:min(430px,100%);background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow)}
+.auth-card h1{font-family:Georgia,serif;color:var(--forest);font-weight:500}
+.auth-card p{color:var(--muted);font-size:13px}
+.auth-form{display:grid;gap:13px}
+.auth-form label{display:grid;gap:6px;font-size:12px;font-weight:700;color:var(--muted)}
+.auth-form input{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fffefb;color:var(--ink)}
+.auth-message{font-size:12px;color:#934d3c;min-height:18px;overflow-wrap:anywhere}
+.sync-status{font-size:10px;color:var(--muted);margin-right:4px}
+@media(max-width:700px){.auth-card{padding:22px}}
+
 </style>
 </head>
 <body>
-<div class="app">
+<div id="authScreen" class="auth-screen">
+  <section class="auth-card">
+    <div class="brand-mark" style="margin-bottom:18px">
+      <span style="font-size:25px;color:var(--forest)">♧</span>
+    </div>
+    <div class="eyebrow">KIWIPATH · OUR JOURNEY</div>
+    <h1>Bem-vindos de volta.</h1>
+    <p>Entre na sua conta para acessar o espaço compartilhado de vocês.</p>
+    <form id="authForm" class="auth-form">
+      <label>E-mail<input id="authEmail" type="email" autocomplete="username" required></label>
+      <label>Senha<input id="authPassword" type="password" autocomplete="current-password" required minlength="6"></label>
+      <button class="btn" id="authSubmit" type="submit">Entrar no KiwiPath</button>
+      <div id="authMessage" class="auth-message" role="status" aria-live="polite"></div>
+    </form>
+    <p style="font-size:11px">Use o e-mail e a senha criados no Supabase. Seus dados serão compartilhados apenas com membros autorizados.</p>
+  </section>
+</div>
+<div class="app" id="kiwiApp" style="visibility:hidden">
 <aside class="sidebar">
   <div class="brand">
     <div class="brand-mark" aria-label="Silver fern">
@@ -224,6 +253,8 @@ h1{font-size:28px}
   <header class="topbar">
     <div class="breadcrumb"><span>KiwiPath</span> / <span id="crumb">Início</span></div>
     <div class="top-actions">
+      <span id="syncStatus" class="sync-status">Conectando…</span>
+      <button class="icon-btn" id="logoutBtn" type="button" title="Sair da conta" aria-label="Sair da conta">↪</button>
       <button class="lang-btn" id="languageBtn" aria-label="Change language">EN ↗</button>
       <button class="icon-btn" id="exportBtn" title="Export data" aria-label="Export data">⇩</button>
       <div class="profile"><div class="avatar">V&amp;Z</div>
@@ -237,12 +268,23 @@ h1{font-size:28px}
 </div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (() => {
 "use strict";
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const STORE = "kiwipath.v1";
+// Configure these two values with the Project URL and Publishable key from Supabase.
+const SUPABASE_URL = "https://niexrojauhhhtyjzkpkx.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_BWXwh-mYTGw_TRbi0INa_A_gtDPt6_a";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let currentUser = null;
+let cloudRecordId = null;
+let cloudSaveTimer = null;
+let isApplyingCloudData = false;
+let realtimeChannel = null;
+
 const today = () => new Date().toISOString().slice(0,10);
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const initial = () => ({
@@ -303,7 +345,111 @@ function t(k){return copy[data.language]?.[k] || copy.pt[k] || k}
 function esc(s=""){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function money(n){return new Intl.NumberFormat(data.language==="pt"?"pt-BR":"en-NZ",{style:"currency",currency:"NZD",maximumFractionDigits:2}).format(Number(n)||0)}
 function fmtDate(d){if(!d)return t("noDate");const x=new Date(d+"T12:00:00");return isNaN(x)?esc(d):x.toLocaleDateString(data.language==="pt"?"pt-BR":"en-NZ",{day:"2-digit",month:"short",year:"numeric"})}
-function save(){try{localStorage.setItem(STORE,JSON.stringify(data))}catch(e){notify(t("saveError"))}}
+function save(){
+  try { localStorage.setItem(STORE, JSON.stringify(data)); }
+  catch(e) { notify(t("saveError")); }
+  if (currentUser && !isApplyingCloudData) {
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(() => syncToCloud(), 500);
+  }
+}
+async function syncToCloud(){
+  if (!currentUser || isApplyingCloudData) return;
+  const status = $("#syncStatus");
+  if (status) status.textContent = "Sincronizando…";
+  const payload = {
+    user_id: currentUser.id,
+    record_type: "app_state",
+    title: "shared",
+    content: data,
+    updated_at: new Date().toISOString()
+  };
+  try {
+    if (cloudRecordId) {
+      const { error } = await supabaseClient.from("kiwipath_records")
+        .update({user_id: currentUser.id, content: data, updated_at: payload.updated_at})
+        .eq("id", cloudRecordId);
+      if (error) throw error;
+    } else {
+      const { data: rows, error: readError } = await supabaseClient
+        .from("kiwipath_records").select("id,content")
+        .eq("record_type","app_state").eq("title","shared")
+        .order("created_at",{ascending:true}).limit(1);
+      if (readError) throw readError;
+      if (rows && rows.length) {
+        cloudRecordId = rows[0].id;
+        const { error } = await supabaseClient.from("kiwipath_records")
+          .update({user_id:currentUser.id,content:data,updated_at:payload.updated_at}).eq("id",cloudRecordId);
+        if (error) throw error;
+      } else {
+        const { data: inserted, error } = await supabaseClient
+          .from("kiwipath_records").insert(payload).select("id").single();
+        if (error) throw error;
+        cloudRecordId = inserted.id;
+      }
+    }
+    if (status) status.textContent = "Sincronizado ✓";
+  } catch (error) {
+    console.error("KiwiPath cloud save:", error);
+    if (status) status.textContent = "Falha na sincronização";
+    notify("Não foi possível sincronizar. Verifique a conexão e as permissões do Supabase.");
+  }
+}
+async function loadCloudData(){
+  const {data: rows,error} = await supabaseClient.from("kiwipath_records")
+    .select("id,content").eq("record_type","app_state").eq("title","shared")
+    .order("created_at",{ascending:true}).limit(1);
+  if(error) throw error;
+  if(rows && rows.length){
+    cloudRecordId = rows[0].id;
+    isApplyingCloudData = true;
+    data = {...initial(),...(rows[0].content || {})};
+    for(const k of ["documents","events","transactions","study","dreams"])
+      if(!Array.isArray(data[k])) data[k]=[];
+    if(!["pt","en"].includes(data.language)) data.language="pt";
+    localStorage.setItem(STORE,JSON.stringify(data));
+    isApplyingCloudData = false;
+  } else {
+    await syncToCloud();
+  }
+  render();
+}
+function showAuth(message=""){
+  $("#authScreen").style.display="grid";
+  $("#kiwiApp").style.visibility="hidden";
+  $("#authMessage").textContent=message;
+}
+async function startApp(session){
+  currentUser = session?.user || null;
+  if(!currentUser){showAuth();return;}
+  $("#authScreen").style.display="none";
+  $("#kiwiApp").style.visibility="visible";
+  try {
+    await loadCloudData();
+    if(realtimeChannel) await supabaseClient.removeChannel(realtimeChannel);
+    realtimeChannel = supabaseClient.channel("kiwipath-shared-records")
+      .on("postgres_changes",{event:"UPDATE",schema:"public",table:"kiwipath_records"},async payload=>{
+        if(payload.new && payload.new.id===cloudRecordId && payload.new.user_id!==currentUser.id){
+          try {
+            const {data:row,error}=await supabaseClient.from("kiwipath_records").select("id,content").eq("id",cloudRecordId).single();
+            if(error) throw error;
+            if(row && row.content){
+              isApplyingCloudData=true;
+              data={...initial(),...row.content};
+              localStorage.setItem(STORE,JSON.stringify(data));
+              isApplyingCloudData=false;
+              render();
+              $("#syncStatus").textContent="Sincronizado ✓";
+            }
+          } catch(e){console.error(e);}
+        }
+      }).subscribe();
+  } catch(error) {
+    console.error("KiwiPath initialization:",error);
+    showAuth("Não foi possível carregar o espaço compartilhado. Confira as permissões do banco no Supabase.");
+  }
+}
+
 function progress(){return data.documents.length?Math.round(data.documents.filter(x=>x.status==="done").length/data.documents.length*100):0}
 function empty(msg=t("empty")){return `<div class="empty"><span>✳</span>${esc(msg)}</div>`}
 function button(label,action,cls="btn",extra=""){return `<button class="${cls}" data-action="${action}" ${extra}>${label}</button>`}
@@ -352,7 +498,37 @@ $("#pageContent").addEventListener("click",e=>{const b=e.target.closest("[data-a
 $("#pageContent").addEventListener("change",e=>{const cb=e.target.closest("[data-toggle-doc]");if(!cb)return;const x=data.documents.find(x=>x.id===cb.dataset.toggleDoc);if(x)x.status=cb.checked?"done":"todo";save();render()});
 $("#pageContent").addEventListener("input",e=>{if(e.target.id==="docSearch"){const q=e.target.value.toLowerCase();$$('#docList [data-searchable]').forEach(row=>row.classList.toggle("hidden",!row.dataset.searchable.includes(q)))}});
 window.addEventListener("storage",e=>{if(e.key===STORE){try{data={...initial(),...JSON.parse(e.newValue)};render()}catch(_){}}});
-render();
+$("#authForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const email=$("#authEmail").value.trim();
+  const password=$("#authPassword").value;
+  const submit=$("#authSubmit");
+  submit.disabled=true; submit.textContent="Entrando…";
+  $("#authMessage").textContent="";
+  try{
+    const {data:result,error}=await supabaseClient.auth.signInWithPassword({email,password});
+    if(error) throw error;
+    await startApp(result.session);
+  }catch(error){
+    $("#authMessage").textContent=error.message || "Não foi possível entrar.";
+  }finally{
+    submit.disabled=false;submit.textContent="Entrar no KiwiPath";
+  }
+});
+$("#logoutBtn").addEventListener("click",async()=>{
+  if(!confirm("Deseja sair da sua conta?"))return;
+  await supabaseClient.auth.signOut();
+  currentUser=null;cloudRecordId=null;
+  if(realtimeChannel){await supabaseClient.removeChannel(realtimeChannel);realtimeChannel=null;}
+  showAuth();
+});
+supabaseClient.auth.getSession().then(({data:sessionData,error})=>{
+  if(error){showAuth("Erro ao verificar a sessão.");return;}
+  startApp(sessionData.session);
+});
+supabaseClient.auth.onAuthStateChange((event,session)=>{
+  if(event==="SIGNED_OUT"){currentUser=null;cloudRecordId=null;showAuth();}
+});
 })();
 </script>
 </body>
