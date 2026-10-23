@@ -199,11 +199,14 @@ h1{font-size:28px}
 .countdown-panel:hover .countdown-fill{filter:saturate(1.12)}
 .countdown-number{font-size:20px;color:var(--forest);text-align:right}
 @keyframes countdown-pop{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.modal-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:12px;background:#10271dc9;overflow:auto;overscroll-behavior:contain}
-.modal-form{width:min(510px,calc(100vw - 24px));max-width:100%;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;margin:auto;padding:clamp(14px,3vw,24px)}
+.modal-backdrop{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:12px;background:#10271dc9;overflow:hidden;overscroll-behavior:contain}
+.modal-form{width:min(510px,calc(100vw - 24px));min-width:0;max-width:100%;height:auto;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;margin:0;padding:clamp(14px,3vw,24px);transform:none}
+.modal-form .form-grid{min-width:0;grid-template-columns:repeat(2,minmax(0,1fr))}
+.modal-form .field{min-width:0}
+.modal-form input,.modal-form select,.modal-form textarea{max-width:100%;min-width:0}
 .modal-form .panel-head{position:sticky;top:calc(-1 * clamp(14px,3vw,24px));z-index:2;background:var(--paper);padding-top:4px;padding-bottom:10px}
 .modal-form .form-actions{position:sticky;bottom:calc(-1 * clamp(14px,3vw,24px));z-index:2;background:var(--paper);padding:10px 0 2px}
-@media(max-width:600px){.modal-backdrop{padding:8px;align-items:center}.modal-form{width:calc(100vw - 16px);max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);padding:16px}.modal-form .panel-head{top:-16px}.modal-form .form-actions{bottom:-16px}.countdown-number{font-size:16px}.countdown-message{font-size:13px}}
+@media(max-width:600px){.modal-backdrop{padding:8px;align-items:center;justify-content:center}.modal-form{width:calc(100vw - 16px);max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);padding:16px;border-radius:18px}.modal-form .form-grid{grid-template-columns:minmax(0,1fr)}.modal-form .panel-head{top:-16px}.modal-form .form-actions{bottom:-16px}.modal-form input,.modal-form select,.modal-form textarea{font-size:16px!important}.modal-form .btn{min-height:44px}.countdown-number{font-size:16px}.countdown-message{font-size:13px}}
 @media(prefers-reduced-motion:reduce){.countdown-message{animation:none}.countdown-track .progress-fill{transition:none}}
 </style>
 </head>
