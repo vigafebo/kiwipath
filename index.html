@@ -439,7 +439,7 @@ async function sendPushTest(){
 }
 async function loadCustomAlerts(){
   if(!currentUser){customAlerts=[];return}
-  const {data:rows,error}=await supabaseClient.from("kiwipath_custom_alerts").select("id,title,message,scheduled_at,timezone,status,sent_at,created_at").eq("user_id",currentUser.id).order("scheduled_at",{ascending:true});
+  const {data:rows,error}=await supabaseClient.from("kiwipath_custom_alerts").select("id,title,message,scheduled_at,timezone,status,sent_at,created_at,recurrence,recurrence_end,linked_type,linked_id,source_key").eq("user_id",currentUser.id).order("scheduled_at",{ascending:true});
   if(error) throw error;
   customAlerts=rows||[];
 }
@@ -476,17 +476,38 @@ function displayAlertDate(iso){
   const d=new Date(iso);
   return Number.isNaN(d.getTime())?esc(iso):d.toLocaleString(data.language==="pt"?"pt-BR":"en-NZ",{timeZone:ALERT_TIMEZONE,dateStyle:"medium",timeStyle:"short"});
 }
+async function syncDocumentExpiryAlerts(){
+  if(!currentUser||!data.documents)return;
+  const now=new Date();
+  const makeAt=(date,daysBefore)=>{const [y,m,d]=date.split("-").map(Number);const wall=Date.UTC(y,m-1,d-daysBefore,9,0,0);let utc=wall-timezoneOffsetMs(new Date(wall),ALERT_TIMEZONE);utc=wall-timezoneOffsetMs(new Date(utc),ALERT_TIMEZONE);return new Date(utc).toISOString()};
+  for(const doc of data.documents){
+    const expiry=doc.expiryDate||((doc.hasExpiry&&doc.due)?doc.due:"");const prefix="document-expiry:"+doc.id+":";
+    if(!expiry||doc.status==="done"||doc.hasExpiry===false){await supabaseClient.from("kiwipath_custom_alerts").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("user_id",currentUser.id).like("source_key",prefix+"%").eq("status","pending");continue}
+    for(const days of [30,15,7,0]){
+      const at=makeAt(expiry,days),key=prefix+days;
+      if(new Date(at)<=now){await supabaseClient.from("kiwipath_custom_alerts").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("user_id",currentUser.id).eq("source_key",key).eq("status","pending");continue}
+      const payload={user_id:currentUser.id,title:data.language==="pt"?"Vencimento de documento":"Document expiry",message:data.language==="pt"?"\""+doc.title+"\" "+(days===0?"vence hoje":"vence em "+days+" dias")+".":"\""+doc.title+"\" "+(days===0?"expires today":"expires in "+days+" days")+".",scheduled_at:at,timezone:ALERT_TIMEZONE,status:"pending",recurrence:"once",linked_type:"document",linked_id:String(doc.id),source_key:key,updated_at:new Date().toISOString()};
+      const {error}=await supabaseClient.from("kiwipath_custom_alerts").upsert(payload,{onConflict:"user_id,source_key"});if(error)console.error("Could not sync document expiry alert:",error);
+    }
+  }
+  await loadCustomAlerts();
+}
 function alertStatusLabel(status){
   const pt=data.language==="pt";
   return ({pending:pt?"Agendado":"Scheduled",processing:pt?"Enviando":"Sending",sent:pt?"Enviado":"Sent",cancelled:pt?"Cancelado":"Cancelled"})[status]||status;
 }
 function alertPage(){
   const pt=data.language==="pt";
-  const rows=customAlerts.map(a=>`<div class="item-row">
+  const rows=customAlerts.map(a=>{
+    const repeat=({once:pt?"Único":"Once",daily:pt?"Diário":"Daily",weekly:pt?"A cada 7 dias":"Every 7 days",monthly:pt?"Mensal":"Monthly"})[a.recurrence||"once"];
+    const linked=a.linked_type==="document"?data.documents.find(x=>String(x.id)===String(a.linked_id)):a.linked_type==="event"?data.events.find(x=>String(x.id)===String(a.linked_id)):null;
+    const relation=linked?(pt?"Vinculado a: ":"Linked to: ")+linked.title:(a.source_key?(pt?"Lembrete automático de validade":"Automatic expiry reminder"):"");
+    return `<div class="item-row">
     <div class="item-date">${esc(displayAlertDate(a.scheduled_at))}</div>
-    <div class="item-main"><strong>${esc(a.title)}</strong><p>${esc(a.message||"")}</p><span class="tag ${a.status==="sent"?"":a.status==="cancelled"?"":"gold"}">${esc(alertStatusLabel(a.status))}</span></div>
-    <div class="item-actions">${a.status==="pending"?button("✎","edit-alert:"+a.id,"btn-small"):""}${a.status==="pending"?button(pt?"Cancelar":"Cancel","cancel-alert:"+a.id,"btn-small"):""}${button("×","delete-alert:"+a.id,"btn-small btn-danger")}</div>
-  </div>`).join("");
+    <div class="item-main"><strong>${esc(a.title)}</strong><p>${esc(a.message||"")}</p><span class="tag ${a.status==="sent"?"":a.status==="cancelled"?"":"gold"}">${esc(alertStatusLabel(a.status))}</span> <span class="tag">${esc(repeat)}</span>${relation?`<p>${esc(relation)}</p>`:""}</div>
+    <div class="item-actions">${a.status==="pending"&&!a.source_key?button("✎","edit-alert:"+a.id,"btn-small"):""}${a.status==="pending"&&!a.source_key?button(pt?"Cancelar":"Cancel","cancel-alert:"+a.id,"btn-small"):""}${!a.source_key?button("×","delete-alert:"+a.id,"btn-small btn-danger"):""}</div>
+  </div>`;
+  }).join("");
   return `${pageHead(pt?"Alertas personalizados":"Custom alerts",pt?"Crie lembretes que o KiwiPath enviará no dia e horário escolhidos.":"Create reminders for KiwiPath to send at the date and time you choose.","add-alert",pt?"Criar alerta":"Create alert")}
   <section class="panel"><div class="panel-head"><div><h2>${pt?"Seus alertas":"Your alerts"}</h2><p>${customAlerts.length} ${pt?"alerta(s)":"alert(s)"}</p></div><button class="btn btn-soft btn-small" data-action="refresh-alerts">${pt?"Atualizar":"Refresh"}</button></div>
   ${rows||empty(pt?"Você ainda não criou alertas. Use “Criar alerta” para começar.":"You have no custom alerts yet. Choose “Create alert” to get started.")}</section>
@@ -494,7 +515,9 @@ function alertPage(){
 }
 function editAlert(id){
   const old=customAlerts.find(a=>a.id===id);const pt=data.language==="pt";
-  const fields=field("title",pt?"Título do alerta":"Alert title",old?.title||"","text","full")+textareaField("message",pt?"Mensagem da notificação":"Notification message",old?.message||"","full")+field("scheduledAt",pt?"Data e horário":"Date and time",localDateTimeValue(old?.scheduled_at),"datetime-local","full")+ `<div class="field full"><p class="file-hint">${pt?"Todos os horários são no fuso da Nova Zelândia (Auckland). O servidor enviará o alerta mesmo que o aplicativo esteja fechado.":"All times use New Zealand time (Auckland). The server will send the alert even when the app is closed."}</p></div>`;
+  const linkOptions=[["","— "+(pt?"Nenhum vínculo":"No link")+" —"],...data.documents.map(x=>["document|"+x.id,(pt?"Documento: ":"Document: ")+x.title]),...data.events.map(x=>["event|"+x.id,(pt?"Evento: ":"Event: ")+x.title])];
+  const linkedValue=old?.linked_type&&old?.linked_id?old.linked_type+"|"+old.linked_id:"";
+  const fields=field("title",pt?"Título do alerta":"Alert title",old?.title||"","text","full")+textareaField("message",pt?"Mensagem da notificação":"Notification message",old?.message||"","full")+field("scheduledAt",pt?"Data e horário (Nova Zelândia)":"Date and time (New Zealand)",localDateTimeValue(old?.scheduled_at),"datetime-local","full")+selectField("recurrence",pt?"Repetição":"Repeat",[["once",pt?"Não repetir":"Does not repeat"],["daily",pt?"Todos os dias":"Every day"],["weekly",pt?"A cada 7 dias":"Every 7 days"],["monthly",pt?"Todo mês":"Every month"]],old?.recurrence||"once","full")+field("recurrenceEnd",pt?"Repetir até (opcional)":"Repeat until (optional)",old?.recurrence_end||"","date","full")+selectField("linkedItem",pt?"Vincular a documento/evento":"Link to document/event",linkOptions,linkedValue,"full")+`<div class="field full"><p class="file-hint">${pt?"Os horários usam o fuso da Nova Zelândia (Auckland). Alertas vinculados acompanham o item escolhido.":"Times use New Zealand time (Auckland). Linked alerts stay associated with the selected item."}</p></div>`
   modal(old?(pt?"Editar alerta":"Edit alert"):(pt?"Novo alerta":"New alert"),fields,async v=>{
     const title=String(v.title||"").trim(),message=String(v.message||"").trim();
     if(!title){notify(pt?"Informe um título.":"Enter a title.");return false}
@@ -502,7 +525,10 @@ function editAlert(id){
     const scheduledIso=zonedDateTimeToIso(v.scheduledAt,ALERT_TIMEZONE);
     if(!scheduledIso){notify(pt?"Data/horário inválido ou inexistente na Nova Zelândia. Escolha outro horário.":"Invalid or nonexistent New Zealand date/time. Please choose another time.");return false}
     if(new Date(scheduledIso).getTime()<=Date.now()){notify(pt?"Escolha um horário futuro no fuso da Nova Zelândia.":"Choose a future time in New Zealand time.");return false}
-    const payload={title,message,scheduled_at:scheduledIso,timezone:ALERT_TIMEZONE,status:"pending",updated_at:new Date().toISOString()};
+    const linkParts=String(v.linkedItem||"").split("|");
+    const linkedType=linkParts.length===2&&linkParts[0]?linkParts[0]:null;
+    const linkedId=linkedType?linkParts[1]:null;
+    const payload={title,message,scheduled_at:scheduledIso,timezone:ALERT_TIMEZONE,status:"pending",recurrence:v.recurrence||"once",recurrence_end:v.recurrenceEnd||null,linked_type:linkedType,linked_id:linkedId,updated_at:new Date().toISOString()};
     const result=old?await supabaseClient.from("kiwipath_custom_alerts").update(payload).eq("id",old.id).eq("user_id",currentUser.id):await supabaseClient.from("kiwipath_custom_alerts").insert({...payload,user_id:currentUser.id});
     if(result.error)throw result.error;
     await loadCustomAlerts();return true;
@@ -656,6 +682,7 @@ async function syncToCloud(){
       }
     }
     if (status) status.textContent = "Sincronizado ✓";
+    await syncDocumentExpiryAlerts();
   } catch (error) {
     console.error("KiwiPath cloud save:", error);
     if (status) status.textContent = "Falha na sincronização";
