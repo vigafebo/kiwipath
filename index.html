@@ -74,13 +74,16 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
  .profile-menu-subitem{font-size:11px;padding-top:9px;padding-bottom:9px}
  #profileAlertsBtn[aria-expanded="true"] .profile-chevron,#profileMenusBtn[aria-expanded="true"] .profile-chevron{transform:rotate(180deg)}
  .profile-menu-subitem .menu-item-icon{width:20px;height:20px}
- .customize-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(105px,145px);gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+ .customize-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px;align-items:start}
+ .customize-row{display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:8px;align-items:center;min-width:0;padding:12px 0;border-bottom:1px solid var(--line)}
  .customize-row:last-child{border-bottom:0}
- .customize-row label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600}
+ .customize-row label{display:flex;align-items:center;gap:8px;min-width:0;font-size:12px;font-weight:600;line-height:1.35;overflow-wrap:anywhere}
+ .customize-row label span{min-width:0}
+ .customize-row select{min-width:0}
  .customize-row input[type="checkbox"]{accent-color:var(--green);width:16px;height:16px}
  .customize-row select{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px;background:var(--paper);color:var(--ink);font-size:12px}
  .customize-help{font-size:12px;color:var(--muted);margin:0 0 8px}
- @media(max-width:700px){.profile-menu{max-height:calc(100vh - 95px);overflow-y:auto}.customize-row{grid-template-columns:minmax(0,1fr) 105px}}
+ @media(max-width:700px){.profile-menu{max-height:calc(100vh - 95px);overflow-y:auto}.customize-grid{grid-template-columns:1fr;column-gap:0}.customize-row{grid-template-columns:minmax(0,1fr) 118px}.customize-row label{font-size:13px}}
  .profile-menu-subitem{font-size:11px;padding-top:9px;padding-bottom:9px}
  #profileAlertsBtn[aria-expanded="true"] .profile-chevron{transform:rotate(180deg)}
 .avatar{width:36px;height:36px;border-radius:50%;background:var(--sage);
@@ -378,7 +381,7 @@ h1{font-size:28px}
           <button type="button" class="profile-menu-item" id="syncRefreshBtn"><span class="menu-item-icon">↻</span><span data-i18n="syncRefresh">Sincronizar e atualizar</span></button>
           <button type="button" class="profile-menu-item" id="profileMenusBtn" aria-expanded="false" aria-controls="profileMenusSubmenu"><span class="menu-item-icon">☷</span><span data-i18n="profileMenus">Menus</span><span class="profile-chevron" aria-hidden="true">⌄</span></button>
           <div id="profileMenusSubmenu" class="profile-alerts-submenu" hidden></div>
-          <button type="button" class="profile-menu-item" id="profileCustomizeBtn"><span class="menu-item-icon">⚙</span><span data-i18n="personalization">Personalização</span></button>
+          <button type="button" class="profile-menu-item" id="profileCustomizeBtn"><span class="menu-item-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="2.5"></rect><path d="M8 8h8M8 12h5M8 16h8"></path></svg></span><span data-i18n="personalization">Personalização</span></button>
           <button type="button" class="profile-menu-item" id="profileAlertsBtn" aria-expanded="false" aria-controls="profileAlertsSubmenu"><span class="menu-item-icon">♧</span><span id="alertsMenuLabel">Meus alertas</span><span class="profile-chevron" aria-hidden="true">⌄</span></button>
           <div id="profileAlertsSubmenu" class="profile-alerts-submenu" hidden>
             <button type="button" class="profile-menu-item profile-menu-subitem" id="openAlertsCenterBtn"><span class="menu-item-icon">◷</span><span data-i18n="openAlertsCenter">Central de alertas</span></button>
@@ -896,7 +899,7 @@ function openPersonalization(){
   const orderValue=prefs.order.indexOf(p.id)>=0?prefs.order.indexOf(p.id):NAV_PAGES.findIndex(x=>x.id===p.id);
   return '<div class="customize-row"><label><input type="checkbox" name="visible_'+p.id+'" value="yes" '+(!prefs.hidden.includes(p.id)?"checked":"")+'><span>'+label+'</span></label><select name="order_'+p.id+'" aria-label="'+(pt?"Ordem de ":"Order for ")+label+'">'+NAV_PAGES.map((o,index)=>'<option value="'+(index+1)+'" '+(orderValue===index?'selected':'')+'>'+ (index+1)+(pt?"ª posição":" position")+'</option>').join("")+'</select></div>';
  }).join("");
- modal(pt?"Personalização do menu":"Menu personalization",'<p class="customize-help field full">'+(pt?"Marque os menus que deseja mostrar e escolha a posição de cada um. As preferências ficam salvas para esta conta neste navegador.":"Choose which menus to show and select their order. Preferences are saved for this account in this browser.")+'</p>'+rows,v=>{
+ modal(pt?"Personalização do menu":"Menu personalization",'<p class="customize-help field full">'+(pt?"Marque os menus que deseja mostrar e escolha a posição de cada um. As preferências ficam salvas para esta conta neste navegador.":"Choose which menus to show and select their order. Preferences are saved for this account in this browser.")+'</p>'+'<div class="customize-grid">'+rows+'</div>',v=>{
   const hidden=NAV_PAGES.filter(p=>v["visible_"+p.id]!=="yes").map(p=>p.id);
   const order=NAV_PAGES.map((p,index)=>({id:p.id,pos:Number(v["order_"+p.id]||index+1),index})).sort((a,b)=>a.pos-b.pos||a.index-b.index).map(x=>x.id);
   try{localStorage.setItem(personalizationKey(),JSON.stringify({hidden,order}))}
