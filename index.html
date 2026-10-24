@@ -740,51 +740,55 @@ function showAuth(message=""){
   $("#authMessage").textContent=message;
 }
 async function startApp(session){
-  currentUser = session?.user || null;
+  currentUser=session?.user||null;
   if(!currentUser){showAuth();return;}
   updateProfile();
   $("#authScreen").style.display="none";
   $("#kiwiApp").style.visibility="visible";
-  try {
+
+  // Render immediately so a cloud-data or alert-sync problem cannot lock the user out.
+  try{render();}catch(renderError){console.error("KiwiPath initial render:",renderError);}
+  try{
     await loadCloudData();
     render();
-    // Alert synchronization must never block sign-in or the main app.
-    (async()=>{
-      try {
-        await syncDocumentExpiryAlerts();
-        await loadCustomAlerts();
-        if(page==="alerts")render();
-      } catch(alertError) {
-        console.error("KiwiPath alert sync (non-blocking):",alertError);
-      }
-    })();
-    if(realtimeChannel) await supabaseClient.removeChannel(realtimeChannel);
-    realtimeChannel = supabaseClient.channel("kiwipath-shared-records")
+  }catch(cloudError){
+    console.error("KiwiPath cloud load failed; keeping app accessible:",cloudError);
+    $("#syncStatus").textContent=data.language==="pt"?"Offline — dados locais":"Offline — local data";
+    try{render();}catch(e){console.error(e);}
+  }
+
+  // Run alert work in the background; never route alert errors to the login screen.
+  (async()=>{
+    try{
+      await syncDocumentExpiryAlerts();
+      await loadCustomAlerts();
+      if(page==="alerts")render();
+    }catch(alertError){console.error("KiwiPath alert sync (non-blocking):",alertError);}
+  })();
+
+  try{
+    if(realtimeChannel)await supabaseClient.removeChannel(realtimeChannel);
+    realtimeChannel=supabaseClient.channel("kiwipath-shared-records")
       .on("postgres_changes",{event:"UPDATE",schema:"public",table:"kiwipath_records"},async payload=>{
-        if(payload.new && payload.new.id===cloudRecordId && payload.new.user_id!==currentUser.id){
-          try {
+        if(payload.new&&payload.new.id===cloudRecordId&&payload.new.user_id!==currentUser.id){
+          try{
             const {data:row,error}=await supabaseClient.from("kiwipath_records").select("id,content").eq("id",cloudRecordId).single();
-            if(error) throw error;
-            if(row && row.content){
+            if(error)throw error;
+            if(row&&row.content){
               isApplyingCloudData=true;
               data={...initial(),...row.content};
               for(const k of ["documents","events","transactions","study","dreams","projectCosts","nzReserve","accounts"])
-                if(!Array.isArray(data[k])) data[k]=[];
+                if(!Array.isArray(data[k]))data[k]=[];
               localStorage.setItem(STORE,JSON.stringify(data));
               isApplyingCloudData=false;
               render();
               $("#syncStatus").textContent="Sincronizado ✓";
             }
-          } catch(e){console.error(e);}
+          }catch(e){isApplyingCloudData=false;console.error("KiwiPath realtime update:",e);}
         }
       }).subscribe();
-  } catch(error) {
-    console.error("KiwiPath initialization:",error);
-    const detail = error?.message || error?.details || error?.hint || "Erro desconhecido";
-    showAuth("Falha ao carregar dados: " + String(detail).slice(0,220));
-  }
+  }catch(realtimeError){console.error("KiwiPath realtime setup failed:",realtimeError);}
 }
-
 function progress(){return data.documents.length?Math.round(data.documents.filter(x=>x.status==="done").length/data.documents.length*100):0}
 function empty(msg=t("empty")){return `<div class="empty"><span>✳</span>${esc(msg)}</div>`}
 function button(label,action,cls="btn",extra=""){return `<button class="${cls}" data-action="${action}" ${extra}>${label}</button>`}
