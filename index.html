@@ -320,6 +320,7 @@ h1{font-size:28px}
     <button class="active" data-page="home"><span class="nav-icon">⌂</span><span data-i18n="home">Início</span></button>
     <button data-page="documents"><span class="nav-icon">▤</span><span data-i18n="documents">Documentos</span></button>
     <button data-page="timeline"><span class="nav-icon">◷</span><span data-i18n="timeline">Cronograma</span></button>
+    <button data-page="alerts"><span class="nav-icon">🔔</span><span data-i18n="customAlertsNav">Alertas</span></button>
     <button data-page="finances"><span class="nav-icon">＄</span><span data-i18n="finances">Finanças</span></button>
     <button data-page="study"><span class="nav-icon">⌑</span><span data-i18n="study">Estudos e carreira</span></button>
     <button data-page="dreams"><span class="nav-icon">♡</span><span data-i18n="dreams">Nossos sonhos</span></button>
@@ -376,6 +377,7 @@ let cloudRecordId = null;
 let cloudSaveTimer = null;
 let isApplyingCloudData = false;
 let realtimeChannel = null;
+let customAlerts = [];
 
 // Resolve o membro ativo a partir da sessão autenticada do Supabase.
 function currentMemberKey(){
@@ -434,6 +436,68 @@ async function enablePushNotifications(){
 async function sendPushTest(){
   const result=await callPushFunction({action:"test"});
   notify(result.message||(data.language==="pt"?"Solicitação de teste enviada.":"Test request sent."));
+}
+async function loadCustomAlerts(){
+  if(!currentUser){customAlerts=[];return}
+  const {data:rows,error}=await supabaseClient.from("kiwipath_custom_alerts").select("id,title,message,scheduled_at,timezone,status,sent_at,created_at").eq("user_id",currentUser.id).order("scheduled_at",{ascending:true});
+  if(error) throw error;
+  customAlerts=rows||[];
+}
+function localDateTimeValue(iso){
+  if(!iso)return "";
+  const d=new Date(iso);if(Number.isNaN(d.getTime()))return "";
+  const pad=n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
+}
+function displayAlertDate(iso){
+  if(!iso)return "";
+  const d=new Date(iso);
+  return Number.isNaN(d.getTime())?esc(iso):d.toLocaleString(data.language==="pt"?"pt-BR":"en-NZ",{dateStyle:"medium",timeStyle:"short"});
+}
+function alertStatusLabel(status){
+  const pt=data.language==="pt";
+  return ({pending:pt?"Agendado":"Scheduled",processing:pt?"Enviando":"Sending",sent:pt?"Enviado":"Sent",cancelled:pt?"Cancelado":"Cancelled"})[status]||status;
+}
+function alertPage(){
+  const pt=data.language==="pt";
+  const rows=customAlerts.map(a=>`<div class="item-row">
+    <div class="item-date">${esc(displayAlertDate(a.scheduled_at))}</div>
+    <div class="item-main"><strong>${esc(a.title)}</strong><p>${esc(a.message||"")}</p><span class="tag ${a.status==="sent"?"":a.status==="cancelled"?"":"gold"}">${esc(alertStatusLabel(a.status))}</span></div>
+    <div class="item-actions">${a.status==="pending"?button("✎","edit-alert:"+a.id,"btn-small"):""}${a.status==="pending"?button(pt?"Cancelar":"Cancel","cancel-alert:"+a.id,"btn-small"):""}${button("×","delete-alert:"+a.id,"btn-small btn-danger")}</div>
+  </div>`).join("");
+  return `${pageHead(pt?"Alertas personalizados":"Custom alerts",pt?"Crie lembretes que o KiwiPath enviará no dia e horário escolhidos.":"Create reminders for KiwiPath to send at the date and time you choose.","add-alert",pt?"Criar alerta":"Create alert")}
+  <section class="panel"><div class="panel-head"><div><h2>${pt?"Seus alertas":"Your alerts"}</h2><p>${customAlerts.length} ${pt?"alerta(s)":"alert(s)"}</p></div><button class="btn btn-soft btn-small" data-action="refresh-alerts">${pt?"Atualizar":"Refresh"}</button></div>
+  ${rows||empty(pt?"Você ainda não criou alertas. Use “Criar alerta” para começar.":"You have no custom alerts yet. Choose “Create alert” to get started.")}</section>
+  <div class="note">${pt?"Os alertas são enviados por notificação push. Ative as notificações no menu do perfil e mantenha um dispositivo registrado. O servidor verifica alertas pendentes a cada minuto.":"Alerts are delivered by push notification. Enable notifications from the profile menu and keep a device registered. The server checks pending alerts every minute."}</div>`;
+}
+function editAlert(id){
+  const old=customAlerts.find(a=>a.id===id);const pt=data.language==="pt";
+  const fields=field("title",pt?"Título do alerta":"Alert title",old?.title||"","text","full")+textareaField("message",pt?"Mensagem da notificação":"Notification message",old?.message||"","full")+field("scheduledAt",pt?"Data e horário":"Date and time",localDateTimeValue(old?.scheduled_at),"datetime-local","full")+ `<div class="field full"><p class="file-hint">${pt?"Escolha o horário no seu dispositivo. O alerta será enviado pelo servidor mesmo que o aplicativo esteja fechado.":"Choose the time on your device. The server will send the alert even when the app is closed."}</p></div>`;
+  modal(old?(pt?"Editar alerta":"Edit alert"):(pt?"Novo alerta":"New alert"),fields,async v=>{
+    const title=String(v.title||"").trim(),message=String(v.message||"").trim();
+    if(!title){notify(pt?"Informe um título.":"Enter a title.");return false}
+    if(!v.scheduledAt){notify(pt?"Escolha data e horário.":"Choose a date and time.");return false}
+    const localDate=new Date(v.scheduledAt);
+    if(Number.isNaN(localDate.getTime())){notify(pt?"Data ou horário inválido.":"Invalid date or time.");return false}
+    if(localDate.getTime()<=Date.now()){notify(pt?"Escolha um horário futuro.":"Choose a future time.");return false}
+    const payload={title,message,scheduled_at:localDate.toISOString(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"Pacific/Auckland",status:"pending",updated_at:new Date().toISOString()};
+    const result=old?await supabaseClient.from("kiwipath_custom_alerts").update(payload).eq("id",old.id).eq("user_id",currentUser.id):await supabaseClient.from("kiwipath_custom_alerts").insert({...payload,user_id:currentUser.id});
+    if(result.error)throw result.error;
+    await loadCustomAlerts();return true;
+  });
+}
+async function cancelAlert(id){
+  const pt=data.language==="pt";
+  const {error}=await supabaseClient.from("kiwipath_custom_alerts").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("id",id).eq("user_id",currentUser.id).eq("status","pending");
+  if(error){console.error(error);notify(pt?"Não foi possível cancelar o alerta.":"Could not cancel alert.");return}
+  await loadCustomAlerts();render();notify(pt?"Alerta cancelado.":"Alert cancelled.");
+}
+async function deleteAlert(id){
+  const pt=data.language==="pt";
+  if(!confirm(pt?"Excluir este alerta permanentemente?":"Permanently delete this alert?"))return;
+  const {error}=await supabaseClient.from("kiwipath_custom_alerts").delete().eq("id",id).eq("user_id",currentUser.id);
+  if(error){console.error(error);notify(pt?"Não foi possível excluir o alerta.":"Could not delete alert.");return}
+  await loadCustomAlerts();render();notify(pt?"Alerta excluído.":"Alert deleted.");
 }
 function updateProfile(){
   const name=currentMemberName();
@@ -611,6 +675,8 @@ async function startApp(session){
   $("#kiwiApp").style.visibility="visible";
   try {
     await loadCloudData();
+    await loadCustomAlerts();
+    render();
     if(realtimeChannel) await supabaseClient.removeChannel(realtimeChannel);
     realtimeChannel = supabaseClient.channel("kiwipath-shared-records")
       .on("postgres_changes",{event:"UPDATE",schema:"public",table:"kiwipath_records"},async payload=>{
@@ -687,7 +753,7 @@ function financesPage(){return `${pageHead(t('finances'),data.language==='pt'?'O
 
 function studyPage(){return `${pageHead(t("study"),t("studyNote"),"add-study",t("add"))}<section class="panel"><div class="panel-head"><div><h2>${t("target")}</h2><p>${data.study.length} ${t("studyCount")}</p></div></div>${data.study.length?data.study.map(x=>`<div class="item-row"><div class="module-icon" style="margin:0;width:37px;height:37px;flex:0 0 37px">⌑</div><div class="item-main"><strong>${esc(x.title)}</strong><p>${esc(x.category||t("other"))} · ${esc(x.note||"")}</p>${x.date?`<p>${t("date")}: ${fmtDate(x.date)}</p>`:""}<span class="tag ${x.status==="active"?"":"gold"}">${t(x.status)}</span></div><div class="item-actions">${button("✎","edit-study:"+x.id,"btn-small")}${button("×","delete-study:"+x.id,"btn-small btn-danger")}</div></div>`).join(""):empty()}</section><div class="note">${t("officialNote")}</div>`}
 function dreamsPage(){return `${pageHead(t("dreams"),t("dreamDesc"),"add-dream",t("add"))}<section class="panel"><div class="panel-head"><div><h2>♡ ${t("ourJourney")}</h2><p>${data.dreams.filter(x=>x.done).length} ${t("of")} ${data.dreams.length} ${t("items")}</p></div></div>${data.dreams.length?data.dreams.map(x=>`<div class="dream-card"><div class="dream-star">${x.done?"🌿":"✧"}</div><div class="item-main"><div class="task-title">${esc(x.title)}</div><div class="task-meta">${esc(x.note||"")}</div><div class="dream-actions">${button(x.done?t("dreamDone"):t("markDone"),"toggle-dream:"+x.id,"btn-soft btn-small")}${button("✎ "+t("edit"),"edit-dream:"+x.id,"btn-small")}${button("×","delete-dream:"+x.id,"btn-small btn-danger")}</div></div></div>`).join(""):empty()}</section><div class="note">${t("dreamNote")}</div>`}
-function render(){const names={home:"home",documents:"documents",timeline:"timeline",finances:"finances",study:"study",dreams:"dreams"};$("#crumb").textContent=t(names[page]||"home");$$("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));const views={home:dashboard,documents:documentPage,timeline:timelinePage,finances:financesPage,study:studyPage,dreams:dreamsPage};$("#pageContent").innerHTML=(views[page]||dashboard)();document.documentElement.lang=data.language==="pt"?"pt-BR":"en";$$("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});$("#languageMenuLabel").textContent=data.language==="pt"?"Mudar idioma para English":"Change language to Português"}
+function render(){const names={home:"home",documents:"documents",timeline:"timeline",alerts:"customAlertsNav",finances:"finances",study:"study",dreams:"dreams"};$("#crumb").textContent=page==="alerts"?(data.language==="pt"?"Alertas":"Alerts"):t(names[page]||"home");$$("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));const views={home:dashboard,documents:documentPage,timeline:timelinePage,alerts:alertPage,finances:financesPage,study:studyPage,dreams:dreamsPage};$("#pageContent").innerHTML=(views[page]||dashboard)();document.documentElement.lang=data.language==="pt"?"pt-BR":"en";$$("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});$("#languageMenuLabel").textContent=data.language==="pt"?"Mudar idioma para English":"Change language to Português"}
 function notify(s){const el=$("#toast");el.textContent=s;el.classList.remove("hidden");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add("hidden"),2600)}
 function modal(title,fields,onSave){const html=`<div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><form id="itemForm" class="panel modal-form"><div class="panel-head"><h2 id="modalTitle">${esc(title)}</h2><button type="button" class="icon-btn" id="closeModal" aria-label="${t("cancel")}">×</button></div><div class="form-grid">${fields}</div><div class="form-actions"><button type="button" class="btn btn-soft" id="cancelModal">${t("cancel")}</button><button class="btn" type="submit">${t("save")}</button></div></form></div>`;$("#modalBackdrop")?.remove();document.body.insertAdjacentHTML("beforeend",html);const close=()=>$("#modalBackdrop")?.remove();$("#closeModal").onclick=close;$("#cancelModal").onclick=close;$("#itemForm").onsubmit=e=>{e.preventDefault();const fd=new FormData(e.target);try{const result=onSave(Object.fromEntries(fd.entries()));if(result&&typeof result.then==="function"){const submit=e.submitter; if(submit){submit.disabled=true;submit.textContent=data.language==="pt"?"Enviando…":"Uploading…"} Promise.resolve(result).then(value=>{if(value===false){if(submit){submit.disabled=false;submit.textContent=t("save")}return}close();save();render();notify(t("saved"))}).catch(err=>{console.error(err);if(submit){submit.disabled=false;submit.textContent=t("save")}notify(data.language==="pt"?"Falha ao salvar o documento.":"Could not save document.")});return}if(result===false)return;close();save();render();notify(t("saved"))}catch(err){console.error("KiwiPath form save error:",err);notify(data.language==='pt'?'Não foi possível salvar. Confira os campos e tente novamente.':'Could not save. Check the fields and try again.')}};$("#modalBackdrop").addEventListener("click",e=>{if(e.target.id==="modalBackdrop")close()});$("#itemForm").querySelector("input,select,textarea")?.focus()}
 function field(name,label,value="",type="text",extra=""){const numeric=type==="number";return `<div class="field ${extra}"><label for="f-${name}">${esc(label)}</label><input id="f-${name}" name="${name}" type="${numeric?'text':type}" value="${esc(value??"")}" ${numeric?'inputmode="decimal" autocomplete="off"':''}></div>`}
@@ -741,7 +807,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfileMenu()})
 $("#languageBtn").onclick=()=>{data.language=data.language==="pt"?"en":"pt";save();render();closeProfileMenu();notify(t("languageChanged"))};
 $("#refreshAppBtn").onclick=()=>{closeProfileMenu();window.location.reload()};
 $("#syncNowBtn").onclick=async()=>{const b=$("#syncNowBtn");const label=b.querySelector("span:last-child");const old=label.textContent;b.disabled=true;label.textContent=data.language==="pt"?"Sincronizando…":"Syncing…";try{await syncToCloud();notify(data.language==="pt"?"Sincronização solicitada.":"Sync requested.")}catch(e){notify(data.language==="pt"?"Não foi possível sincronizar agora.":"Could not sync right now.")}finally{b.disabled=false;label.textContent=old;closeProfileMenu()}};
-$("#pageContent").addEventListener("click",e=>{const pie=e.target.closest("[data-pie-category]");if(pie){selectedPieCategory=pie.dataset.pieCategory;render();return}const pieCycle=e.target.closest("[data-pie-cycle]");if(pieCycle){const cats=[...new Set((data.transactions||[]).filter(x=>x.type==="expense"&&x.category).map(x=>x.category))];const next=cats.indexOf(selectedPieCategory)+1;selectedPieCategory=cats.length?cats[next%cats.length]:"";render();return}const b=e.target.closest("[data-action]");if(!b)return;const a=b.dataset.action;if(a.startsWith("edit-project-cost:"))return editProjectCost(a.split(":")[1]);if(a.startsWith("edit-transaction:"))return editFinanceTransaction(false,a.split(":")[1]);if(a.startsWith("edit-reserve:"))return editFinanceTransaction(true,a.split(":")[1]);if(a.startsWith('edit-account:'))return editAccount(a.split(':')[1]);if(a.startsWith('delete-account:')){const id=a.split(':')[1];if((data.transactions||[]).some(x=>x.accountId===id)){notify(data.language==='pt'?'Esta caixinha tem movimentações associadas e não pode ser excluída.':'This money box has linked transactions and cannot be deleted.');return}return removeItem('accounts',id)}if(a.startsWith("finance-tab:")){financeSubpage=a.split(":")[1];render();return}if(a.startsWith("finance-period:")){financePeriod=a.split(":")[1];render();return}if(a.startsWith("quick-transaction:"))return editFinanceTransaction(false,null,a.split(":")[1]);if(a==="add-project-cost")return editProjectCost();if(a==="add-reserve")return editFinanceTransaction(true);if(a==='add-account')return editAccount();if(a==="add-transaction")return addTransactionWizard();if(a.startsWith("go-")){page=a.slice(3);render();window.scrollTo({top:0,behavior:"smooth"});return}if(a==="add-document")return editDoc();if(a.startsWith("preview-document:"))return documentFileAction(a.slice(17),false);if(a.startsWith("download-document:"))return documentFileAction(a.slice(18),true);if(a==="add-event")return editEvent();if(a==="add-transaction")return editTransaction();if(a==="add-study")return editStudy();if(a==="add-dream")return editDream();if(a==="edit-goal")return editGoal();for(const [prefix,fn] of [["edit-document:",editDoc],["edit-event:",editEvent],["edit-study:",editStudy],["edit-dream:",editDream]])if(a.startsWith(prefix))return fn(a.slice(prefix.length));for(const [prefix,col] of [["delete-document:","documents"],["delete-event:","events"],["delete-transaction:","transactions"],["delete-project-cost:","projectCosts"],["delete-reserve:","nzReserve"],["delete-study:","study"],["delete-dream:","dreams"]])if(a.startsWith(prefix))return removeItem(col,a.slice(prefix.length));if(a.startsWith("toggle-dream:")){const x=data.dreams.find(x=>x.id===a.slice(12));if(x)x.done=!x.done;save();render()}});
+$("#pageContent").addEventListener("click",e=>{const pie=e.target.closest("[data-pie-category]");if(pie){selectedPieCategory=pie.dataset.pieCategory;render();return}const pieCycle=e.target.closest("[data-pie-cycle]");if(pieCycle){const cats=[...new Set((data.transactions||[]).filter(x=>x.type==="expense"&&x.category).map(x=>x.category))];const next=cats.indexOf(selectedPieCategory)+1;selectedPieCategory=cats.length?cats[next%cats.length]:"";render();return}const b=e.target.closest("[data-action]");if(!b)return;const a=b.dataset.action;if(a.startsWith("edit-project-cost:"))return editProjectCost(a.split(":")[1]);if(a.startsWith("edit-transaction:"))return editFinanceTransaction(false,a.split(":")[1]);if(a.startsWith("edit-reserve:"))return editFinanceTransaction(true,a.split(":")[1]);if(a.startsWith('edit-account:'))return editAccount(a.split(':')[1]);if(a.startsWith('delete-account:')){const id=a.split(':')[1];if((data.transactions||[]).some(x=>x.accountId===id)){notify(data.language==='pt'?'Esta caixinha tem movimentações associadas e não pode ser excluída.':'This money box has linked transactions and cannot be deleted.');return}return removeItem('accounts',id)}if(a.startsWith("finance-tab:")){financeSubpage=a.split(":")[1];render();return}if(a.startsWith("finance-period:")){financePeriod=a.split(":")[1];render();return}if(a.startsWith("quick-transaction:"))return editFinanceTransaction(false,null,a.split(":")[1]);if(a==="add-project-cost")return editProjectCost();if(a==="add-reserve")return editFinanceTransaction(true);if(a==='add-account')return editAccount();if(a==="add-transaction")return addTransactionWizard();if(a.startsWith("go-")){page=a.slice(3);render();window.scrollTo({top:0,behavior:"smooth"});return}if(a==="add-document")return editDoc();if(a.startsWith("preview-document:"))return documentFileAction(a.slice(17),false);if(a.startsWith("download-document:"))return documentFileAction(a.slice(18),true);if(a==="add-event")return editEvent();if(a==="add-alert")return editAlert();if(a==="refresh-alerts"){loadCustomAlerts().then(render).catch(err=>{console.error(err);notify(data.language==="pt"?"Falha ao carregar alertas.":"Could not load alerts.")});return}if(a.startsWith("edit-alert:"))return editAlert(a.slice(11));if(a.startsWith("cancel-alert:")){cancelAlert(a.slice(13));return}if(a.startsWith("delete-alert:")){deleteAlert(a.slice(13));return}if(a==="add-transaction")return editTransaction();if(a==="add-study")return editStudy();if(a==="add-dream")return editDream();if(a==="edit-goal")return editGoal();for(const [prefix,fn] of [["edit-document:",editDoc],["edit-event:",editEvent],["edit-study:",editStudy],["edit-dream:",editDream]])if(a.startsWith(prefix))return fn(a.slice(prefix.length));for(const [prefix,col] of [["delete-document:","documents"],["delete-event:","events"],["delete-transaction:","transactions"],["delete-project-cost:","projectCosts"],["delete-reserve:","nzReserve"],["delete-study:","study"],["delete-dream:","dreams"]])if(a.startsWith(prefix))return removeItem(col,a.slice(prefix.length));if(a.startsWith("toggle-dream:")){const x=data.dreams.find(x=>x.id===a.slice(12));if(x)x.done=!x.done;save();render()}});
 $("#pageContent").addEventListener("change",e=>{if(e.target.id==="financeCategoryFilter"){financeCategory=e.target.value;render();return}if(e.target.id==="financeFrom"){financeFrom=e.target.value;render();return}if(e.target.id==="financeTo"){financeTo=e.target.value;render();return}const cb=e.target.closest("[data-toggle-doc]");if(!cb)return;const x=data.documents.find(x=>x.id===cb.dataset.toggleDoc);if(x)x.status=cb.checked?"done":"todo";save();render()});
 $("#pageContent").addEventListener("input",e=>{if(e.target.id==="docSearch")applyDocumentFilters()});
 function applyDocumentFilters(){const q=( $("#docSearch")?.value||"").toLowerCase();const owner=$("#docOwnerFilter")?.value||"all";$$('#docList [data-searchable]').forEach(row=>{const ownerMatch=owner==="all"||row.dataset.owner===owner;const textMatch=row.dataset.searchable.includes(q);row.classList.toggle("hidden",!(ownerMatch&&textMatch))})}
