@@ -778,6 +778,22 @@ async function loadCloudData(){
       if(!Array.isArray(data[k])) data[k]=[];
     await syncToCloud();
   }
+  // Migrate legacy per-device menu preferences into the cloud profile once.
+  const profileId=String(currentUser?.id||"");
+  if(profileId && !data.navigationPrefsByUser?.[profileId]){
+    try{
+      const legacyPrefs=localStorage.getItem(personalizationKey());
+      if(legacyPrefs){
+        const parsed=JSON.parse(legacyPrefs);
+        if(parsed && typeof parsed==="object" && Array.isArray(parsed.hidden) && Array.isArray(parsed.order)){
+          if(!data.navigationPrefsByUser || typeof data.navigationPrefsByUser!=="object")data.navigationPrefsByUser={};
+          data.navigationPrefsByUser[profileId]={hidden:parsed.hidden,order:parsed.order};
+          localStorage.setItem(STORE,JSON.stringify(data));
+          await syncToCloud();
+        }
+      }
+    }catch(e){console.warn("Menu preference migration:",e)}
+  }
   if(migrateLegacyReserve()){localStorage.setItem(STORE,JSON.stringify(data));await syncToCloud()}
   render();
 }
