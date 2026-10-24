@@ -747,9 +747,17 @@ async function startApp(session){
   $("#kiwiApp").style.visibility="visible";
   try {
     await loadCloudData();
-    await syncDocumentExpiryAlerts();
-    await loadCustomAlerts();
     render();
+    // Alert synchronization must never block sign-in or the main app.
+    (async()=>{
+      try {
+        await syncDocumentExpiryAlerts();
+        await loadCustomAlerts();
+        if(page==="alerts")render();
+      } catch(alertError) {
+        console.error("KiwiPath alert sync (non-blocking):",alertError);
+      }
+    })();
     if(realtimeChannel) await supabaseClient.removeChannel(realtimeChannel);
     realtimeChannel = supabaseClient.channel("kiwipath-shared-records")
       .on("postgres_changes",{event:"UPDATE",schema:"public",table:"kiwipath_records"},async payload=>{
