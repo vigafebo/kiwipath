@@ -247,6 +247,19 @@ h1{font-size:28px}
 .countdown-panel:hover .countdown-fill{filter:saturate(1.12)}
 .countdown-number{font-size:20px;color:var(--forest);text-align:right}
 @keyframes countdown-pop{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.confirm-backdrop{position:fixed;inset:0;z-index:1400;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(12,29,22,.58);backdrop-filter:blur(5px);animation:confirmFadeIn .18s ease-out}
+.confirm-card{width:min(420px,100%);background:var(--paper,#fffdf7);color:var(--ink,#23382f);border:1px solid rgba(60,90,72,.12);border-radius:22px;padding:26px;box-shadow:0 24px 80px rgba(0,0,0,.24);animation:confirmPopIn .24s cubic-bezier(.2,.8,.2,1);transform-origin:center}
+.confirm-icon{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:#f8e9d8;color:#8d4a24;font-size:22px;margin-bottom:16px}
+.confirm-card h2{font-size:20px;line-height:1.25;margin:0 0 9px;color:inherit}
+.confirm-card p{font-size:14px;line-height:1.6;color:var(--muted,#718078);margin:0}
+.confirm-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:24px}
+.confirm-actions button{border:0;border-radius:12px;padding:11px 17px;font:inherit;font-weight:650;cursor:pointer;transition:transform .16s ease,filter .16s ease}
+.confirm-actions button:hover{transform:translateY(-1px);filter:brightness(.98)}
+.confirm-cancel{background:#e7ede4;color:#203a2e}
+.confirm-danger{background:#173f32;color:#fff}
+@keyframes confirmFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes confirmPopIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.confirm-backdrop,.confirm-card{animation:none}.confirm-actions button{transition:none}}
 .modal-backdrop{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:12px;background:#10271dc9;overflow:hidden;overscroll-behavior:contain}
 .modal-form{width:min(510px,calc(100vw - 24px));min-width:0;max-width:100%;height:auto;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;margin:0;padding:clamp(14px,3vw,24px);transform:none}
 .modal-form .form-grid{min-width:0;grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -439,20 +452,67 @@ async function sendPushTest(){
 }
 async function loadCustomAlerts(){
   if(!currentUser){customAlerts=[];return}
-  const {data:rows,error}=await supabaseClient.from("kiwipath_custom_alerts").select("id,title,message,scheduled_at,timezone,status,sent_at,created_at").eq("user_id",currentUser.id).order("scheduled_at",{ascending:true});
+  const {data:rows,error}=await supabaseClient.from("kiwipath_custom_alerts").select("id,title,message,scheduled_at,timezone,status,sent_at,created_at,recurrence,recurrence_end,linked_type,linked_id,source_key").eq("user_id",currentUser.id).order("scheduled_at",{ascending:true});
   if(error) throw error;
   customAlerts=rows||[];
+}
+const ALERT_TIMEZONE="Pacific/Auckland";
+function zonedParts(date,timeZone=ALERT_TIMEZONE){
+  const parts=new Intl.DateTimeFormat("en-CA",{timeZone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(date);
+  return Object.fromEntries(parts.filter(p=>p.type!=="literal").map(p=>[p.type,Number(p.value)]));
+}
+function timezoneOffsetMs(date,timeZone=ALERT_TIMEZONE){
+  const p=zonedParts(date,timeZone);
+  return Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second)-Math.floor(date.getTime()/1000)*1000;
 }
 function localDateTimeValue(iso){
   if(!iso)return "";
   const d=new Date(iso);if(Number.isNaN(d.getTime()))return "";
+  const p=zonedParts(d);
   const pad=n=>String(n).padStart(2,"0");
-  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
+  return p.year+"-"+pad(p.month)+"-"+pad(p.day)+"T"+pad(p.hour)+":"+pad(p.minute);
+}
+function zonedDateTimeToIso(value,timeZone=ALERT_TIMEZONE){
+  const match=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(value||""));
+  if(!match)return null;
+  const [,ys,mos,ds,hs,mis]=match;
+  const [year,month,day,hour,minute]=[ys,mos,ds,hs,mis].map(Number);
+  const wallUtc=Date.UTC(year,month-1,day,hour,minute,0);
+  let utc=wallUtc-timezoneOffsetMs(new Date(wallUtc),timeZone);
+  utc=wallUtc-timezoneOffsetMs(new Date(utc),timeZone);
+  const p=zonedParts(new Date(utc),timeZone);
+  if(p.year!==year||p.month!==month||p.day!==day||p.hour!==hour||p.minute!==minute)return null;
+  return new Date(utc).toISOString();
 }
 function displayAlertDate(iso){
   if(!iso)return "";
   const d=new Date(iso);
-  return Number.isNaN(d.getTime())?esc(iso):d.toLocaleString(data.language==="pt"?"pt-BR":"en-NZ",{dateStyle:"medium",timeStyle:"short"});
+  return Number.isNaN(d.getTime())?esc(iso):d.toLocaleString(data.language==="pt"?"pt-BR":"en-NZ",{timeZone:ALERT_TIMEZONE,dateStyle:"medium",timeStyle:"short"});
+}
+async function syncDocumentExpiryAlerts(){
+  if(!currentUser||!Array.isArray(data.documents))return;
+  const {data:member,error:memberError}=await supabaseClient.from("kiwipath_members").select("role").eq("user_id",currentUser.id).maybeSingle();
+  if(memberError)throw memberError;
+  const person=(member?.role||"member")==="owner"?"vitor":"zack";
+  const now=new Date(), desired=[], desiredKeys=[];
+  const makeAt=(date,daysBefore)=>{const [y,m,d]=date.split("-").map(Number);const wall=Date.UTC(y,m-1,d-daysBefore,9,0,0);let utc=wall-timezoneOffsetMs(new Date(wall),ALERT_TIMEZONE);utc=wall-timezoneOffsetMs(new Date(utc),ALERT_TIMEZONE);return new Date(utc).toISOString()};
+  for(const doc of data.documents){
+    const expiry=doc.expiryDate||((doc.hasExpiry&&doc.due)?doc.due:"");
+    const owner=String(doc.owner||"both").toLowerCase();
+    if(!expiry||doc.hasExpiry===false||!(owner==="both"||owner==="ambos"||owner===person))continue;
+    for(const days of [30,15,7,0]){
+      const at=makeAt(expiry,days),key="document-expiry:"+doc.id+":"+days;
+      if(new Date(at)<=now)continue;
+      desiredKeys.push(key);
+      const message=data.language==="pt"?"\""+doc.title+"\" "+(days===0?"vence hoje":"vence em "+days+" dias")+".":"\""+doc.title+"\" "+(days===0?"expires today":"expires in "+days+" days")+".";
+      desired.push({user_id:currentUser.id,title:data.language==="pt"?"Vencimento de documento":"Document expiry",message,scheduled_at:at,timezone:ALERT_TIMEZONE,status:"pending",recurrence:"once",linked_type:"document",linked_id:String(doc.id),source_key:key,updated_at:now.toISOString()});
+    }
+  }
+  const {data:existing,error:existingError}=await supabaseClient.from("kiwipath_custom_alerts").select("id,source_key,status").eq("user_id",currentUser.id).like("source_key","document-expiry:%");
+  if(existingError)throw existingError;
+  const stale=(existing||[]).filter(a=>!desiredKeys.includes(a.source_key)).map(a=>a.id);
+  if(stale.length){const {error}=await supabaseClient.from("kiwipath_custom_alerts").delete().in("id",stale).eq("user_id",currentUser.id);if(error)throw error}
+  if(desired.length){const {error}=await supabaseClient.from("kiwipath_custom_alerts").upsert(desired,{onConflict:"user_id,source_key"});if(error)throw error}
 }
 function alertStatusLabel(status){
   const pt=data.language==="pt";
@@ -460,11 +520,16 @@ function alertStatusLabel(status){
 }
 function alertPage(){
   const pt=data.language==="pt";
-  const rows=customAlerts.map(a=>`<div class="item-row">
+  const rows=customAlerts.map(a=>{
+    const repeat=({once:pt?"Único":"Once",daily:pt?"Diário":"Daily",weekly:pt?"A cada 7 dias":"Every 7 days",monthly:pt?"Mensal":"Monthly"})[a.recurrence||"once"];
+    const linked=a.linked_type==="document"?data.documents.find(x=>String(x.id)===String(a.linked_id)):a.linked_type==="event"?data.events.find(x=>String(x.id)===String(a.linked_id)):null;
+    const relation=linked?(pt?"Vinculado a: ":"Linked to: ")+linked.title:(a.source_key?(pt?"Lembrete automático de validade":"Automatic expiry reminder"):"");
+    return `<div class="item-row">
     <div class="item-date">${esc(displayAlertDate(a.scheduled_at))}</div>
-    <div class="item-main"><strong>${esc(a.title)}</strong><p>${esc(a.message||"")}</p><span class="tag ${a.status==="sent"?"":a.status==="cancelled"?"":"gold"}">${esc(alertStatusLabel(a.status))}</span></div>
-    <div class="item-actions">${a.status==="pending"?button("✎","edit-alert:"+a.id,"btn-small"):""}${a.status==="pending"?button(pt?"Cancelar":"Cancel","cancel-alert:"+a.id,"btn-small"):""}${button("×","delete-alert:"+a.id,"btn-small btn-danger")}</div>
-  </div>`).join("");
+    <div class="item-main"><strong>${esc(a.title)}</strong><p>${esc(a.message||"")}</p><span class="tag ${a.status==="sent"?"":a.status==="cancelled"?"":"gold"}">${esc(alertStatusLabel(a.status))}</span> <span class="tag">${esc(repeat)}</span>${relation?`<p>${esc(relation)}</p>`:""}</div>
+    <div class="item-actions">${a.status==="pending"&&!a.source_key?button("✎","edit-alert:"+a.id,"btn-small"):""}${a.status==="pending"&&!a.source_key?button(pt?"Cancelar":"Cancel","cancel-alert:"+a.id,"btn-small"):""}${!a.source_key?button("×","delete-alert:"+a.id,"btn-small btn-danger"):""}</div>
+  </div>`;
+  }).join("");
   return `${pageHead(pt?"Alertas personalizados":"Custom alerts",pt?"Crie lembretes que o KiwiPath enviará no dia e horário escolhidos.":"Create reminders for KiwiPath to send at the date and time you choose.","add-alert",pt?"Criar alerta":"Create alert")}
   <section class="panel"><div class="panel-head"><div><h2>${pt?"Seus alertas":"Your alerts"}</h2><p>${customAlerts.length} ${pt?"alerta(s)":"alert(s)"}</p></div><button class="btn btn-soft btn-small" data-action="refresh-alerts">${pt?"Atualizar":"Refresh"}</button></div>
   ${rows||empty(pt?"Você ainda não criou alertas. Use “Criar alerta” para começar.":"You have no custom alerts yet. Choose “Create alert” to get started.")}</section>
@@ -472,15 +537,20 @@ function alertPage(){
 }
 function editAlert(id){
   const old=customAlerts.find(a=>a.id===id);const pt=data.language==="pt";
-  const fields=field("title",pt?"Título do alerta":"Alert title",old?.title||"","text","full")+textareaField("message",pt?"Mensagem da notificação":"Notification message",old?.message||"","full")+field("scheduledAt",pt?"Data e horário":"Date and time",localDateTimeValue(old?.scheduled_at),"datetime-local","full")+ `<div class="field full"><p class="file-hint">${pt?"Escolha o horário no seu dispositivo. O alerta será enviado pelo servidor mesmo que o aplicativo esteja fechado.":"Choose the time on your device. The server will send the alert even when the app is closed."}</p></div>`;
+  const linkOptions=[["","— "+(pt?"Nenhum vínculo":"No link")+" —"],...data.documents.map(x=>["document|"+x.id,(pt?"Documento: ":"Document: ")+x.title]),...data.events.map(x=>["event|"+x.id,(pt?"Evento: ":"Event: ")+x.title])];
+  const linkedValue=old?.linked_type&&old?.linked_id?old.linked_type+"|"+old.linked_id:"";
+  const fields=field("title",pt?"Título do alerta":"Alert title",old?.title||"","text","full")+textareaField("message",pt?"Mensagem da notificação":"Notification message",old?.message||"","full")+field("scheduledAt",pt?"Data e horário (Nova Zelândia)":"Date and time (New Zealand)",localDateTimeValue(old?.scheduled_at),"datetime-local","full")+selectField("recurrence",pt?"Repetição":"Repeat",[["once",pt?"Não repetir":"Does not repeat"],["daily",pt?"Todos os dias":"Every day"],["weekly",pt?"A cada 7 dias":"Every 7 days"],["monthly",pt?"Todo mês":"Every month"]],old?.recurrence||"once","full")+field("recurrenceEnd",pt?"Repetir até (opcional)":"Repeat until (optional)",old?.recurrence_end||"","date","full")+selectField("linkedItem",pt?"Vincular a documento/evento":"Link to document/event",linkOptions,linkedValue,"full")+`<div class="field full"><p class="file-hint">${pt?"Os horários usam o fuso da Nova Zelândia (Auckland). Alertas vinculados acompanham o item escolhido.":"Times use New Zealand time (Auckland). Linked alerts stay associated with the selected item."}</p></div>`
   modal(old?(pt?"Editar alerta":"Edit alert"):(pt?"Novo alerta":"New alert"),fields,async v=>{
     const title=String(v.title||"").trim(),message=String(v.message||"").trim();
     if(!title){notify(pt?"Informe um título.":"Enter a title.");return false}
     if(!v.scheduledAt){notify(pt?"Escolha data e horário.":"Choose a date and time.");return false}
-    const localDate=new Date(v.scheduledAt);
-    if(Number.isNaN(localDate.getTime())){notify(pt?"Data ou horário inválido.":"Invalid date or time.");return false}
-    if(localDate.getTime()<=Date.now()){notify(pt?"Escolha um horário futuro.":"Choose a future time.");return false}
-    const payload={title,message,scheduled_at:localDate.toISOString(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"Pacific/Auckland",status:"pending",updated_at:new Date().toISOString()};
+    const scheduledIso=zonedDateTimeToIso(v.scheduledAt,ALERT_TIMEZONE);
+    if(!scheduledIso){notify(pt?"Data/horário inválido ou inexistente na Nova Zelândia. Escolha outro horário.":"Invalid or nonexistent New Zealand date/time. Please choose another time.");return false}
+    if(new Date(scheduledIso).getTime()<=Date.now()){notify(pt?"Escolha um horário futuro no fuso da Nova Zelândia.":"Choose a future time in New Zealand time.");return false}
+    const linkParts=String(v.linkedItem||"").split("|");
+    const linkedType=linkParts.length===2&&linkParts[0]?linkParts[0]:null;
+    const linkedId=linkedType?linkParts[1]:null;
+    const payload={title,message,scheduled_at:scheduledIso,timezone:ALERT_TIMEZONE,status:"pending",recurrence:v.recurrence||"once",recurrence_end:v.recurrenceEnd||null,linked_type:linkedType,linked_id:linkedId,updated_at:new Date().toISOString()};
     const result=old?await supabaseClient.from("kiwipath_custom_alerts").update(payload).eq("id",old.id).eq("user_id",currentUser.id):await supabaseClient.from("kiwipath_custom_alerts").insert({...payload,user_id:currentUser.id});
     if(result.error)throw result.error;
     await loadCustomAlerts();return true;
@@ -494,7 +564,7 @@ async function cancelAlert(id){
 }
 async function deleteAlert(id){
   const pt=data.language==="pt";
-  if(!confirm(pt?"Excluir este alerta permanentemente?":"Permanently delete this alert?"))return;
+  if(!await confirmDialog({title:pt?"Excluir alerta?":"Delete alert?",message:pt?"Este lembrete será excluído permanentemente. Esta ação não pode ser desfeita.":"This reminder will be permanently deleted. This action cannot be undone.",confirmText:pt?"Excluir alerta":"Delete alert"}))return;
   const {error}=await supabaseClient.from("kiwipath_custom_alerts").delete().eq("id",id).eq("user_id",currentUser.id);
   if(error){console.error(error);notify(pt?"Não foi possível excluir o alerta.":"Could not delete alert.");return}
   await loadCustomAlerts();render();notify(pt?"Alerta excluído.":"Alert deleted.");
@@ -634,6 +704,7 @@ async function syncToCloud(){
       }
     }
     if (status) status.textContent = "Sincronizado ✓";
+    await syncDocumentExpiryAlerts();
   } catch (error) {
     console.error("KiwiPath cloud save:", error);
     if (status) status.textContent = "Falha na sincronização";
@@ -669,42 +740,55 @@ function showAuth(message=""){
   $("#authMessage").textContent=message;
 }
 async function startApp(session){
-  currentUser = session?.user || null;
+  currentUser=session?.user||null;
   if(!currentUser){showAuth();return;}
   updateProfile();
   $("#authScreen").style.display="none";
   $("#kiwiApp").style.visibility="visible";
-  try {
+
+  // Render immediately so a cloud-data or alert-sync problem cannot lock the user out.
+  try{render();}catch(renderError){console.error("KiwiPath initial render:",renderError);}
+  try{
     await loadCloudData();
-    await loadCustomAlerts();
     render();
-    if(realtimeChannel) await supabaseClient.removeChannel(realtimeChannel);
-    realtimeChannel = supabaseClient.channel("kiwipath-shared-records")
+  }catch(cloudError){
+    console.error("KiwiPath cloud load failed; keeping app accessible:",cloudError);
+    $("#syncStatus").textContent=data.language==="pt"?"Offline — dados locais":"Offline — local data";
+    try{render();}catch(e){console.error(e);}
+  }
+
+  // Run alert work in the background; never route alert errors to the login screen.
+  (async()=>{
+    try{
+      await syncDocumentExpiryAlerts();
+      await loadCustomAlerts();
+      if(page==="alerts")render();
+    }catch(alertError){console.error("KiwiPath alert sync (non-blocking):",alertError);}
+  })();
+
+  try{
+    if(realtimeChannel)await supabaseClient.removeChannel(realtimeChannel);
+    realtimeChannel=supabaseClient.channel("kiwipath-shared-records")
       .on("postgres_changes",{event:"UPDATE",schema:"public",table:"kiwipath_records"},async payload=>{
-        if(payload.new && payload.new.id===cloudRecordId && payload.new.user_id!==currentUser.id){
-          try {
+        if(payload.new&&payload.new.id===cloudRecordId&&payload.new.user_id!==currentUser.id){
+          try{
             const {data:row,error}=await supabaseClient.from("kiwipath_records").select("id,content").eq("id",cloudRecordId).single();
-            if(error) throw error;
-            if(row && row.content){
+            if(error)throw error;
+            if(row&&row.content){
               isApplyingCloudData=true;
               data={...initial(),...row.content};
               for(const k of ["documents","events","transactions","study","dreams","projectCosts","nzReserve","accounts"])
-                if(!Array.isArray(data[k])) data[k]=[];
+                if(!Array.isArray(data[k]))data[k]=[];
               localStorage.setItem(STORE,JSON.stringify(data));
               isApplyingCloudData=false;
               render();
               $("#syncStatus").textContent="Sincronizado ✓";
             }
-          } catch(e){console.error(e);}
+          }catch(e){isApplyingCloudData=false;console.error("KiwiPath realtime update:",e);}
         }
       }).subscribe();
-  } catch(error) {
-    console.error("KiwiPath initialization:",error);
-    const detail = error?.message || error?.details || error?.hint || "Erro desconhecido";
-    showAuth("Falha ao carregar dados: " + String(detail).slice(0,220));
-  }
+  }catch(realtimeError){console.error("KiwiPath realtime setup failed:",realtimeError);}
 }
-
 function progress(){return data.documents.length?Math.round(data.documents.filter(x=>x.status==="done").length/data.documents.length*100):0}
 function empty(msg=t("empty")){return `<div class="empty"><span>✳</span>${esc(msg)}</div>`}
 function button(label,action,cls="btn",extra=""){return `<button class="${cls}" data-action="${action}" ${extra}>${label}</button>`}
@@ -756,6 +840,22 @@ function studyPage(){return `${pageHead(t("study"),t("studyNote"),"add-study",t(
 function dreamsPage(){return `${pageHead(t("dreams"),t("dreamDesc"),"add-dream",t("add"))}<section class="panel"><div class="panel-head"><div><h2>♡ ${t("ourJourney")}</h2><p>${data.dreams.filter(x=>x.done).length} ${t("of")} ${data.dreams.length} ${t("items")}</p></div></div>${data.dreams.length?data.dreams.map(x=>`<div class="dream-card"><div class="dream-star">${x.done?"🌿":"✧"}</div><div class="item-main"><div class="task-title">${esc(x.title)}</div><div class="task-meta">${esc(x.note||"")}</div><div class="dream-actions">${button(x.done?t("dreamDone"):t("markDone"),"toggle-dream:"+x.id,"btn-soft btn-small")}${button("✎ "+t("edit"),"edit-dream:"+x.id,"btn-small")}${button("×","delete-dream:"+x.id,"btn-small btn-danger")}</div></div></div>`).join(""):empty()}</section><div class="note">${t("dreamNote")}</div>`}
 function render(){const names={home:"home",documents:"documents",timeline:"timeline",alerts:"customAlertsNav",finances:"finances",study:"study",dreams:"dreams"};$("#crumb").textContent=page==="alerts"?(data.language==="pt"?"Alertas":"Alerts"):t(names[page]||"home");$$("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));const views={home:dashboard,documents:documentPage,timeline:timelinePage,alerts:alertPage,finances:financesPage,study:studyPage,dreams:dreamsPage};$("#pageContent").innerHTML=(views[page]||dashboard)();document.documentElement.lang=data.language==="pt"?"pt-BR":"en";$$("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});$("#languageMenuLabel").textContent=data.language==="pt"?"Mudar idioma para English":"Change language to Português"}
 function notify(s){const el=$("#toast");el.textContent=s;el.classList.remove("hidden");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add("hidden"),2600)}
+function confirmDialog({title,message,confirmText,cancelText,danger=true}){
+  return new Promise(resolve=>{
+    const pt=data.language==="pt";
+    const backdrop=document.createElement("div");
+    backdrop.className="confirm-backdrop";
+    backdrop.innerHTML=`<section class="confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="confirmDialogTitle" aria-describedby="confirmDialogMessage"><div class="confirm-icon" aria-hidden="true">${danger?"!":"?"}</div><h2 id="confirmDialogTitle">${esc(title)}</h2><p id="confirmDialogMessage">${esc(message)}</p><div class="confirm-actions"><button type="button" class="confirm-cancel" data-confirm-cancel>${esc(cancelText||(pt?"Cancelar":"Cancel"))}</button><button type="button" class="confirm-danger" data-confirm-ok>${esc(confirmText||(pt?"Confirmar":"Confirm"))}</button></div></section>`;
+    document.body.appendChild(backdrop);
+    const finish=value=>{document.removeEventListener("keydown",onKey);backdrop.remove();resolve(value)};
+    const onKey=e=>{if(e.key==="Escape"){e.preventDefault();finish(false)}if(e.key==="Enter"){e.preventDefault();finish(true)}};
+    backdrop.addEventListener("click",e=>{if(e.target===backdrop)finish(false)});
+    backdrop.querySelector("[data-confirm-cancel]").addEventListener("click",()=>finish(false));
+    backdrop.querySelector("[data-confirm-ok]").addEventListener("click",()=>finish(true));
+    document.addEventListener("keydown",onKey);
+    backdrop.querySelector("[data-confirm-cancel]").focus();
+  });
+}
 function modal(title,fields,onSave){const html=`<div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><form id="itemForm" class="panel modal-form"><div class="panel-head"><h2 id="modalTitle">${esc(title)}</h2><button type="button" class="icon-btn" id="closeModal" aria-label="${t("cancel")}">×</button></div><div class="form-grid">${fields}</div><div class="form-actions"><button type="button" class="btn btn-soft" id="cancelModal">${t("cancel")}</button><button class="btn" type="submit">${t("save")}</button></div></form></div>`;$("#modalBackdrop")?.remove();document.body.insertAdjacentHTML("beforeend",html);const close=()=>$("#modalBackdrop")?.remove();$("#closeModal").onclick=close;$("#cancelModal").onclick=close;$("#itemForm").onsubmit=e=>{e.preventDefault();const fd=new FormData(e.target);try{const result=onSave(Object.fromEntries(fd.entries()));if(result&&typeof result.then==="function"){const submit=e.submitter; if(submit){submit.disabled=true;submit.textContent=data.language==="pt"?"Enviando…":"Uploading…"} Promise.resolve(result).then(value=>{if(value===false){if(submit){submit.disabled=false;submit.textContent=t("save")}return}close();save();render();notify(t("saved"))}).catch(err=>{console.error(err);if(submit){submit.disabled=false;submit.textContent=t("save")}notify(data.language==="pt"?"Falha ao salvar o documento.":"Could not save document.")});return}if(result===false)return;close();save();render();notify(t("saved"))}catch(err){console.error("KiwiPath form save error:",err);notify(data.language==='pt'?'Não foi possível salvar. Confira os campos e tente novamente.':'Could not save. Check the fields and try again.')}};$("#modalBackdrop").addEventListener("click",e=>{if(e.target.id==="modalBackdrop")close()});$("#itemForm").querySelector("input,select,textarea")?.focus()}
 function field(name,label,value="",type="text",extra=""){const numeric=type==="number";return `<div class="field ${extra}"><label for="f-${name}">${esc(label)}</label><input id="f-${name}" name="${name}" type="${numeric?'text':type}" value="${esc(value??"")}" ${numeric?'inputmode="decimal" autocomplete="off"':''}></div>`}
 function selectField(name,label,options,value,extra=""){return `<div class="field ${extra}"><label for="f-${name}">${esc(label)}</label><select id="f-${name}" name="${name}">${options.map(([v,l])=>`<option value="${v}" ${v===value?"selected":""}>${esc(l)}</option>`).join("")}</select></div>`}
@@ -799,7 +899,25 @@ function editFinanceTransaction(reserve=false,id=null,preset=null){const arrName
 function editStudy(id){const old=data.study.find(x=>x.id===id);modal(old?t("editItem"):t("addStudy"),field("title",t("studyTitle"),old?.title||"","text","full")+selectField("category",t("category"),[["course",t("course")],["career",t("career")],["other",t("other")]],old?.category||"course")+selectField("status",t("status"),[["todo",t("todo")],["active",t("active")],["paused",t("paused")],["done",t("done")]],old?.status||"todo")+field("date",t("date"),old?.date||"","date")+textareaField("note",t("notes"),old?.note||"","full"),v=>{const item={id:old?.id||uid(),title:v.title.trim(),category:v.category,status:v.status,date:v.date,note:v.note.trim()};if(!item.title)return notify(t("title"));if(old)data.study=data.study.map(x=>x.id===id?item:x);else data.study.push(item)})}
 function editDream(id){const old=data.dreams.find(x=>x.id===id);modal(old?t("editItem"):t("addDream"),field("title",t("dreamTitle"),old?.title||"","text","full")+textareaField("note",t("notes"),old?.note||"","full"),v=>{if(!v.title.trim())return notify(t("title"));const item={id:old?.id||uid(),title:v.title.trim(),note:v.note.trim(),done:old?.done||false};if(old)data.dreams=data.dreams.map(x=>x.id===id?item:x);else data.dreams.push(item)})}
 function editGoal(){modal(t("setGoal"),field("goal",t("goal"),data.savingsGoal||"","number","full"),v=>{const n=Number(v.goal);if(!Number.isFinite(n)||n<0)return notify(t("amount"));data.savingsGoal=n})}
-function removeItem(collection,id){if(!confirm(t("confirmDelete")))return;const removed=(data[collection]||[]).find(x=>x.id===id);data[collection]=data[collection].filter(x=>x.id!==id);if(collection==="documents"&&removed?.filePath) supabaseClient.storage.from("kiwipath-documents").remove([removed.filePath]).catch(e=>console.warn(e));save();render();notify(t("deleted"))}
+async async function removeItem(collection,id){
+  if(!await confirmDialog({title:t("confirmDelete"),message:t("confirmDelete"),confirmText:t("delete")}))return;
+  const removed=(data[collection]||[]).find(x=>x.id===id);
+  if(collection==="documents"&&removed){
+    const docId=String(removed.id);
+    const [linkedResult,autoResult]=await Promise.all([
+      supabaseClient.from("kiwipath_custom_alerts").delete().eq("linked_type","document").eq("linked_id",docId),
+      supabaseClient.from("kiwipath_custom_alerts").delete().like("source_key","document-expiry:"+docId+":%")
+    ]);
+    if(linkedResult.error||autoResult.error){
+      console.error("Failed to remove document alerts:",linkedResult.error||autoResult.error);
+      notify(data.language==="pt"?"Documento não excluído: não foi possível remover os alertas vinculados. Tente novamente.":"Document not deleted: linked alerts could not be removed. Please try again.");
+      return;
+    }
+    if(removed.filePath)supabaseClient.storage.from("kiwipath-documents").remove([removed.filePath]).catch(e=>console.warn(e));
+  }
+  data[collection]=(data[collection]||[]).filter(x=>x.id!==id);
+  save();render();notify(t("deleted"));
+}
 $("#navigation").addEventListener("click",e=>{const b=e.target.closest("button[data-page]");if(!b)return;page=b.dataset.page;render();window.scrollTo({top:0,behavior:"smooth"})});
 function closeProfileMenu(){const menu=$("#profileMenu"),toggle=$("#profileMenuToggle");if(menu)menu.hidden=true;if(toggle)toggle.setAttribute("aria-expanded","false")}
 $("#profileMenuToggle").addEventListener("click",()=>{const menu=$("#profileMenu"),toggle=$("#profileMenuToggle");const willOpen=menu.hidden;menu.hidden=!willOpen;toggle.setAttribute("aria-expanded",String(willOpen))});
@@ -807,9 +925,9 @@ document.addEventListener("click",e=>{if(!e.target.closest("#profileMenuWrap"))c
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfileMenu()});
 $("#languageBtn").onclick=()=>{data.language=data.language==="pt"?"en":"pt";save();render();closeProfileMenu();notify(t("languageChanged"))};
 $("#refreshAppBtn").onclick=()=>{closeProfileMenu();window.location.reload()};
-$("#profileAlertsBtn").onclick=()=>{page="alerts";render();closeProfileMenu();window.scrollTo({top:0,behavior:"smooth"})};
+$("#profileAlertsBtn").onclick=async()=>{page="alerts";closeProfileMenu();render();window.scrollTo({top:0,behavior:"smooth"});try{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()}catch(e){console.error("Alert sync:",e);notify(data.language==="pt"?"Não foi possível sincronizar os alertas.":"Could not sync alerts.")}};
 $("#syncNowBtn").onclick=async()=>{const b=$("#syncNowBtn");const label=b.querySelector("span:last-child");const old=label.textContent;b.disabled=true;label.textContent=data.language==="pt"?"Sincronizando…":"Syncing…";try{await syncToCloud();notify(data.language==="pt"?"Sincronização solicitada.":"Sync requested.")}catch(e){notify(data.language==="pt"?"Não foi possível sincronizar agora.":"Could not sync right now.")}finally{b.disabled=false;label.textContent=old;closeProfileMenu()}};
-$("#pageContent").addEventListener("click",e=>{const pie=e.target.closest("[data-pie-category]");if(pie){selectedPieCategory=pie.dataset.pieCategory;render();return}const pieCycle=e.target.closest("[data-pie-cycle]");if(pieCycle){const cats=[...new Set((data.transactions||[]).filter(x=>x.type==="expense"&&x.category).map(x=>x.category))];const next=cats.indexOf(selectedPieCategory)+1;selectedPieCategory=cats.length?cats[next%cats.length]:"";render();return}const b=e.target.closest("[data-action]");if(!b)return;const a=b.dataset.action;if(a.startsWith("edit-project-cost:"))return editProjectCost(a.split(":")[1]);if(a.startsWith("edit-transaction:"))return editFinanceTransaction(false,a.split(":")[1]);if(a.startsWith("edit-reserve:"))return editFinanceTransaction(true,a.split(":")[1]);if(a.startsWith('edit-account:'))return editAccount(a.split(':')[1]);if(a.startsWith('delete-account:')){const id=a.split(':')[1];if((data.transactions||[]).some(x=>x.accountId===id)){notify(data.language==='pt'?'Esta caixinha tem movimentações associadas e não pode ser excluída.':'This money box has linked transactions and cannot be deleted.');return}return removeItem('accounts',id)}if(a.startsWith("finance-tab:")){financeSubpage=a.split(":")[1];render();return}if(a.startsWith("finance-period:")){financePeriod=a.split(":")[1];render();return}if(a.startsWith("quick-transaction:"))return editFinanceTransaction(false,null,a.split(":")[1]);if(a==="add-project-cost")return editProjectCost();if(a==="add-reserve")return editFinanceTransaction(true);if(a==='add-account')return editAccount();if(a==="add-transaction")return addTransactionWizard();if(a.startsWith("go-")){page=a.slice(3);render();window.scrollTo({top:0,behavior:"smooth"});return}if(a==="add-document")return editDoc();if(a.startsWith("preview-document:"))return documentFileAction(a.slice(17),false);if(a.startsWith("download-document:"))return documentFileAction(a.slice(18),true);if(a==="add-event")return editEvent();if(a==="add-alert")return editAlert();if(a==="refresh-alerts"){loadCustomAlerts().then(render).catch(err=>{console.error(err);notify(data.language==="pt"?"Falha ao carregar alertas.":"Could not load alerts.")});return}if(a.startsWith("edit-alert:"))return editAlert(a.slice(11));if(a.startsWith("cancel-alert:")){cancelAlert(a.slice(13));return}if(a.startsWith("delete-alert:")){deleteAlert(a.slice(13));return}if(a==="add-transaction")return editTransaction();if(a==="add-study")return editStudy();if(a==="add-dream")return editDream();if(a==="edit-goal")return editGoal();for(const [prefix,fn] of [["edit-document:",editDoc],["edit-event:",editEvent],["edit-study:",editStudy],["edit-dream:",editDream]])if(a.startsWith(prefix))return fn(a.slice(prefix.length));for(const [prefix,col] of [["delete-document:","documents"],["delete-event:","events"],["delete-transaction:","transactions"],["delete-project-cost:","projectCosts"],["delete-reserve:","nzReserve"],["delete-study:","study"],["delete-dream:","dreams"]])if(a.startsWith(prefix))return removeItem(col,a.slice(prefix.length));if(a.startsWith("toggle-dream:")){const x=data.dreams.find(x=>x.id===a.slice(12));if(x)x.done=!x.done;save();render()}});
+$("#pageContent").addEventListener("click",e=>{const pie=e.target.closest("[data-pie-category]");if(pie){selectedPieCategory=pie.dataset.pieCategory;render();return}const pieCycle=e.target.closest("[data-pie-cycle]");if(pieCycle){const cats=[...new Set((data.transactions||[]).filter(x=>x.type==="expense"&&x.category).map(x=>x.category))];const next=cats.indexOf(selectedPieCategory)+1;selectedPieCategory=cats.length?cats[next%cats.length]:"";render();return}const b=e.target.closest("[data-action]");if(!b)return;const a=b.dataset.action;if(a.startsWith("edit-project-cost:"))return editProjectCost(a.split(":")[1]);if(a.startsWith("edit-transaction:"))return editFinanceTransaction(false,a.split(":")[1]);if(a.startsWith("edit-reserve:"))return editFinanceTransaction(true,a.split(":")[1]);if(a.startsWith('edit-account:'))return editAccount(a.split(':')[1]);if(a.startsWith('delete-account:')){const id=a.split(':')[1];if((data.transactions||[]).some(x=>x.accountId===id)){notify(data.language==='pt'?'Esta caixinha tem movimentações associadas e não pode ser excluída.':'This money box has linked transactions and cannot be deleted.');return}return removeItem('accounts',id)}if(a.startsWith("finance-tab:")){financeSubpage=a.split(":")[1];render();return}if(a.startsWith("finance-period:")){financePeriod=a.split(":")[1];render();return}if(a.startsWith("quick-transaction:"))return editFinanceTransaction(false,null,a.split(":")[1]);if(a==="add-project-cost")return editProjectCost();if(a==="add-reserve")return editFinanceTransaction(true);if(a==='add-account')return editAccount();if(a==="add-transaction")return addTransactionWizard();if(a.startsWith("go-")){page=a.slice(3);render();window.scrollTo({top:0,behavior:"smooth"});return}if(a==="add-document")return editDoc();if(a.startsWith("preview-document:"))return documentFileAction(a.slice(17),false);if(a.startsWith("download-document:"))return documentFileAction(a.slice(18),true);if(a==="add-event")return editEvent();if(a==="add-alert")return editAlert();if(a==="refresh-alerts"){(async()=>{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()})().catch(err=>{console.error(err);notify(data.language==="pt"?"Falha ao carregar alertas.":"Could not load alerts.")});return}if(a.startsWith("edit-alert:"))return editAlert(a.slice(11));if(a.startsWith("cancel-alert:")){cancelAlert(a.slice(13));return}if(a.startsWith("delete-alert:")){deleteAlert(a.slice(13));return}if(a==="add-transaction")return editTransaction();if(a==="add-study")return editStudy();if(a==="add-dream")return editDream();if(a==="edit-goal")return editGoal();for(const [prefix,fn] of [["edit-document:",editDoc],["edit-event:",editEvent],["edit-study:",editStudy],["edit-dream:",editDream]])if(a.startsWith(prefix))return fn(a.slice(prefix.length));for(const [prefix,col] of [["delete-document:","documents"],["delete-event:","events"],["delete-transaction:","transactions"],["delete-project-cost:","projectCosts"],["delete-reserve:","nzReserve"],["delete-study:","study"],["delete-dream:","dreams"]])if(a.startsWith(prefix))return removeItem(col,a.slice(prefix.length));if(a.startsWith("toggle-dream:")){const x=data.dreams.find(x=>x.id===a.slice(12));if(x)x.done=!x.done;save();render()}});
 $("#pageContent").addEventListener("change",e=>{if(e.target.id==="financeCategoryFilter"){financeCategory=e.target.value;render();return}if(e.target.id==="financeFrom"){financeFrom=e.target.value;render();return}if(e.target.id==="financeTo"){financeTo=e.target.value;render();return}const cb=e.target.closest("[data-toggle-doc]");if(!cb)return;const x=data.documents.find(x=>x.id===cb.dataset.toggleDoc);if(x)x.status=cb.checked?"done":"todo";save();render()});
 $("#pageContent").addEventListener("input",e=>{if(e.target.id==="docSearch")applyDocumentFilters()});
 function applyDocumentFilters(){const q=( $("#docSearch")?.value||"").toLowerCase();const owner=$("#docOwnerFilter")?.value||"all";$$('#docList [data-searchable]').forEach(row=>{const ownerMatch=owner==="all"||row.dataset.owner===owner;const textMatch=row.dataset.searchable.includes(q);row.classList.toggle("hidden",!(ownerMatch&&textMatch))})}
@@ -859,7 +977,7 @@ $("#testPushBtn").addEventListener("click",async()=>{
 });
 
 $("#logoutBtn").addEventListener("click",async()=>{
-  if(!confirm("Deseja sair da sua conta?"))return;
+  if(!await confirmDialog({title:"Sair do KiwiPath?",message:"Deseja realmente sair da sua conta?",confirmText:"Sair",danger:false}))return;
   await supabaseClient.auth.signOut();
   currentUser=null;cloudRecordId=null;
   if(realtimeChannel){await supabaseClient.removeChannel(realtimeChannel);realtimeChannel=null;}
