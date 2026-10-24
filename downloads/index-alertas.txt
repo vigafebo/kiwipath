@@ -1,0 +1,892 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#183d32">
+<title>KiwiPath — Our journey to New Zealand</title>
+<style>
+:root {
+  --forest:#183d32; --green:#47785c; --sage:#dce8d8;
+  --cream:#f7f5ed; --paper:#fffef9; --ink:#25382e;
+  --muted:#7b887e; --line:#e7e7dc; --gold:#c59b54;
+  --radius:20px; --shadow:0 8px 28px #233a2a0a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);
+  font:15px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid #82aa8b;outline-offset:2px}
+.app{min-height:100vh}
+.sidebar{position:fixed;inset:0 auto 0 0;width:245px;background:var(--forest);
+  color:#f9f8ef;padding:28px 17px;display:flex;flex-direction:column;z-index:5}
+.brand{display:flex;align-items:center;gap:11px;padding:0 10px 30px}
+.brand-mark{width:43px;height:43px;border-radius:15px;background:#dbe8d6;
+  display:grid;place-items:center;flex-shrink:0}
+.brand-name{font-size:22px;font-weight:750;letter-spacing:-.8px}
+.brand-sub{font-size:10px;color:#b9cbbb;letter-spacing:1.5px;text-transform:uppercase}
+.nav-label{font-size:10px;color:#a6beab;letter-spacing:1.6px;
+  padding:10px 12px;text-transform:uppercase}
+.nav{display:grid;gap:5px}
+.nav button{border:0;background:transparent;color:#d4e0d5;text-align:left;
+  padding:12px 13px;border-radius:12px;display:flex;gap:12px;align-items:center}
+.nav button:hover,.nav button.active{background:#ffffff16;color:white}
+.nav button.active{box-shadow:inset 3px 0 #c6d9bd}
+.nav-icon{width:23px;text-align:center;font-size:17px}
+.sidebar-bottom{margin-top:auto;border-top:1px solid #ffffff20;padding:18px 8px 0}
+.motto{font-family:Georgia,serif;font-size:17px;font-style:italic;color:#e4ebdf}
+.motto-sub{font-size:11px;color:#afc3b3;margin-top:6px}
+.main{margin-left:245px;padding:28px 38px 55px;max-width:1600px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:32px}
+.breadcrumb{font-size:12px;color:var(--muted)}
+.top-actions{display:flex;align-items:center;gap:10px}
+.lang-btn,.icon-btn{border:1px solid var(--line);background:var(--paper);
+  border-radius:11px;padding:9px 12px;color:var(--ink)}
+.profile{display:flex;align-items:center;gap:9px;margin-left:4px}
+.profile-menu-wrap{position:relative}
+.profile-trigger{border:1px solid transparent;background:transparent;color:var(--ink);padding:5px 8px;border-radius:14px;cursor:pointer;text-align:left}
+.profile-trigger:hover,.profile-trigger[aria-expanded="true"]{background:var(--paper);border-color:var(--line);box-shadow:0 6px 18px #183d3210}
+.profile-trigger .profile-copy{display:block}
+.profile-chevron{font-size:14px;color:var(--muted);transition:transform .2s ease;margin-left:2px}
+.profile-trigger[aria-expanded="true"] .profile-chevron{transform:rotate(180deg)}
+.profile-menu{position:absolute;right:0;top:calc(100% + 10px);width:min(280px,calc(100vw - 30px));padding:8px;background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 45px #183d3226;z-index:50;transform-origin:top right;animation:profileMenuIn .16s ease-out}
+.profile-menu[hidden]{display:none!important}
+@keyframes profileMenuIn{from{opacity:0;transform:translateY(-5px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.profile-menu-heading{padding:11px 12px 13px;display:grid;gap:3px}
+.profile-menu-heading strong{font-size:14px;color:var(--forest)}
+.profile-menu-heading small{font-size:11px;color:var(--muted)}
+.profile-menu-item{width:100%;display:flex;align-items:center;gap:11px;text-align:left;border:0;background:transparent;color:var(--ink);padding:11px 12px;border-radius:10px;font:inherit;font-size:12px;cursor:pointer;transition:background .16s ease,transform .16s ease,color .16s ease}
+.profile-menu-item:hover{background:#edf2e9;transform:translateX(2px)}
+.menu-item-icon{width:22px;height:22px;display:grid;place-items:center;border-radius:7px;background:var(--sage);color:var(--forest);font-size:14px;flex:none}
+.profile-menu-divider{height:1px;background:var(--line);margin:6px 4px}
+.profile-menu-logout{color:#914636}
+.profile-menu-logout .menu-item-icon{background:#f7e5e0;color:#914636}
+.profile-menu-logout:hover{background:#fbefeb}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--sage);
+  display:grid;place-items:center;color:var(--forest);font-weight:750}
+.profile small{display:block;color:var(--muted);font-size:11px}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:clamp(26px,3vw,36px);line-height:1.15;letter-spacing:-1.2px;margin-bottom:9px}
+h2{font-size:20px;letter-spacing:-.5px;margin-bottom:4px}
+h3{font-size:15px;margin-bottom:7px}
+.subtitle{color:var(--muted);margin-bottom:25px}
+.eyebrow{color:var(--green);font-size:10px;letter-spacing:1.8px;font-weight:750;text-transform:uppercase;margin-bottom:9px}
+.hero{position:relative;overflow:hidden;background:var(--forest);color:white;padding:30px 32px;
+  border-radius:24px;min-height:235px;display:flex;align-items:center;margin-bottom:24px}
+.hero-copy{position:relative;z-index:1;max-width:510px}
+.hero .eyebrow{color:#c2d9bd}
+.hero h2{font-family:Georgia,serif;font-size:clamp(26px,3vw,39px);
+  font-weight:500;line-height:1.2;max-width:470px;margin:0 0 12px}
+.hero p{color:#d5e1d5;max-width:410px;margin-bottom:18px;font-size:13px}
+.hero-art{position:absolute;right:0;top:0;height:100%;width:38%;opacity:.95;
+  background:radial-gradient(ellipse at 70% 25%,#6c92734d,transparent 55%),
+  linear-gradient(140deg,transparent 25%,#71916b33 25% 40%,transparent 40%),
+  linear-gradient(45deg,transparent 20%,#93aa8040 20% 36%,transparent 36%)}
+.hero-art:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--forest),transparent 60%)}
+.hero-fern{position:absolute;right:7%;bottom:-22px;font-size:150px;color:#d5e5ca;opacity:.16;transform:rotate(-20deg)}
+/* Polished, animated buttons */
+.btn,.btn-small,.btn-soft,.item-actions button,.pdf-preview-actions button,.logout-btn,.lang-btn,.icon-btn{
+  transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+.btn:hover,.btn-small:hover,.btn-soft:hover,.item-actions button:hover,.pdf-preview-actions button:hover,.logout-btn:hover,.lang-btn:hover,.icon-btn:hover{
+  transform:translateY(-2px);box-shadow:0 7px 16px #183d321a;
+}
+.btn:active,.btn-small:active,.btn-soft:active,.item-actions button:active,.pdf-preview-actions button:active,.logout-btn:active,.lang-btn:active,.icon-btn:active{transform:scale(.97)}
+.btn-small{border-radius:10px!important;padding:8px 12px!important;font-weight:650!important;background:#f8f7f0!important;color:var(--forest)!important;border:1px solid #e4e5d9!important}
+.btn-small:hover{background:#eaf0e5!important;border-color:#b9cdb8!important}
+.btn-danger:hover{background:#f1d5ce!important;color:#7d2d21!important}
+.logout-btn{border:1px solid var(--line);background:var(--paper);border-radius:11px;padding:9px 13px;color:var(--ink);font-size:12px;font-weight:650;cursor:pointer}
+.logout-btn:hover{background:#f7e5e0;border-color:#e6c5bd;color:#8d3c2e}
+.pdf-preview-actions button{cursor:pointer;font-weight:650;color:var(--forest);background:#f8f7f0;border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+.pdf-preview-actions button:hover{background:var(--sage);border-color:#b9cdb8}
+@media(prefers-reduced-motion:reduce){.btn,.btn-small,.btn-soft,.item-actions button,.pdf-preview-actions button,.logout-btn,.lang-btn,.icon-btn{transition:none}}
+.btn{border:0;border-radius:11px;background:var(--forest);color:white;padding:11px 16px;
+  font-weight:650;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:7px}
+.btn:hover{background:#2a5543}
+.btn-light{background:#f6f4e9;color:var(--forest)}
+.btn-light:hover{background:white}
+.btn-soft{background:var(--sage);color:var(--forest)}
+.btn-soft:hover{background:#cbdcc8}
+.btn-small{padding:7px 10px;font-size:12px}
+.btn-danger{background:#f7e5e0;color:#8d3c2e}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:25px}
+.stat,.panel,.module-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.stat{padding:18px 19px}
+.stat-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.stat-label{font-size:12px;color:var(--muted)}
+.stat-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:#eaf0e5;font-size:17px}
+.stat-value{font-size:29px;font-weight:750;letter-spacing:-1px;margin:12px 0 2px}
+.stat-note{font-size:11px;color:var(--muted)}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.section-head p{font-size:12px;color:var(--muted);margin:3px 0 0}
+.dashboard-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:20px}
+.panel{padding:22px;min-width:0}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:17px}
+.text-btn{border:0;background:none;color:var(--green);font-size:12px;font-weight:700}
+.progress-track{height:7px;background:#e9e9df;border-radius:9px;overflow:hidden}
+.progress-fill{height:100%;background:var(--green);border-radius:9px;transition:width .2s}
+.progress-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin:8px 0 17px}
+.task-list{display:grid;gap:0}
+.task{display:flex;align-items:flex-start;gap:11px;padding:13px 0;border-bottom:1px solid var(--line)}
+.task:last-child{border-bottom:0}
+.task input{accent-color:var(--green);width:17px;height:17px;margin-top:3px}
+.task-copy{flex:1;min-width:0}
+.task-title{font-size:13px;font-weight:600;overflow-wrap:anywhere}
+.task.done .task-title{text-decoration:line-through;color:var(--muted)}
+.task-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.tag{display:inline-flex;padding:4px 8px;border-radius:8px;background:#eaf0e5;color:#41644b;font-size:10px;font-weight:700}
+.tag.gold{background:#f5edd9;color:#8d6a2b}
+.tag.rose{background:#f7e5e0;color:#934d3c}
+.empty{padding:22px 8px;text-align:center;color:var(--muted);font-size:13px}
+.empty span{display:block;font-size:27px;margin-bottom:8px}
+.milestone{display:flex;gap:13px;padding:4px 0 20px;position:relative}
+.milestone:not(:last-child):before{content:"";position:absolute;left:13px;top:29px;bottom:0;width:1px;background:var(--line)}
+.milestone-dot{width:27px;height:27px;flex:0 0 27px;border-radius:50%;display:grid;place-items:center;background:var(--sage);font-size:12px;z-index:1}
+.milestone-date{font-size:10px;color:var(--green);font-weight:750;margin-bottom:3px}
+.milestone-title{font-size:13px;font-weight:650}
+.milestone-desc{font-size:11px;color:var(--muted);margin-top:3px}
+.module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.module-card{padding:21px;transition:transform .15s}
+.module-card:hover{transform:translateY(-2px)}
+.module-icon{width:43px;height:43px;border-radius:14px;background:#eaf0e5;display:grid;place-items:center;font-size:21px;margin-bottom:14px}
+.module-card p{color:var(--muted);font-size:12px;margin:5px 0 15px}
+.module-card-foot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:13px;font-size:11px;color:var(--muted)}
+.module-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:17px}
+.field{display:grid;gap:6px;min-width:0}
+.field label{font-size:11px;font-weight:700;color:var(--muted)}
+.field input,.field select,.field textarea,.search-input{width:100%;min-width:0;border:1px solid var(--line);border-radius:10px;background:#fffefb;color:var(--ink);padding:10px 11px;font-size:13px}
+.field textarea{min-height:85px;resize:vertical}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.field.full{grid-column:1/-1}
+.form-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:15px}
+.doc-filters{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,230px);gap:10px;width:100%}
+.doc-reminders{display:grid;gap:9px;margin:16px 0 4px}
+.doc-reminder{display:flex;gap:11px;align-items:flex-start;padding:12px 14px;border-radius:12px;font-size:12px}
+.doc-reminder strong{display:block;font-size:13px;margin-bottom:2px}
+.doc-reminder p{margin:0;color:inherit;opacity:.86}
+.doc-reminder.urgent{background:#f8e6e0;color:#883d2d;border:1px solid #efd0c7}
+.doc-reminder.soon{background:#fbf1d9;color:#755b23;border:1px solid #efdfb7}
+.doc-reminder.ok{background:#e8f0e5;color:#315b3f;border:1px solid #d5e4d1}
+.doc-expiry-tag{display:inline-flex;margin-top:7px;padding:4px 8px;border-radius:8px;font-size:10px;font-weight:750}
+.doc-expiry-tag.expired{background:#f8e6e0;color:#883d2d}
+.doc-expiry-tag.soon{background:#fbf1d9;color:#755b23}
+.doc-expiry-tag.safe{background:#e8f0e5;color:#315b3f}
+@media(max-width:620px){.doc-filters{grid-template-columns:1fr}.doc-reminder{padding:10px}}
+.item-row{display:flex;gap:12px;align-items:flex-start;padding:15px 0;border-bottom:1px solid var(--line)}
+.item-row:last-child{border-bottom:0}
+.item-main{flex:1;min-width:0}
+.item-main strong{font-size:13px;display:block;overflow-wrap:anywhere}
+.item-main p{font-size:12px;color:var(--muted);margin:4px 0 0;overflow-wrap:anywhere}
+.item-date{font-size:11px;color:var(--green);font-weight:700;white-space:nowrap}
+.item-actions{display:flex;gap:6px;align-items:center}
+.item-actions button{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:5px 8px;font-size:11px}
+.money-total{background:var(--forest);color:white;border-radius:16px;padding:20px;margin-bottom:17px}
+.money-total .label{font-size:11px;color:#c8d8c7}
+.money-total .amount{font-size:32px;font-weight:750;letter-spacing:-1px;margin:6px 0}
+.money-total small{color:#c8d8c7}
+.money-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:17px}
+.money-mini{border:1px solid var(--line);border-radius:13px;padding:14px}
+.money-mini span{font-size:11px;color:var(--muted)}
+.money-mini strong{display:block;font-size:19px;margin-top:5px}
+.money-mini.income strong{color:#47785c}
+.money-mini.expense strong{color:#a15a47}
+.note{border-radius:12px;background:#f5f0df;color:#75613c;padding:12px;font-size:11px;margin-top:14px}
+.dream-card{display:flex;gap:12px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--line)}
+.dream-card:last-child{border:0}
+.dream-star{font-size:23px}
+.dream-card .task-title{font-size:14px}
+.dream-card .task-meta{line-height:1.5}
+.dream-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--forest);color:white;border-radius:12px;padding:12px 18px;font-size:13px;box-shadow:var(--shadow);z-index:20;max-width:calc(100vw - 40px)}
+.hidden{display:none!important}
+.mobile-head{display:none}
+footer{padding-top:28px;text-align:center;color:var(--muted);font-size:10px}
+@media(max-width:1100px){.main{padding:25px 24px}.sidebar{width:215px}.main{margin-left:215px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grid{grid-template-columns:1fr}}
+@media(max-width:700px){
+.sidebar{inset:auto 0 0;width:auto;height:67px;padding:5px 7px;flex-direction:row;justify-content:center;border-top:1px solid #ffffff22}
+.brand,.nav-label,.sidebar-bottom{display:none}
+.nav{width:100%;display:flex;justify-content:space-around;gap:0}
+.nav button{flex:1;display:flex;flex-direction:column;justify-content:center;gap:1px;padding:5px 1px;border-radius:9px;font-size:9px;text-align:center}
+.nav button.active{box-shadow:inset 0 2px #c6d9bd}
+.nav-icon{font-size:17px;width:auto}
+.main{margin-left:0;padding:19px 15px 90px}
+.topbar{margin-bottom:22px}.profile-trigger .profile-copy{display:none}.profile-menu{right:0}
+.hero{padding:24px 21px;min-height:225px}
+.hero-art{width:55%;opacity:.5}.hero-fern{font-size:115px;right:-5px}
+.stats{gap:10px}.stat{padding:14px}.stat-value{font-size:25px}
+.stat-label{font-size:11px}.dashboard-grid{gap:14px}
+.panel{padding:17px}.module-grid{grid-template-columns:1fr}
+.module-card{padding:18px}.form-grid{grid-template-columns:1fr}
+.field.full{grid-column:auto}.item-row{flex-wrap:wrap}
+.item-actions{width:100%;padding-left:0}
+.top-actions{gap:6px}.lang-btn,.icon-btn,.logout-btn{padding:8px 10px}
+h1{font-size:28px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+.auth-screen{position:fixed;inset:0;z-index:100;background:var(--cream);display:grid;place-items:center;padding:20px}
+.auth-card{width:min(430px,100%);background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow)}
+.auth-card h1{font-family:Georgia,serif;color:var(--forest);font-weight:500}
+.auth-card p{color:var(--muted);font-size:13px}
+.auth-form{display:grid;gap:13px}
+.auth-form label{display:grid;gap:6px;font-size:12px;font-weight:700;color:var(--muted)}
+.auth-form input{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fffefb;color:var(--ink)}
+.auth-message{font-size:12px;color:#934d3c;min-height:18px;overflow-wrap:anywhere}
+.sync-status{font-size:10px;color:var(--muted);margin-right:4px}
+@media(max-width:700px){.auth-card{padding:22px}}
+
+
+.finance-quick-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.finance-quick-actions .btn{white-space:nowrap}.finance-quick-actions .btn:not(:first-child){background:#dce8d8;color:#183d32;border:1px solid #dce8d8}.finance-quick-actions .btn:not(:first-child):hover{background:#cbdcc6;transform:translateY(-1px)}.finance-quick-actions .btn{transition:transform .16s ease,background .16s ease}@media(max-width:900px){.finance-quick-actions{justify-content:flex-start}}@media(max-width:600px){.section-head{align-items:flex-start;flex-direction:column}.finance-quick-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.finance-quick-actions .btn{width:100%;padding:10px 8px;font-size:13px}}
+.finance-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}.finance-tabs button,.segmented button{border:1px solid var(--line,#e5e2d8);background:var(--card,#fffdf8);color:var(--ink,#183d32);border-radius:12px;padding:11px 14px;font:inherit;cursor:pointer}.finance-tabs button.selected,.segmented button.selected{background:#183d32;color:#fff;border-color:#183d32}.finance-filters{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0 16px}.segmented{display:flex;gap:5px;flex-wrap:wrap}.finance-filters select{padding:10px 12px;border:1px solid #e5e2d8;border-radius:10px;background:#fffdf8;color:#183d32;max-width:100%}.finance-chart-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px;margin:16px 0}.pie-chart{width:150px;height:150px;border-radius:50%;margin:18px auto;border:1px solid #ffffff;cursor:pointer;transition:transform .22s ease,filter .22s ease,box-shadow .22s ease}.pie-chart:hover{transform:scale(1.045);filter:saturate(1.12);box-shadow:0 8px 20px #183d3220}.pie-chart:active{transform:scale(.985)}.pie-legend button{border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;display:flex;align-items:center;gap:7px;width:100%;text-align:left;padding:3px;border-radius:6px}.pie-legend button:hover,.pie-legend button.selected{background:#e8eee5}.pie-detail{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:#eef2e8;color:#183d32;font-size:13px}.pie-legend{display:grid;gap:8px;font-size:12px}.pie-legend div{display:flex;align-items:center;gap:7px}.pie-legend span{width:10px;height:10px;border-radius:50%;flex:none}.pie-legend strong{margin-left:auto}.summary-line{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #ece9df}.summary-line:last-child{border-bottom:0}.muted{color:var(--muted,#718078)}@media(max-width:600px){.finance-tabs{display:grid;grid-template-columns:1fr}.finance-tabs button{text-align:left}.finance-filters{align-items:stretch}.finance-filters select{width:100%}}
+
+.countdown-message{margin:13px 0 0;padding:11px 14px;border-radius:12px;background:#eef2e8;color:#183d32;font-weight:750;letter-spacing:.1px;animation:countdown-pop .35s ease both}
+.countdown-track .progress-fill{transition:width .7s ease,filter .25s ease}
+.countdown-panel:hover .countdown-fill{filter:saturate(1.12)}
+.countdown-number{font-size:20px;color:var(--forest);text-align:right}
+@keyframes countdown-pop{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.modal-backdrop{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:12px;background:#10271dc9;overflow:hidden;overscroll-behavior:contain}
+.modal-form{width:min(510px,calc(100vw - 24px));min-width:0;max-width:100%;height:auto;max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;margin:0;padding:clamp(14px,3vw,24px);transform:none}
+.modal-form .form-grid{min-width:0;grid-template-columns:repeat(2,minmax(0,1fr))}
+.modal-form .field{min-width:0}
+.modal-form input,.modal-form select,.modal-form textarea{max-width:100%;min-width:0}
+.modal-form .panel-head{position:sticky;top:calc(-1 * clamp(14px,3vw,24px));z-index:2;background:var(--paper);padding-top:4px;padding-bottom:10px}
+.modal-form .form-actions{position:sticky;bottom:calc(-1 * clamp(14px,3vw,24px));z-index:2;background:var(--paper);padding:10px 0 2px}
+@media(max-width:600px){.modal-backdrop{padding:8px;align-items:center;justify-content:center}.modal-form{width:calc(100vw - 16px);max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);padding:16px;border-radius:18px}.modal-form .form-grid{grid-template-columns:minmax(0,1fr)}.modal-form .panel-head{top:-16px}.modal-form .form-actions{bottom:-16px}.modal-form input,.modal-form select,.modal-form textarea{font-size:16px!important}.modal-form .btn{min-height:44px}.countdown-number{font-size:16px}.countdown-message{font-size:13px}}
+.pdf-preview-frame{width:min(1100px,96vw);height:min(88vh,900px);border:0;border-radius:12px;background:#fff}.pdf-preview-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-bottom:10px}.file-hint{font-size:12px;color:var(--muted);margin-top:6px}.pdf-modal-panel{width:min(1200px,98vw);max-height:96vh;overflow:auto;padding:14px;background:var(--paper);border-radius:18px}.pdf-modal-backdrop{position:fixed;inset:0;z-index:1100;background:#10271dd9;display:flex;align-items:center;justify-content:center;padding:12px}.pdf-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.pdf-modal-head strong{overflow-wrap:anywhere}.pdf-modal-head button{border:1px solid var(--line);border-radius:9px;padding:7px 12px;background:white}.pdf-preview-frame{width:100%;height:calc(96vh - 90px);border:0;border-radius:10px;background:white}@media(prefers-reduced-motion:reduce){.countdown-message{animation:none}.countdown-track .progress-fill{transition:none}}
+</style>
+
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KiwiPath">
+<link rel="apple-touch-icon" href="./icons/kiwipath-192.png">
+</head>
+<body>
+<div id="authScreen" class="auth-screen">
+  <section class="auth-card">
+    <div class="brand-mark" style="margin-bottom:18px" aria-label="Silver fern">
+      <svg viewBox="0 0 48 48" width="31" height="31" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g stroke="#183D32" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 40C17 31 26 21 38 7"/>
+          <path d="M13 35L6 28L17 31"/>
+          <path d="M18 30L11 22L22 26"/>
+          <path d="M23 25L17 16L28 21"/>
+          <path d="M28 19L24 10L34 14"/>
+          <path d="M17 32L25 34L22 27"/>
+          <path d="M22 27L31 29L28 22"/>
+          <path d="M28 21L36 22L34 15"/>
+          <path d="M33 14L38 7"/>
+        </g>
+      </svg>
+    </div>
+    <div class="eyebrow">KIWIPATH · OUR JOURNEY</div>
+    <h1>Bem-vindos de volta.</h1>
+    <p>Entre na sua conta para acessar o espaço compartilhado de vocês.</p>
+    <form id="authForm" class="auth-form">
+      <label>E-mail<input id="authEmail" type="email" autocomplete="username" required></label>
+      <label>Senha<input id="authPassword" type="password" autocomplete="current-password" required minlength="6"></label>
+      <button class="btn" id="authSubmit" type="submit">Entrar no KiwiPath</button>
+      <div id="authMessage" class="auth-message" role="status" aria-live="polite"></div>
+    </form>
+    <p style="font-size:11px">Use o e-mail e a senha criados no Supabase. Seus dados serão compartilhados apenas com membros autorizados.</p>
+  </section>
+</div>
+<div class="app" id="kiwiApp" style="visibility:hidden">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark" aria-label="Silver fern">
+      <svg viewBox="0 0 48 48" width="31" height="31" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g stroke="#183D32" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 40C17 31 26 21 38 7"/>
+          <path d="M13 35L6 28L17 31"/>
+          <path d="M18 30L11 22L22 26"/>
+          <path d="M23 25L17 16L28 21"/>
+          <path d="M28 19L24 10L34 14"/>
+          <path d="M17 32L25 34L22 27"/>
+          <path d="M22 27L31 29L28 22"/>
+          <path d="M28 21L36 22L34 15"/>
+          <path d="M33 14L38 7"/>
+        </g>
+      </svg>
+    </div>
+    <div><div class="brand-name">KiwiPath<span style="color:#a8c5a0">.</span></div>
+      <div class="brand-sub">Our journey</div></div>
+  </div>
+  <div class="nav-label" data-i18n="workspace">Espaço de vocês</div>
+  <nav class="nav" id="navigation">
+    <button class="active" data-page="home"><span class="nav-icon">⌂</span><span data-i18n="home">Início</span></button>
+    <button data-page="documents"><span class="nav-icon">▤</span><span data-i18n="documents">Documentos</span></button>
+    <button data-page="timeline"><span class="nav-icon">◷</span><span data-i18n="timeline">Cronograma</span></button>
+    <button data-page="alerts"><span class="nav-icon">🔔</span><span data-i18n="customAlertsNav">Alertas</span></button>
+    <button data-page="finances"><span class="nav-icon">＄</span><span data-i18n="finances">Finanças</span></button>
+    <button data-page="study"><span class="nav-icon">⌑</span><span data-i18n="study">Estudos e carreira</span></button>
+    <button data-page="dreams"><span class="nav-icon">♡</span><span data-i18n="dreams">Nossos sonhos</span></button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="motto" data-i18n="motto">Cada passo nos aproxima.</div>
+    <div class="motto-sub">Made with ♡ for Vitor &amp; Zack</div>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb"><span>KiwiPath</span> / <span id="crumb">Início</span></div>
+    <div class="top-actions">
+      <span id="syncStatus" class="sync-status">Conectando…</span>
+      <div class="profile-menu-wrap" id="profileMenuWrap">
+        <button class="profile profile-trigger" id="profileMenuToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="profileMenu" title="Abrir menu da conta">
+          <span class="avatar" id="profileAvatar">V</span>
+          <span class="profile-copy"><strong id="profileName" style="font-size:12px">Vitor</strong><small data-i18n="ourJourney">Nossa jornada</small></span>
+          <span class="profile-chevron" aria-hidden="true">⌄</span>
+        </button>
+        <div class="profile-menu" id="profileMenu" hidden>
+          <div class="profile-menu-heading"><strong id="profileMenuName">Vitor</strong><small data-i18n="accountMenuSubtitle">Conta e preferências</small></div>
+          <button type="button" class="profile-menu-item" id="languageBtn"><span class="menu-item-icon">文</span><span id="languageMenuLabel">Mudar idioma para English</span></button>
+          <button type="button" class="profile-menu-item" id="syncNowBtn"><span class="menu-item-icon">↻</span><span data-i18n="syncNow">Sincronizar agora</span></button>
+          <button type="button" class="profile-menu-item" id="refreshAppBtn"><span class="menu-item-icon">⟳</span><span data-i18n="refreshApp">Atualizar aplicativo</span></button>
+          <button type="button" class="profile-menu-item" id="enablePushBtn"><span class="menu-item-icon">🔔</span><span id="enablePushLabel">Ativar notificações</span></button>
+          <button type="button" class="profile-menu-item" id="testPushBtn"><span class="menu-item-icon">📲</span><span id="testPushLabel">Enviar notificação de teste</span></button>
+          <div class="profile-menu-divider"></div>
+          <button type="button" class="profile-menu-item profile-menu-logout" id="logoutBtn"><span class="menu-item-icon">↪</span><span data-i18n="logout">Sair da conta</span></button>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div id="pageContent"></div>
+  <footer>KiwiPath · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
+</main>
+</div>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const STORE = "kiwipath.v1";
+// Configure these two values with the Project URL and Publishable key from Supabase.
+const SUPABASE_URL = "https://niexrojauhhhtyjzkpkx.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_BWXwh-mYTGw_TRbi0INa_A_gtDPt6_a";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let currentUser = null;
+let cloudRecordId = null;
+let cloudSaveTimer = null;
+let isApplyingCloudData = false;
+let realtimeChannel = null;
+let customAlerts = [];
+
+// Resolve o membro ativo a partir da sessão autenticada do Supabase.
+function currentMemberKey(){
+  const email=String(currentUser?.email||"").toLowerCase();
+  const meta=currentUser?.user_metadata||{};
+  const identity=String(meta.full_name||meta.name||meta.display_name||"").toLowerCase();
+  if(email.includes("zack")||identity.includes("zack")) return "zack";
+  if(email.includes("viga")||identity.includes("vitor")||identity.includes("victor")) return "vitor";
+  return "vitor";
+}
+function currentMemberName(){return currentMemberKey()==="zack"?"Zack":"Vitor";}
+
+// Web Push integration for KiwiPath. Public VAPID key only; private key stays in Supabase Secrets.
+const PUSH_FUNCTION_URL = SUPABASE_URL + "/functions/v1/kiwipath-notifications";
+const VAPID_PUBLIC_KEY = "BOnL2dafmSU4QstCiIwxTLYK2nFQInl0IM_UU5HmkM6vhtcm5H3mitTpVlhJz7RVd7d2ppFeV6xOIfVX5kiM-hg";
+function urlBase64ToUint8Array(base64String){
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(ch => ch.charCodeAt(0)));
+}
+async function callPushFunction(payload){
+  const {data:sessionData,error:sessionError}=await supabaseClient.auth.getSession();
+  if(sessionError) throw sessionError;
+  const token=sessionData?.session?.access_token;
+  if(!token) throw new Error(data.language==="pt"?"Entre na sua conta primeiro.":"Please sign in first.");
+  const response=await fetch(PUSH_FUNCTION_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+token,"apikey":SUPABASE_PUBLISHABLE_KEY},
+    body:JSON.stringify(payload)
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error(result.error||result.message||("HTTP "+response.status));
+  return result;
+}
+async function enablePushNotifications(){
+  if(!currentUser) throw new Error(data.language==="pt"?"Entre na sua conta primeiro.":"Please sign in first.");
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
+    throw new Error(data.language==="pt"?"Este navegador não suporta notificações Push. No iPhone, adicione o KiwiPath à Tela de Início e abra pelo ícone.":"This browser does not support push notifications. On iPhone, add KiwiPath to the Home Screen and open it from its icon.");
+  }
+  if(!window.matchMedia("(display-mode: standalone)").matches && !navigator.standalone){
+    const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    if(isIOS) throw new Error(data.language==="pt"?"No iPhone, primeiro use Compartilhar → Adicionar à Tela de Início e abra o KiwiPath pelo ícone.":"On iPhone, first use Share → Add to Home Screen and open KiwiPath from its icon.");
+  }
+  let permission=Notification.permission;
+  if(permission!=="granted") permission=await Notification.requestPermission();
+  if(permission!=="granted") throw new Error(data.language==="pt"?"Permissão de notificações não concedida.":"Notification permission was not granted.");
+  const registration=await navigator.serviceWorker.ready;
+  let subscription=await registration.pushManager.getSubscription();
+  if(!subscription){
+    subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+  }
+  await callPushFunction({action:"subscribe",subscription:subscription.toJSON()});
+  notify(data.language==="pt"?"Este dispositivo foi registrado para notificações!":"This device is registered for notifications!");
+}
+async function sendPushTest(){
+  const result=await callPushFunction({action:"test"});
+  notify(result.message||(data.language==="pt"?"Solicitação de teste enviada.":"Test request sent."));
+}
+async function loadCustomAlerts(){
+  if(!currentUser){customAlerts=[];return}
+  const {data:rows,error}=await supabaseClient.from("kiwipath_custom_alerts").select("id,title,message,scheduled_at,timezone,status,sent_at,created_at").eq("user_id",currentUser.id).order("scheduled_at",{ascending:true});
+  if(error) throw error;
+  customAlerts=rows||[];
+}
+function localDateTimeValue(iso){
+  if(!iso)return "";
+  const d=new Date(iso);if(Number.isNaN(d.getTime()))return "";
+  const pad=n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
+}
+function displayAlertDate(iso){
+  if(!iso)return "";
+  const d=new Date(iso);
+  return Number.isNaN(d.getTime())?esc(iso):d.toLocaleString(data.language==="pt"?"pt-BR":"en-NZ",{dateStyle:"medium",timeStyle:"short"});
+}
+function alertStatusLabel(status){
+  const pt=data.language==="pt";
+  return ({pending:pt?"Agendado":"Scheduled",processing:pt?"Enviando":"Sending",sent:pt?"Enviado":"Sent",cancelled:pt?"Cancelado":"Cancelled"})[status]||status;
+}
+function alertPage(){
+  const pt=data.language==="pt";
+  const rows=customAlerts.map(a=>`<div class="item-row">
+    <div class="item-date">${esc(displayAlertDate(a.scheduled_at))}</div>
+    <div class="item-main"><strong>${esc(a.title)}</strong><p>${esc(a.message||"")}</p><span class="tag ${a.status==="sent"?"":a.status==="cancelled"?"":"gold"}">${esc(alertStatusLabel(a.status))}</span></div>
+    <div class="item-actions">${a.status==="pending"?button("✎","edit-alert:"+a.id,"btn-small"):""}${a.status==="pending"?button(pt?"Cancelar":"Cancel","cancel-alert:"+a.id,"btn-small"):""}${button("×","delete-alert:"+a.id,"btn-small btn-danger")}</div>
+  </div>`).join("");
+  return `${pageHead(pt?"Alertas personalizados":"Custom alerts",pt?"Crie lembretes que o KiwiPath enviará no dia e horário escolhidos.":"Create reminders for KiwiPath to send at the date and time you choose.","add-alert",pt?"Criar alerta":"Create alert")}
+  <section class="panel"><div class="panel-head"><div><h2>${pt?"Seus alertas":"Your alerts"}</h2><p>${customAlerts.length} ${pt?"alerta(s)":"alert(s)"}</p></div><button class="btn btn-soft btn-small" data-action="refresh-alerts">${pt?"Atualizar":"Refresh"}</button></div>
+  ${rows||empty(pt?"Você ainda não criou alertas. Use “Criar alerta” para começar.":"You have no custom alerts yet. Choose “Create alert” to get started.")}</section>
+  <div class="note">${pt?"Os alertas são enviados por notificação push. Ative as notificações no menu do perfil e mantenha um dispositivo registrado. O servidor verifica alertas pendentes a cada minuto.":"Alerts are delivered by push notification. Enable notifications from the profile menu and keep a device registered. The server checks pending alerts every minute."}</div>`;
+}
+function editAlert(id){
+  const old=customAlerts.find(a=>a.id===id);const pt=data.language==="pt";
+  const fields=field("title",pt?"Título do alerta":"Alert title",old?.title||"","text","full")+textareaField("message",pt?"Mensagem da notificação":"Notification message",old?.message||"","full")+field("scheduledAt",pt?"Data e horário":"Date and time",localDateTimeValue(old?.scheduled_at),"datetime-local","full")+ `<div class="field full"><p class="file-hint">${pt?"Escolha o horário no seu dispositivo. O alerta será enviado pelo servidor mesmo que o aplicativo esteja fechado.":"Choose the time on your device. The server will send the alert even when the app is closed."}</p></div>`;
+  modal(old?(pt?"Editar alerta":"Edit alert"):(pt?"Novo alerta":"New alert"),fields,async v=>{
+    const title=String(v.title||"").trim(),message=String(v.message||"").trim();
+    if(!title){notify(pt?"Informe um título.":"Enter a title.");return false}
+    if(!v.scheduledAt){notify(pt?"Escolha data e horário.":"Choose a date and time.");return false}
+    const localDate=new Date(v.scheduledAt);
+    if(Number.isNaN(localDate.getTime())){notify(pt?"Data ou horário inválido.":"Invalid date or time.");return false}
+    if(localDate.getTime()<=Date.now()){notify(pt?"Escolha um horário futuro.":"Choose a future time.");return false}
+    const payload={title,message,scheduled_at:localDate.toISOString(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"Pacific/Auckland",status:"pending",updated_at:new Date().toISOString()};
+    const result=old?await supabaseClient.from("kiwipath_custom_alerts").update(payload).eq("id",old.id).eq("user_id",currentUser.id):await supabaseClient.from("kiwipath_custom_alerts").insert({...payload,user_id:currentUser.id});
+    if(result.error)throw result.error;
+    await loadCustomAlerts();return true;
+  });
+}
+async function cancelAlert(id){
+  const pt=data.language==="pt";
+  const {error}=await supabaseClient.from("kiwipath_custom_alerts").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("id",id).eq("user_id",currentUser.id).eq("status","pending");
+  if(error){console.error(error);notify(pt?"Não foi possível cancelar o alerta.":"Could not cancel alert.");return}
+  await loadCustomAlerts();render();notify(pt?"Alerta cancelado.":"Alert cancelled.");
+}
+async function deleteAlert(id){
+  const pt=data.language==="pt";
+  if(!confirm(pt?"Excluir este alerta permanentemente?":"Permanently delete this alert?"))return;
+  const {error}=await supabaseClient.from("kiwipath_custom_alerts").delete().eq("id",id).eq("user_id",currentUser.id);
+  if(error){console.error(error);notify(pt?"Não foi possível excluir o alerta.":"Could not delete alert.");return}
+  await loadCustomAlerts();render();notify(pt?"Alerta excluído.":"Alert deleted.");
+}
+function updateProfile(){
+  const name=currentMemberName();
+  const avatar=$("#profileAvatar");
+  const label=$("#profileName");
+  if(avatar) avatar.textContent=name==="Zack"?"Z":"V";
+  if(label) label.textContent=name;
+  const menuName=$("#profileMenuName"); if(menuName) menuName.textContent=name;
+  const pushEnableLabel=$("#enablePushLabel"); if(pushEnableLabel) pushEnableLabel.textContent=data.language==="pt"?"Ativar notificações":"Enable notifications";
+  const pushTestLabel=$("#testPushLabel"); if(pushTestLabel) pushTestLabel.textContent=data.language==="pt"?"Enviar notificação de teste":"Send test notification";
+}
+
+const today = () => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Pacific/Auckland",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+};
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const initial = () => ({
+  language:"pt",
+  documents:[
+    {id:uid(),title:"Passaporte válido",owner:"both",status:"todo",due:"",note:"Confirmar validade e condições."},
+    {id:uid(),title:"Documentos acadêmicos",owner:"vitor",status:"todo",due:"",note:"Diploma, histórico e traduções, conforme exigido."},
+    {id:uid(),title:"Documentos do parceiro",owner:"zack",status:"todo",due:"",note:"Confirmar a lista aplicável à situação de vocês."},
+    {id:uid(),title:"Exames e documentos médicos",owner:"both",status:"todo",due:"",note:"Verificar os requisitos oficiais vigentes."},
+    {id:uid(),title:"Comprovantes financeiros",owner:"both",status:"todo",due:"",note:"Conferir os requisitos oficiais e os prazos."}
+  ],
+  events:[
+    {id:uid(),title:"Preparação da mudança",date:"",note:"Organizar os próximos passos da jornada."},
+    {id:uid(),title:"Início do Master of Nursing",date:"2027-02-08",note:"Data de referência inicial — confirmar com a instituição."}
+  ],
+  transactions:[],
+  projectCosts:[],
+  nzReserve:[],
+  accounts:[],
+  study:[
+    {id:uid(),title:"Master of Nursing Science",category:"Curso",status:"active",date:"",note:"Acompanhar calendário, matrícula e requisitos."},
+    {id:uid(),title:"Registro profissional de enfermagem",category:"Carreira",status:"todo",date:"",note:"Pesquisar os requisitos aplicáveis junto aos órgãos oficiais."}
+  ],
+  dreams:[
+    {id:uid(),title:"Chegar à Nova Zelândia juntos",note:"O começo de uma nova fase.",done:false},
+    {id:uid(),title:"Construir nossa vida em um lugar que amamos",note:"Uma casa, novas amizades e novas memórias.",done:false},
+    {id:uid(),title:"Explorar as paisagens da Nova Zelândia",note:"Montanhas, lagos, florestas e trilhas.",done:false}
+  ],
+  savingsGoal:0
+});
+let data;
+try {
+  const saved = localStorage.getItem(STORE);
+  data = saved ? {...initial(),...JSON.parse(saved)} : initial();
+  for (const k of ["documents","events","transactions","projectCosts","nzReserve","accounts","study","dreams"])
+    if (!Array.isArray(data[k])) data[k]=[];
+  if (!["pt","en"].includes(data.language)) data.language="pt";
+} catch(e) { data=initial(); }
+let page = "home";
+let financeSubpage = "monthly";
+let financePeriod = "month";
+let financeCategory = "all";
+let financeFrom = today();
+let financeTo = today();
+let selectedPieCategory = "";
+let toastTimer;
+const copy = {
+ pt:{
+  workspace:"Espaço de vocês",home:"Início",documents:"Documentos",timeline:"Cronograma",
+  finances:"Finanças",study:"Estudos e carreira",dreams:"Nossos sonhos",motto:"Cada passo nos aproxima.",
+  ourJourney:"Nossa jornada",footer:"Um passo de cada vez, juntos.",
+  welcome:"NOSSO PRÓXIMO CAPÍTULO",hero:"A vida que estamos construindo.",heroText:"Do Brasil à Nova Zelândia: cada conquista nos aproxima do futuro que imaginamos.",openTasks:"Tarefas pendentes",completed:"Concluídas",milestones:"Próximas etapas",quickTasks:"Prioridades da jornada",viewAll:"Ver todas",noTasks:"Nenhuma tarefa pendente. Bom trabalho!",noEvents:"Adicione uma data importante para começar sua timeline.",
+  progress:"Progresso dos documentos",of:"de",items:"itens",modules:"Nosso espaço de planejamento",moduleText:"Tudo o que precisamos, organizado em um só lugar.",
+  docDesc:"Organize documentos e acompanhe pendências.",timeDesc:"Datas, prazos e próximos marcos.",finDesc:"Registre gastos e acompanhe a meta.",studyDesc:"Acompanhe formação e carreira.",dreamDesc:"Guardem as metas que querem realizar juntos.",
+  add:"Adicionar",addTask:"Adicionar documento",addEvent:"Adicionar evento",addTransaction:"Registrar movimento",addStudy:"Adicionar objetivo",addDream:"Adicionar sonho",cancel:"Cancelar",save:"Salvar",edit:"Editar",delete:"Excluir",markDone:"Concluir",markTodo:"Reabrir",empty:"Ainda não há itens aqui.",search:"Buscar...",title:"Título",owner:"Responsável",status:"Status",due:"Data / prazo",notes:"Notas",date:"Data",description:"Descrição",vitor:"Vitor",zack:"Zack",both:"Ambos",todo:"Pendente",done:"Concluído",active:"Em andamento",paused:"Pausado",category:"Categoria",course:"Curso",career:"Carreira",other:"Outro",amount:"Valor",type:"Tipo",expense:"Despesa",income:"Entrada",currency:"Moeda",goal:"Meta de economia",setGoal:"Definir meta",balance:"Saldo registrado",totalIn:"Entradas",totalOut:"Despesas",remaining:"Faltam para a meta",dreamDone:"Realizado",dreamOpen:"Em aberto",export:"Exportar backup",import:"Importar backup",importConfirm:"Importar este backup? Os dados atuais serão substituídos.",exported:"Backup exportado.",saved:"Alterações salvas.",deleted:"Item excluído.",confirmDelete:"Deseja excluir este item?",saveError:"Não foi possível salvar no navegador. Exporte seus dados e verifique o espaço disponível.",noDate:"Sem data",ownerAll:"Ambos",statusProgress:"Progresso",total:"Total",languageChanged:"Idioma alterado.",accountMenuSubtitle:"Conta e preferências",syncNow:"Sincronizar agora",refreshApp:"Atualizar aplicativo",logout:"Sair da conta",allLocal:"Os dados ficam neste navegador.",privacy:"Não insira números de passaporte nem informações sensíveis.",finNote:"Os valores são apenas os que vocês registrarem. Não representam saldo bancário real.",officialNote:"Os itens são lembretes pessoais, não uma confirmação dos requisitos de imigração. Confirme sempre as regras vigentes nos sites oficiais.",target:"Objetivo",studyNote:"Registre aqui os objetivos e as datas de vocês. Verifique requisitos profissionais diretamente com as entidades competentes.",dreamNote:"Pequenos passos também fazem parte da aventura.",noSearch:"Nenhum resultado encontrado.",saveGoal:"Guardar meta",addFirst:"Adicionar primeiro item",eventPast:"Passado",eventFuture:"Próximo",documentCount:"documentos",transactionCount:"movimentos",studyCount:"objetivos",dreamCount:"sonhos",homeSubtitle:"Uma visão tranquila do que já conquistamos e do que vem pela frente.",newItem:"Novo item",editItem:"Editar item",selectDate:"Selecionar data",month:"Mês",year:"Ano",eventTitle:"Nome do evento",dreamTitle:"Nome do sonho",transactionTitle:"Nome do movimento",studyTitle:"Nome do objetivo",documentTitle:"Nome do documento",saveGoalHint:"Meta total de economia em NZD",clearSearch:"Limpar busca",hasExpiry:"Este documento tem validade?",expiryDate:"Data de validade",expiringDocs:"Documentos que vencem nos próximos 3 meses",noExpiringDocs:"Nenhum documento cadastrado vence nos próximos 3 meses.",daysUntilEvent:"Contagem para o próximo evento",daysLeft:"dias restantes",todayEvent:"O próximo evento é hoje!",pastEvent:"Não há próximos eventos cadastrados."
+ },
+ en:{
+  workspace:"Your workspace",home:"Home",documents:"Documents",timeline:"Timeline",finances:"Finances",study:"Study & career",dreams:"Our dreams",motto:"Every step brings us closer.",
+  ourJourney:"Our journey",footer:"One step at a time, together.",
+  welcome:"OUR NEXT CHAPTER",hero:"The life we're building.",heroText:"From Brazil to New Zealand: every milestone brings us closer to the future we imagine.",openTasks:"Open tasks",completed:"Completed",milestones:"Upcoming milestones",quickTasks:"Journey priorities",viewAll:"View all",noTasks:"No pending tasks. Well done!",noEvents:"Add an important date to start your timeline.",
+  progress:"Document progress",of:"of",items:"items",modules:"Our planning space",moduleText:"Everything we need, organised in one place.",
+  docDesc:"Organise documents and track outstanding tasks.",timeDesc:"Dates, deadlines and upcoming milestones.",finDesc:"Track expenses and your savings goal.",studyDesc:"Follow your education and career.",dreamDesc:"Keep the goals you want to achieve together.",
+  add:"Add",addTask:"Add document",addEvent:"Add event",addTransaction:"Record transaction",addStudy:"Add goal",addDream:"Add dream",cancel:"Cancel",save:"Save",edit:"Edit",delete:"Delete",markDone:"Complete",markTodo:"Reopen",empty:"There are no items here yet.",search:"Search...",title:"Title",owner:"Assigned to",status:"Status",due:"Date / deadline",notes:"Notes",date:"Date",description:"Description",vitor:"Vitor",zack:"Zack",both:"Both",todo:"Pending",done:"Completed",active:"In progress",paused:"Paused",category:"Category",course:"Course",career:"Career",other:"Other",amount:"Amount",type:"Type",expense:"Expense",income:"Income",currency:"Currency",goal:"Savings goal",setGoal:"Set goal",balance:"Recorded balance",totalIn:"Income",totalOut:"Expenses",remaining:"Left to goal",dreamDone:"Achieved",dreamOpen:"In progress",export:"Export backup",import:"Import backup",importConfirm:"Import this backup? Current data will be replaced.",exported:"Backup exported.",saved:"Changes saved.",deleted:"Item deleted.",confirmDelete:"Delete this item?",saveError:"Could not save in this browser. Export your data and check available storage.",noDate:"No date",ownerAll:"Both",statusProgress:"Progress",total:"Total",languageChanged:"Language changed.",accountMenuSubtitle:"Account and preferences",syncNow:"Sync now",refreshApp:"Refresh app",logout:"Sign out",allLocal:"Data stays in this browser.",privacy:"Do not enter passport numbers or sensitive information.",finNote:"Values reflect only what you record. They are not a real bank balance.",officialNote:"These are personal reminders, not confirmation of immigration requirements. Always check current rules on official websites.",target:"Goal",studyNote:"Record your goals and dates here. Check professional requirements with the relevant authorities.",dreamNote:"Small steps are part of the adventure, too.",noSearch:"No results found.",saveGoal:"Save goal",addFirst:"Add your first item",eventPast:"Past",eventFuture:"Upcoming",documentCount:"documents",transactionCount:"transactions",studyCount:"goals",dreamCount:"dreams",homeSubtitle:"A calm overview of what we've achieved and what's ahead.",newItem:"New item",editItem:"Edit item",selectDate:"Select date",month:"Month",year:"Year",eventTitle:"Event name",dreamTitle:"Dream name",transactionTitle:"Transaction name",studyTitle:"Goal name",documentTitle:"Document name",saveGoalHint:"Total savings goal in NZD",clearSearch:"Clear search",hasExpiry:"Does this document expire?",expiryDate:"Expiry date",expiringDocs:"Documents expiring in the next 3 months",noExpiringDocs:"No registered documents expire in the next 3 months.",daysUntilEvent:"Countdown to the next event",daysLeft:"days left",todayEvent:"The next event is today!",pastEvent:"No upcoming events scheduled."
+ }
+};
+function t(k){return copy[data.language]?.[k] || copy.pt[k] || k}
+function esc(s=""){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function parseAmount(v){if(typeof v==="number")return v;const q=String(v??"").trim().replace(/\s/g,"");if(!q)return NaN;return Number(q.includes(",")?q.replace(/\./g,"").replace(",","."):q)}
+function money(n){return new Intl.NumberFormat(data.language==="pt"?"pt-BR":"en-NZ",{style:"currency",currency:"NZD",maximumFractionDigits:2}).format(Number(n)||0)}
+function fmtDate(d){if(!d)return t("noDate");const x=new Date(d+"T12:00:00");return isNaN(x)?esc(d):x.toLocaleDateString(data.language==="pt"?"pt-BR":"en-NZ",{day:"2-digit",month:"short",year:"numeric"})}
+function save(){
+  try { localStorage.setItem(STORE, JSON.stringify(data)); }
+  catch(e) { notify(t("saveError")); }
+  if (currentUser && !isApplyingCloudData) {
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(() => syncToCloud(), 500);
+  }
+}
+async function syncToCloud(){
+  if (!currentUser || isApplyingCloudData) return;
+  const status = $("#syncStatus");
+  if (status) status.textContent = "Sincronizando…";
+  const payload = {
+    user_id: currentUser.id,
+    record_type: "app_state",
+    title: "shared",
+    content: data,
+    updated_at: new Date().toISOString()
+  };
+  try {
+    if (cloudRecordId) {
+      const { error } = await supabaseClient.from("kiwipath_records")
+        .update({user_id: currentUser.id, content: data, updated_at: payload.updated_at})
+        .eq("id", cloudRecordId);
+      if (error) throw error;
+    } else {
+      const { data: rows, error: readError } = await supabaseClient
+        .from("kiwipath_records").select("id,content")
+        .eq("record_type","app_state").eq("title","shared")
+        .order("created_at",{ascending:true}).limit(1);
+      if (readError) throw readError;
+      if (rows && rows.length) {
+        cloudRecordId = rows[0].id;
+        const { error } = await supabaseClient.from("kiwipath_records")
+          .update({user_id:currentUser.id,content:data,updated_at:payload.updated_at}).eq("id",cloudRecordId);
+        if (error) throw error;
+      } else {
+        const { data: inserted, error } = await supabaseClient
+          .from("kiwipath_records").insert(payload).select("id").single();
+        if (error) throw error;
+        cloudRecordId = inserted.id;
+      }
+    }
+    if (status) status.textContent = "Sincronizado ✓";
+  } catch (error) {
+    console.error("KiwiPath cloud save:", error);
+    if (status) status.textContent = "Falha na sincronização";
+    notify("Não foi possível sincronizar. Verifique a conexão e as permissões do Supabase.");
+  }
+}
+function migrateLegacyReserve(){if(!Array.isArray(data.accounts))data.accounts=[];if(!Array.isArray(data.transactions))data.transactions=[];if((data.nzReserve||[]).length&&!data.accounts.length){const account={id:uid(),name:'Reserva NZ (saldo anterior)',bank:'Reserva anterior',currency:'NZD',initialBalance:0,paymentMethods:['transfer','debit','credit','cash']};data.accounts.push(account);for(const x of data.nzReserve){data.transactions.push({...x,accountId:account.id,paymentMethod:'transfer',category:x.category||'Outro',note:x.note||''})}data.nzReserve=[];return true}return false}
+async function loadCloudData(){
+  const {data: rows,error} = await supabaseClient.from("kiwipath_records")
+    .select("id,content").eq("record_type","app_state").eq("title","shared")
+    .order("created_at",{ascending:true}).limit(1);
+  if(error) throw error;
+  if(rows && rows.length){
+    cloudRecordId = rows[0].id;
+    isApplyingCloudData = true;
+    data = {...initial(),...(rows[0].content || {})};
+    for(const k of ["documents","events","transactions","study","dreams","projectCosts","nzReserve","accounts"])
+      if(!Array.isArray(data[k])) data[k]=[];
+    if(!["pt","en"].includes(data.language)) data.language="pt";
+    localStorage.setItem(STORE,JSON.stringify(data));
+    isApplyingCloudData = false;
+  } else {
+    for(const k of ["documents","events","transactions","study","dreams","projectCosts","nzReserve","accounts"])
+      if(!Array.isArray(data[k])) data[k]=[];
+    await syncToCloud();
+  }
+  if(migrateLegacyReserve()){localStorage.setItem(STORE,JSON.stringify(data));await syncToCloud()}
+  render();
+}
+function showAuth(message=""){
+  $("#authScreen").style.display="grid";
+  $("#kiwiApp").style.visibility="hidden";
+  $("#authMessage").textContent=message;
+}
+async function startApp(session){
+  currentUser = session?.user || null;
+  if(!currentUser){showAuth();return;}
+  updateProfile();
+  $("#authScreen").style.display="none";
+  $("#kiwiApp").style.visibility="visible";
+  try {
+    await loadCloudData();
+    await loadCustomAlerts();
+    render();
+    if(realtimeChannel) await supabaseClient.removeChannel(realtimeChannel);
+    realtimeChannel = supabaseClient.channel("kiwipath-shared-records")
+      .on("postgres_changes",{event:"UPDATE",schema:"public",table:"kiwipath_records"},async payload=>{
+        if(payload.new && payload.new.id===cloudRecordId && payload.new.user_id!==currentUser.id){
+          try {
+            const {data:row,error}=await supabaseClient.from("kiwipath_records").select("id,content").eq("id",cloudRecordId).single();
+            if(error) throw error;
+            if(row && row.content){
+              isApplyingCloudData=true;
+              data={...initial(),...row.content};
+              for(const k of ["documents","events","transactions","study","dreams","projectCosts","nzReserve","accounts"])
+                if(!Array.isArray(data[k])) data[k]=[];
+              localStorage.setItem(STORE,JSON.stringify(data));
+              isApplyingCloudData=false;
+              render();
+              $("#syncStatus").textContent="Sincronizado ✓";
+            }
+          } catch(e){console.error(e);}
+        }
+      }).subscribe();
+  } catch(error) {
+    console.error("KiwiPath initialization:",error);
+    const detail = error?.message || error?.details || error?.hint || "Erro desconhecido";
+    showAuth("Falha ao carregar dados: " + String(detail).slice(0,220));
+  }
+}
+
+function progress(){return data.documents.length?Math.round(data.documents.filter(x=>x.status==="done").length/data.documents.length*100):0}
+function empty(msg=t("empty")){return `<div class="empty"><span>✳</span>${esc(msg)}</div>`}
+function button(label,action,cls="btn",extra=""){return `<button class="${cls}" data-action="${action}" ${extra}>${label}</button>`}
+function pageHead(title,sub,action="",label=""){return `<div class="section-head"><div><div class="eyebrow">KIWIPATH / ${esc(title)}</div><h1>${esc(title)}</h1><p>${esc(sub)}</p></div>${action?button("＋ "+esc(label),action,"btn"):""}</div>`}
+function taskHTML(x){return `<div class="task ${x.status==="done"?"done":""}"><input type="checkbox" data-toggle-doc="${x.id}" ${x.status==="done"?"checked":""} aria-label="${esc(x.title)}"><div class="task-copy"><div class="task-title">${esc(x.title)}</div><div class="task-meta">${esc(t(x.owner||"both"))} · ${esc(x.due?fmtDate(x.due):t("noDate"))}</div></div><span class="tag ${x.status==="done"?"":"gold"}">${esc(t(x.status))}</span></div>`}
+function eventHTML(x){return `<div class="milestone"><div class="milestone-dot">${x.date&&x.date<today()?"✓":"✦"}</div><div><div class="milestone-date">${esc(fmtDate(x.date))}</div><div class="milestone-title">${esc(x.title)}</div><div class="milestone-desc">${esc(x.note||"")}</div></div></div>`}
+function dateOnlyLocal(iso){if(!iso)return null;const [y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d)}
+function daysBetween(from,to){return Math.ceil((to.getTime()-from.getTime())/86400000)}
+function dashboard(){
+ const pending=data.documents.filter(x=>x.status!=="done");
+ const todayDate=dateOnlyLocal(today());
+ const upcoming=[...data.events].filter(x=>x.date&&dateOnlyLocal(x.date)>=todayDate).sort((a,b)=>a.date.localeCompare(b.date));
+ const nextEvent=upcoming[0]||null;
+ const daysToEvent=nextEvent?Math.max(0,daysBetween(todayDate,dateOnlyLocal(nextEvent.date))):null;
+ const countdownPct=daysToEvent===null?0:Math.max(4,Math.min(100,100-(daysToEvent/180*100)));
+ const countdownMessage=daysToEvent===null?"":daysToEvent===0?(data.language==="pt"?"É HOJE! Respira fundo — chegou o grande dia!":"IT'S TODAY! Take a deep breath — the big day is here!"):daysToEvent===1?(data.language==="pt"?"É AMANHÃ! Meu Deus, tá bem aí!":"IT'S TOMORROW! Oh my gosh, it's here!"):daysToEvent<=3?(data.language==="pt"?"MEU DEUS, TÁ BEM AÍ! Últimos preparativos!":"OH WOW, IT'S SO CLOSE! Final preparations!"):daysToEvent<=10?(data.language==="pt"?"CONTAGEM REGRESSIVAAAA! Já dá pra sentir a emoção!":"COUNTDOWN MODE: ON! The excitement is real!"):daysToEvent<=30?(data.language==="pt"?"Modo reta final ativado. A aventura tá chegando!":"Final stretch activated. The adventure is getting close!"):daysToEvent<=50?(data.language==="pt"?"Agora ficou real! Comecem a preparar o coração!":"It's getting REAL! Start getting excited!"):daysToEvent<=100?(data.language==="pt"?"Tá chegando... hora de alinhar os últimos detalhes!":"It's getting closer... time to line up the details!"):(data.language==="pt"?"Suck it up, buttercup! Cada dia conta. 💪":"Suck it up, buttercup! Every day counts. 💪");
+ const cutoff=new Date(todayDate);cutoff.setMonth(cutoff.getMonth()+3);
+ const expiring=(data.documents||[]).filter(x=>{const d=x.expiryDate||((x.hasExpiry&&x.due)?x.due:"");if(!x.hasExpiry&&!x.expiryDate)return false;const date=dateOnlyLocal(d);return date&&date>=todayDate&&date<=cutoff;}).sort((a,b)=>(a.expiryDate||a.due).localeCompare(b.expiryDate||b.due));
+ return `<div class="hero"><div class="hero-copy"><div class="eyebrow">${t("welcome")}</div><h2>${t("hero")}</h2><p>${t("heroText")}</p>${button("＋ "+t("addTask"),"add-document","btn-light")}</div><div class="hero-art"></div><div class="hero-fern" aria-hidden="true"><svg viewBox="0 0 120 150" width="120" height="150" fill="none" stroke="#d5e5ca" stroke-width="3" stroke-linecap="round"><path d="M20 140Q70 75 94 12"/><path d="M31 122L10 99L43 111M43 104L21 78L55 94M55 85L36 58L68 77M66 65L53 37L79 57M78 42L73 17L94 33M38 114L66 119M51 94L78 100M64 73L88 80M76 53L99 59"/></svg></div></div>
+ <div class="stats">
+ <div class="stat"><div class="stat-top"><span class="stat-label">${t("openTasks")}</span><span class="stat-icon">▤</span></div><div class="stat-value">${pending.length}</div><div class="stat-note">${t("documentCount")}</div></div>
+ <div class="stat"><div class="stat-top"><span class="stat-label">${t("completed")}</span><span class="stat-icon">✓</span></div><div class="stat-value">${data.documents.length-pending.length}</div><div class="stat-note">${t("progress")}: ${progress()}%</div></div>
+ <div class="stat"><div class="stat-top"><span class="stat-label">${t("milestones")}</span><span class="stat-icon">◷</span></div><div class="stat-value">${upcoming.length}</div><div class="stat-note">${t("timeline")}</div></div>
+ <div class="stat"><div class="stat-top"><span class="stat-label">${t("ourJourney")}</span><span class="stat-icon">♡</span></div><div class="stat-value">${data.dreams.filter(x=>!x.done).length}</div><div class="stat-note">${t("dreamCount")}</div></div></div>
+ <div class="dashboard-grid"><section class="panel"><div class="panel-head"><div><h2>${t("quickTasks")}</h2><p style="font-size:11px;color:var(--muted);margin:3px 0">${t("progress")}</p></div>${button(t("viewAll")+" ↗","go-documents","text-btn")}</div><div class="progress-track"><div class="progress-fill" style="width:${progress()}%"></div></div><div class="progress-meta"><span>${progress()}% ${t("completed").toLowerCase()}</span><span>${data.documents.length} ${t("items")}</span></div><div class="task-list">${pending.length?pending.slice(0,5).map(taskHTML).join(""):empty(t("noTasks"))}</div></section>
+ <section class="panel"><div class="panel-head"><div><h2>${t("milestones")}</h2><p style="font-size:11px;color:var(--muted);margin:3px 0">${t("timeline")}</p></div>${button("＋","add-event","text-btn")}</div>${upcoming.length?upcoming.slice(0,3).map(eventHTML).join(""):empty(t("noEvents"))}</section></div>
+ <section class="panel countdown-panel" style="margin-top:18px"><div class="panel-head"><div><h2>${t("daysUntilEvent")}</h2><p style="font-size:12px;color:var(--muted);margin:3px 0">${nextEvent?esc(nextEvent.title)+" · "+fmtDate(nextEvent.date):t("pastEvent")}</p></div>${nextEvent?`<strong class="countdown-number">${daysToEvent===0?t("todayEvent"):daysToEvent+" "+t("daysLeft")}</strong>`:""}</div>${nextEvent?`<div class="progress-track countdown-track" aria-label="${t("daysUntilEvent")}"><div class="progress-fill countdown-fill" style="width:${countdownPct}%"></div></div><p class="countdown-message" aria-live="polite">${esc(countdownMessage)}</p>`:""}</section>
+ <section class="panel" style="margin-top:18px"><div class="panel-head"><div><h2>${t("expiringDocs")}</h2><p style="font-size:12px;color:var(--muted);margin:3px 0">${expiring.length} ${t("documentCount")}</p></div>${button(t("viewAll")+" ↗","go-documents","text-btn")}</div>${expiring.length?expiring.map(x=>`<div class="item-row"><div class="item-main"><strong>${esc(x.title)}</strong><p>${t("expiryDate")}: ${fmtDate(x.expiryDate||x.due)}</p></div><span class="tag gold">${Math.max(0,daysBetween(todayDate,dateOnlyLocal(x.expiryDate||x.due)))} ${t("daysLeft")}</span></div>`).join(""):empty(t("noExpiringDocs"))}</section>
+ <div style="margin:26px 0 14px"><div class="section-head"><div><h2>${t("modules")}</h2><p>${t("moduleText")}</p></div></div></div>${moduleCards()}`;
+}
+const moduleInfo=[["documents","▤","docDesc","documents","documents"],["timeline","◷","timeDesc","timeline","events"],["finances","＄","finDesc","finances","transactions"],["study","⌑","studyDesc","study","study"],["dreams","♡","dreamDesc","dreams","dreams"]];
+function moduleCards(){return `<div class="module-grid">${moduleInfo.map(([p,ic,desc,title,key])=>`<div class="module-card"><div class="module-icon">${ic}</div><h3>${t(title)}</h3><p>${t(desc)}</p><div class="module-card-foot"><span>${data[key].length} ${t(key==="documents"?"documentCount":key==="transactions"?"transactionCount":key==="study"?"studyCount":key==="dreams"?"dreamCount":"items")}</span>${button("↗","go-"+p,"text-btn")}</div></div>`).join("")}</div>`}
+function documentExpiryInfo(x){const raw=x.expiryDate||((x.hasExpiry&&x.due)?x.due:"");if(!raw)return {date:"",days:null,state:"none",label:data.language==="pt"?"Validade não informada":"Expiry date not set"};const d=dateOnlyLocal(raw);if(!d||isNaN(d.getTime()))return {date:raw,days:null,state:"none",label:data.language==="pt"?"Confira a data de validade":"Check expiry date"};const days=daysBetween(dateOnlyLocal(today()),d);if(days<0)return {date:raw,days,state:"expired",label:data.language==="pt"?`Vencido há ${Math.abs(days)} dia(s)`:`Expired ${Math.abs(days)} day(s) ago`};if(days===0)return {date:raw,days,state:"soon",label:data.language==="pt"?"Vence hoje":"Expires today"};if(days<=30)return {date:raw,days,state:"soon",label:data.language==="pt"?`Renovar urgentemente · ${days} dia(s)`:`Renew urgently · ${days} day(s)`};if(days<=90)return {date:raw,days,state:"soon",label:data.language==="pt"?`Planejar renovação · ${days} dia(s)`:`Plan renewal · ${days} day(s)`};return {date:raw,days,state:"safe",label:data.language==="pt"?`${days} dias até vencer`:`${days} days until expiry`};}
+function docRow(x){const expiry=documentExpiryInfo(x);return `<div class="item-row" data-searchable="${esc((x.title+" "+(x.note||"")).toLowerCase())}" data-owner="${esc(x.owner||"both")}"><input type="checkbox" data-toggle-doc="${x.id}" ${x.status==="done"?"checked":""} aria-label="${esc(x.title)}"><div class="item-main"><strong>${esc(x.title)}</strong><p>${esc(t(x.owner||"both"))} · ${esc(x.note||"")}</p>${x.due&&!(x.hasExpiry||x.expiryDate)?`<p>${t("due")}: ${fmtDate(x.due)}</p>`:""}${expiry.date?`<p>${t("expiryDate")}: ${fmtDate(expiry.date)}</p><span class="doc-expiry-tag ${expiry.state}">${esc(expiry.label)}</span>`:(x.hasExpiry?`<span class="doc-expiry-tag soon">${data.language==="pt"?"Informe a data de validade":"Add an expiry date"}</span>`:"")}${x.filePath?`<p style="margin-top:8px">${esc(x.fileName||"PDF anexado")}</p><div class="item-actions" style="margin-top:7px">${button(data.language==="pt"?"Visualizar PDF":"Preview PDF","preview-document:"+x.id,"btn-small")}${button(data.language==="pt"?"Baixar PDF":"Download PDF","download-document:"+x.id,"btn-small")}</div>`:""}</div><span class="tag ${x.status==="done"?"":"gold"}">${t(x.status)}</span><div class="item-actions">${button("✎","edit-document:"+x.id,"btn-small")}${button("×","delete-document:"+x.id,"btn-small btn-danger")}</div></div>`}
+function documentPage(){const list=data.documents;const todayDate=dateOnlyLocal(today());const reminders=list.map(x=>({x,info:documentExpiryInfo(x)})).filter(o=>o.info.state==="expired"||(o.info.days!==null&&o.info.days>=0&&o.info.days<=90)||o.info.state==="none"&&o.x.hasExpiry).sort((a,b)=>{const rank=v=>v.info.state==="expired"?0:v.info.days!==null?1:2;return rank(a)-rank(b)||(a.info.days??9999)-(b.info.days??9999)});const expired=reminders.filter(o=>o.info.state==="expired").length;const soon=reminders.filter(o=>o.info.days!==null&&o.info.days>=0&&o.info.days<=90).length;return `${pageHead(t("documents"),t("docDesc"),"add-document",t("add"))}<section class="panel"><div class="panel-head"><div><h2>${t("progress")}</h2><p>${list.filter(x=>x.status==="done").length} ${t("of")} ${list.length} ${t("items")}</p></div><span class="tag">${progress()}%</span></div><div class="progress-track"><div class="progress-fill" style="width:${progress()}%"></div></div><div class="doc-reminders">${expired?`<div class="doc-reminder urgent"><span>⚠️</span><div><strong>${data.language==="pt"?`${expired} documento(s) vencido(s)`:`${expired} expired document(s)`}</strong><p>${data.language==="pt"?"Confira a renovação o quanto antes e atualize a validade após renovar.":"Arrange renewal as soon as possible and update the expiry date after renewal."}</p></div></div>`:""}${soon?`<div class="doc-reminder soon"><span>🔔</span><div><strong>${data.language==="pt"?`${soon} documento(s) vencem nos próximos 90 dias`:`${soon} document(s) expire in the next 90 days`}</strong><p>${data.language==="pt"?"Planejem a renovação com antecedência para evitar interrupções ou atrasos.":"Plan renewals early to avoid interruptions or delays."}</p></div></div>`:""}${!expired&&!soon?`<div class="doc-reminder ok"><span>✓</span><div><strong>${data.language==="pt"?"Tudo em dia?":"Looking good?"}</strong><p>${data.language==="pt"?"Nenhum documento com validade registrada está vencido ou vence nos próximos 90 dias.":"No document with a recorded expiry date is expired or due within the next 90 days."}</p></div></div>`:""}</div><div class="module-toolbar" style="margin-top:18px"><div class="doc-filters"><input class="search-input" id="docSearch" placeholder="${t("search")}" aria-label="${t("search")}"><select class="search-input" id="docOwnerFilter" aria-label="${data.language==="pt"?"Filtrar por responsável":"Filter by owner"}"><option value="all">${data.language==="pt"?"Documentos de todos":"All documents"}</option><option value="vitor">Vitor</option><option value="zack">Zack</option><option value="both">${data.language==="pt"?"De ambos":"Both"}</option></select></div></div><div id="docList">${list.length?list.map(docRow).join(""):empty()}</div></section><div class="note">${t("officialNote")} ${t("privacy")}</div>`}
+function timelinePage(){const list=[...data.events].sort((a,b)=>(a.date||"9999").localeCompare(b.date||"9999"));return `${pageHead(t("timeline"),t("timeDesc"),"add-event",t("add"))}<section class="panel"><div class="panel-head"><div><h2>${t("milestones")}</h2><p>${list.length} ${t("items")}</p></div></div>${list.length?list.map(x=>`<div class="item-row"><div class="item-date">${esc(fmtDate(x.date))}</div><div class="item-main"><strong>${esc(x.title)}</strong><p>${esc(x.note||"")}</p></div><div class="item-actions">${button("✎","edit-event:"+x.id,"btn-small")}${button("×","delete-event:"+x.id,"btn-small btn-danger")}</div></div>`).join(""):empty()}</section><div class="note">${t("officialNote")}</div>`}
+function financeTabs(){return `<div class="finance-tabs"><button class="${financeSubpage==='monthly'?'selected':''}" data-action="finance-tab:monthly">↕ ${data.language==='pt'?'Gastos e entradas':'Income & expenses'}</button><button class="${financeSubpage==='boxes'?'selected':''}" data-action="finance-tab:boxes">▣ ${data.language==='pt'?'Caixinhas':'Money boxes'}</button><button class="${financeSubpage==='project'?'selected':''}" data-action="finance-tab:project">🇳🇿 ${data.language==='pt'?'Projeto Nova Zelândia':'New Zealand project'}</button></div>`}
+function financePerson(x){return x.createdBy==='zack'?'Zack':'Vitor'}
+function financeProjectPage(){const items=data.projectCosts||[];const total=items.reduce((a,x)=>a+Number(x.nzdAmount||0),0);return `${pageHead(data.language==='pt'?'Gastos do projeto NZ':'NZ project costs',data.language==='pt'?'Tudo que já investimos ou ainda vamos investir na mudança.':'Everything already spent or planned for the move.', 'add-project-cost',t('add'))}<div class="money-total"><div class="label">${data.language==='pt'?'Total do projeto estimado':'Estimated project total'} · NZD</div><div class="amount">${money(total)}</div><small>${data.language==='pt'?'Inclui gastos pagos e previstos, convertidos para NZD para facilitar a comparação.':'Includes paid and planned costs, converted to NZD for comparison.'}</small></div><section class="panel"><div class="panel-head"><div><h2>${data.language==='pt'?'Todos os custos':'All project costs'}</h2><p>${items.length} ${data.language==='pt'?'lançamentos':'entries'}</p></div></div>${items.length?[...items].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(x=>`<div class="item-row"><div class="item-date">${fmtDate(x.date)}</div><div class="item-main"><strong>${esc(x.title)}</strong><p>${esc(x.category)} · ${x.status==='planned'?(data.language==='pt'?'Previsto':'Planned'):(data.language==='pt'?'Pago':'Paid')} · ${financePerson(x)}</p><p>${x.currency==='BRL'?`R$ ${Number(x.amount||0).toLocaleString('pt-BR',{minimumFractionDigits:2})} · câmbio NZD ${Number(x.rate||0).toFixed(4)}`:'NZD '+Number(x.amount||0).toFixed(2)}</p></div><strong style="white-space:nowrap">${money(x.nzdAmount)}</strong><div class="item-actions">${button('✎','edit-project-cost:'+x.id,'btn-small')}${button('×','delete-project-cost:'+x.id,'btn-small btn-danger')}</div></div>`).join(''):empty()}</section><div class="note">${data.language==='pt'?'Para valores em reais, informe a cotação de 1 NZD em BRL na data do lançamento. O sistema calcula o equivalente em NZD. Para despesas futuras, marque “Previsto”.':'For BRL amounts, enter the BRL value of 1 NZD on the transaction date. The equivalent NZD amount is calculated. Mark future expenses as “Planned”.'}</div>`}
+function financeMonthlyPage(){const all=data.transactions||[];const now=new Date();const from=new Date(now);if(financePeriod==='week')from.setDate(now.getDate()-6);else if(financePeriod==='month')from.setDate(1);else if(financePeriod==='half')from.setMonth(now.getMonth()-5,1);else if(financePeriod==='custom'&&financeFrom){const d=new Date(financeFrom+'T00:00:00');if(!isNaN(d))from.setTime(d.getTime());}const to=financePeriod==='custom'&&financeTo?new Date(financeTo+'T23:59:59'):now;const filtered=all.filter(x=>{const d=x.date?new Date(x.date+'T12:00:00'):null;return d&&d>=from&&d<=to&&(financeCategory==='all'||x.category===financeCategory)});const income=filtered.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);const expense=filtered.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);const cats=[...new Set(all.map(x=>x.category).filter(Boolean))];const sums=cats.map(c=>({c,v:filtered.filter(x=>x.category===c&&x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0)})).filter(x=>x.v>0);const totalCat=sums.reduce((s,x)=>s+x.v,0)||1;let angle=0;const gradient=sums.map(x=>{const a=angle;angle+=x.v/totalCat*360;return `${['#183d32','#91b78c','#d9b779','#b66c55','#6d8790','#a9a0bd'][sums.indexOf(x)%6]} ${a}deg ${angle}deg`}).join(',');return `<div class="section-head"><div><div class="eyebrow">KIWIPATH / ${data.language==='pt'?'CONTROLE MENSAL':'MONTHLY CONTROL'}</div><h1>${data.language==='pt'?'Controle mensal':'Income & expenses'}</h1><p>${data.language==='pt'?'Acompanhe entradas e saídas, por período e categoria.':'Track income and expenses by period and category.'}</p></div><div class="finance-quick-actions"><button class="btn" data-action="add-transaction">＋ ${t('add')}</button><button class="btn" data-action="quick-transaction:market">🛒 Mercado</button><button class="btn" data-action="quick-transaction:transport">🚌 Transporte</button><button class="btn" data-action="quick-transaction:leisure">🍽️ Lazer</button></div></div><div class="finance-filters"><div class="segmented"><button class="${financePeriod==='week'?'selected':''}" data-action="finance-period:week">${data.language==='pt'?'Semanal':'Weekly'}</button><button class="${financePeriod==='month'?'selected':''}" data-action="finance-period:month">${data.language==='pt'?'Mensal':'Monthly'}</button><button class="${financePeriod==='half'?'selected':''}" data-action="finance-period:half">${data.language==='pt'?'Semestral':'6 months'}</button></div><select id="financeCategoryFilter" aria-label="${t('category')}"><option value="all">${data.language==='pt'?'Todas as categorias':'All categories'}</option>${cats.map(c=>`<option value="${esc(c)}" ${financeCategory===c?'selected':''}>${esc(c)}</option>`).join('')}</select><button class="btn btn-soft btn-small" data-action="finance-period:custom">Período personalizado</button></div>${financePeriod==='custom'?`<div class="finance-filters"><label>De <input id="financeFrom" type="date" value="${financeFrom}"></label><label>Até <input id="financeTo" type="date" value="${financeTo}"></label></div>`:''}<div class="money-summary"><div class="money-mini income"><span>${t('totalIn')}</span><strong>${money(income)}</strong></div><div class="money-mini expense"><span>${t('totalOut')}</span><strong>${money(expense)}</strong></div></div><div class="finance-chart-row"><section class="panel"><h2>${data.language==='pt'?'Despesas por categoria':'Expenses by category'}</h2>${sums.length?`<div class="pie-chart" role="button" tabindex="0" aria-label="${data.language==='pt'?'Clique para ver a porcentagem de cada categoria':'Click to view each category percentage'}" data-pie-cycle="1" style="background:conic-gradient(${gradient})"></div><div class="pie-legend">${sums.map((x,i)=>`<button type="button" class="${selectedPieCategory===x.c?'selected':''}" data-pie-category="${esc(x.c)}"><span style="background:${['#183d32','#91b78c','#d9b779','#b66c55','#6d8790','#a9a0bd'][i%6]};width:10px;height:10px;border-radius:50%;flex:none"></span>${esc(x.c)} <strong>${money(x.v)}</strong></button>`).join('')}</div>${selectedPieCategory&&sums.some(x=>x.c===selectedPieCategory)?`<div class="pie-detail"><strong>${esc(selectedPieCategory)}</strong>: ${(sums.find(x=>x.c===selectedPieCategory).v/totalCat*100).toLocaleString(data.language==='pt'?'pt-BR':'en-NZ',{maximumFractionDigits:1,minimumFractionDigits:1})}% ${data.language==='pt'?'do total de despesas':'of total expenses'} (${money(sums.find(x=>x.c===selectedPieCategory).v)}).</div>`:''}`:`<p class="muted">${data.language==='pt'?'Adicione despesas com categorias para ver o gráfico.':'Add categorised expenses to see the chart.'}</p>`}</section><section class="panel"><h2>${data.language==='pt'?'Resumo do período':'Period summary'}</h2><div class="summary-line"><span>${data.language==='pt'?'Saldo':'Balance'}</span><strong>${money(income-expense)}</strong></div><div class="summary-line"><span>${data.language==='pt'?'Lançamentos':'Entries'}</span><strong>${filtered.length}</strong></div></section></div><section class="panel"><div class="panel-head"><div><h2>${data.language==='pt'?'Lançamentos':'Transactions'}</h2><p>${filtered.length} ${t('transactionCount')}</p></div></div>${filtered.length?[...filtered].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(x=>`<div class="item-row"><div class="item-date">${fmtDate(x.date)}</div><div class="item-main"><strong>${esc(x.title)}</strong><p>${esc(x.category||'Outro')} · ${t(x.type)} · ${financePerson(x)}${x.accountId&&data.accounts?.find(a=>a.id===x.accountId)?' · '+esc(data.accounts.find(a=>a.id===x.accountId).name):''}${x.paymentMethod?' · '+esc(({debit:'Débito',credit:'Crédito',cash:'Cash',transfer:'Transferência'})[x.paymentMethod]||x.paymentMethod):''}</p></div><strong style="color:${x.type==='income'?'#47785c':'#a15a47'};white-space:nowrap">${x.type==='income'?'+':'−'}${x.accountId&&data.accounts?.find(a=>a.id===x.accountId)?accountMoney(data.accounts.find(a=>a.id===x.accountId),x.amount):money(x.amount)}</strong><div class="item-actions">${button('✎','edit-transaction:'+x.id,'btn-small')}${button('×','delete-transaction:'+x.id,'btn-small btn-danger')}</div></div>`).join(''):empty()}</section>`}
+function financeReservePage(){const items=data.nzReserve||[];const income=items.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);const expense=items.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);return `${pageHead(data.language==='pt'?'Reserva criada na NZ':'Savings built in NZ',data.language==='pt'?'Dinheiro ganho ou guardado na Nova Zelândia, sem conversão de reais.':'Money earned or saved in New Zealand, with no BRL conversion.','add-reserve',t('add'))}<div class="money-total"><div class="label">${data.language==='pt'?'Saldo da reserva':'Savings balance'} · NZD</div><div class="amount">${money(income-expense)}</div><small>${data.language==='pt'?'Somente valores em NZD feitos na Nova Zelândia.':'NZD amounts accumulated in New Zealand only.'}</small></div><div class="money-summary"><div class="money-mini income"><span>${t('totalIn')}</span><strong>${money(income)}</strong></div><div class="money-mini expense"><span>${t('totalOut')}</span><strong>${money(expense)}</strong></div></div><section class="panel"><div class="panel-head"><div><h2>${data.language==='pt'?'Movimentos da reserva':'Savings movements'}</h2><p>${items.length} ${data.language==='pt'?'lançamentos':'entries'}</p></div></div>${items.length?[...items].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(x=>`<div class="item-row"><div class="item-date">${fmtDate(x.date)}</div><div class="item-main"><strong>${esc(x.title)}</strong><p>${t(x.type)} · ${financePerson(x)}</p></div><strong style="color:${x.type==='income'?'#47785c':'#a15a47'};white-space:nowrap">${x.type==='income'?'+':'−'}${money(x.amount)}</strong><div class="item-actions">${button('✎','edit-reserve:'+x.id,'btn-small')}${button('×','delete-reserve:'+x.id,'btn-small btn-danger')}</div></div>`).join(''):empty()}</section>`}
+function accountBalance(account){const tx=(data.transactions||[]).filter(x=>x.accountId===account.id);return Number(account.initialBalance||0)+tx.reduce((sum,x)=>sum+(x.type==='income'?1:-1)*Number(x.amount||0),0)}
+function accountCurrency(account){return account.currency==='BRL'?'R$':'NZ$'}
+function accountMoney(account,amount){return `${accountCurrency(account)} ${Number(amount||0).toLocaleString(data.language==='pt'?'pt-BR':'en-NZ',{minimumFractionDigits:2,maximumFractionDigits:2})}`}
+function financeBoxesPage(){const accounts=data.accounts||[];const total=accounts.length;return `${pageHead(data.language==='pt'?'Caixinhas':'Money boxes',data.language==='pt'?'Cada conta tem seu próprio saldo, moeda e formas de pagamento. Entradas e despesas atualizam os saldos automaticamente.':'Each account has its own balance, currency and payment methods. Income and expenses update balances automatically.','add-account',data.language==='pt'?'＋ Criar caixinha':'＋ Create money box')}<div class="money-summary">${accounts.map(a=>`<div class="money-mini"><span>${esc(a.name)} · ${a.currency}</span><strong>${accountMoney(a,accountBalance(a))}</strong></div>`).join('')||`<div class="money-mini"><span>${data.language==='pt'?'Contas cadastradas':'Accounts created'}</span><strong>0</strong></div>`}</div><section class="panel"><div class="panel-head"><div><h2>${data.language==='pt'?'Suas caixinhas':'Your money boxes'}</h2><p>${total} ${data.language==='pt'?'contas':'accounts'}</p></div><button class="btn" data-action="add-account">＋ ${data.language==='pt'?'Criar caixinha':'Create money box'}</button></div>${accounts.length?accounts.map(a=>`<div class="item-row"><div class="module-icon">${a.currency==='BRL'?'R$':'NZ$'}</div><div class="item-main"><strong>${esc(a.name)}</strong><p>${esc(a.bank)} · ${a.currency} · ${(a.paymentMethods||['transfer']).map(m=>({debit:data.language==='pt'?'Débito':'Debit',credit:data.language==='pt'?'Crédito':'Credit',cash:'Cash',transfer:data.language==='pt'?'Transferência':'Transferência'}[m]||m)).join(' · ')}</p><p>${data.language==='pt'?'Saldo inicial':'Opening balance'}: ${accountMoney(a,a.initialBalance)}</p></div><strong style="white-space:nowrap">${accountMoney(a,accountBalance(a))}</strong><div class="item-actions">${button('✎','edit-account:'+a.id,'btn-small')}${button('×','delete-account:'+a.id,'btn-small btn-danger')}</div></div>`).join(''):empty()}<div class="note">${data.language==='pt'?'Ao registrar uma despesa ou entrada em Gastos e entradas, selecione a caixinha. O saldo será atualizado automaticamente. Transferência está sempre habilitada.':'When recording income or an expense, choose the money box. Its balance updates automatically. Transfers are always enabled.'}</div></section>`}
+function financesPage(){return `${pageHead(t('finances'),data.language==='pt'?'Organizem o projeto, as movimentações e o saldo real de cada conta.':'Organise the project, transactions and each account balance.')}${financeTabs()}${financeSubpage==='project'?financeProjectPage():financeSubpage==='monthly'?financeMonthlyPage():financeBoxesPage()}`}
+
+function studyPage(){return `${pageHead(t("study"),t("studyNote"),"add-study",t("add"))}<section class="panel"><div class="panel-head"><div><h2>${t("target")}</h2><p>${data.study.length} ${t("studyCount")}</p></div></div>${data.study.length?data.study.map(x=>`<div class="item-row"><div class="module-icon" style="margin:0;width:37px;height:37px;flex:0 0 37px">⌑</div><div class="item-main"><strong>${esc(x.title)}</strong><p>${esc(x.category||t("other"))} · ${esc(x.note||"")}</p>${x.date?`<p>${t("date")}: ${fmtDate(x.date)}</p>`:""}<span class="tag ${x.status==="active"?"":"gold"}">${t(x.status)}</span></div><div class="item-actions">${button("✎","edit-study:"+x.id,"btn-small")}${button("×","delete-study:"+x.id,"btn-small btn-danger")}</div></div>`).join(""):empty()}</section><div class="note">${t("officialNote")}</div>`}
+function dreamsPage(){return `${pageHead(t("dreams"),t("dreamDesc"),"add-dream",t("add"))}<section class="panel"><div class="panel-head"><div><h2>♡ ${t("ourJourney")}</h2><p>${data.dreams.filter(x=>x.done).length} ${t("of")} ${data.dreams.length} ${t("items")}</p></div></div>${data.dreams.length?data.dreams.map(x=>`<div class="dream-card"><div class="dream-star">${x.done?"🌿":"✧"}</div><div class="item-main"><div class="task-title">${esc(x.title)}</div><div class="task-meta">${esc(x.note||"")}</div><div class="dream-actions">${button(x.done?t("dreamDone"):t("markDone"),"toggle-dream:"+x.id,"btn-soft btn-small")}${button("✎ "+t("edit"),"edit-dream:"+x.id,"btn-small")}${button("×","delete-dream:"+x.id,"btn-small btn-danger")}</div></div></div>`).join(""):empty()}</section><div class="note">${t("dreamNote")}</div>`}
+function render(){const names={home:"home",documents:"documents",timeline:"timeline",alerts:"customAlertsNav",finances:"finances",study:"study",dreams:"dreams"};$("#crumb").textContent=page==="alerts"?(data.language==="pt"?"Alertas":"Alerts"):t(names[page]||"home");$$("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));const views={home:dashboard,documents:documentPage,timeline:timelinePage,alerts:alertPage,finances:financesPage,study:studyPage,dreams:dreamsPage};$("#pageContent").innerHTML=(views[page]||dashboard)();document.documentElement.lang=data.language==="pt"?"pt-BR":"en";$$("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});$("#languageMenuLabel").textContent=data.language==="pt"?"Mudar idioma para English":"Change language to Português"}
+function notify(s){const el=$("#toast");el.textContent=s;el.classList.remove("hidden");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add("hidden"),2600)}
+function modal(title,fields,onSave){const html=`<div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><form id="itemForm" class="panel modal-form"><div class="panel-head"><h2 id="modalTitle">${esc(title)}</h2><button type="button" class="icon-btn" id="closeModal" aria-label="${t("cancel")}">×</button></div><div class="form-grid">${fields}</div><div class="form-actions"><button type="button" class="btn btn-soft" id="cancelModal">${t("cancel")}</button><button class="btn" type="submit">${t("save")}</button></div></form></div>`;$("#modalBackdrop")?.remove();document.body.insertAdjacentHTML("beforeend",html);const close=()=>$("#modalBackdrop")?.remove();$("#closeModal").onclick=close;$("#cancelModal").onclick=close;$("#itemForm").onsubmit=e=>{e.preventDefault();const fd=new FormData(e.target);try{const result=onSave(Object.fromEntries(fd.entries()));if(result&&typeof result.then==="function"){const submit=e.submitter; if(submit){submit.disabled=true;submit.textContent=data.language==="pt"?"Enviando…":"Uploading…"} Promise.resolve(result).then(value=>{if(value===false){if(submit){submit.disabled=false;submit.textContent=t("save")}return}close();save();render();notify(t("saved"))}).catch(err=>{console.error(err);if(submit){submit.disabled=false;submit.textContent=t("save")}notify(data.language==="pt"?"Falha ao salvar o documento.":"Could not save document.")});return}if(result===false)return;close();save();render();notify(t("saved"))}catch(err){console.error("KiwiPath form save error:",err);notify(data.language==='pt'?'Não foi possível salvar. Confira os campos e tente novamente.':'Could not save. Check the fields and try again.')}};$("#modalBackdrop").addEventListener("click",e=>{if(e.target.id==="modalBackdrop")close()});$("#itemForm").querySelector("input,select,textarea")?.focus()}
+function field(name,label,value="",type="text",extra=""){const numeric=type==="number";return `<div class="field ${extra}"><label for="f-${name}">${esc(label)}</label><input id="f-${name}" name="${name}" type="${numeric?'text':type}" value="${esc(value??"")}" ${numeric?'inputmode="decimal" autocomplete="off"':''}></div>`}
+function selectField(name,label,options,value,extra=""){return `<div class="field ${extra}"><label for="f-${name}">${esc(label)}</label><select id="f-${name}" name="${name}">${options.map(([v,l])=>`<option value="${v}" ${v===value?"selected":""}>${esc(l)}</option>`).join("")}</select></div>`}
+function textareaField(name,label,value="",extra=""){return `<div class="field ${extra}"><label for="f-${name}">${esc(label)}</label><textarea id="f-${name}" name="${name}">${esc(value||"")}</textarea></div>`}
+function editDoc(id){const old=data.documents.find(x=>x.id===id);const hasExpiry=old?.hasExpiry??!!old?.expiryDate;const pt=data.language==="pt";const uploadField=`<div class="field full"><label for="f-pdfFile">${pt?"Anexar documento em PDF":"Attach PDF document"}</label><input id="f-pdfFile" name="pdfFile" type="file" accept="application/pdf,.pdf"><div class="file-hint">${old?.fileName?(pt?"Arquivo atual: ":"Current file: ")+esc(old.fileName):pt?"Escolha um PDF. Ele ficará disponível para vocês dois e poderá ser visualizado sem baixar.":"Choose a PDF. It will be available to both of you and can be previewed without downloading."}</div></div>`;modal(old?t("editItem"):t("addTask"),field("title",t("documentTitle"),old?.title||"","text","full")+selectField("owner",t("owner"),[["vitor",t("vitor")],["zack",t("zack")],["both",t("both")]],old?.owner||"both")+selectField("status",t("status"),[["todo",t("todo")],["done",t("done")]],old?.status||"todo")+`<div class="field full"><label for="f-hasExpiry">${t("hasExpiry")}</label><select id="f-hasExpiry" name="hasExpiry"><option value="no" ${hasExpiry?"":"selected"}>${pt?"Não":"No"}</option><option value="yes" ${hasExpiry?"selected":""}>${pt?"Sim":"Yes"}</option></select></div>`+field("expiryDate",t("expiryDate"),old?.expiryDate||((hasExpiry)?old?.due:""),"date","full")+uploadField+textareaField("note",t("notes"),old?.note||"","full"),async v=>{const item={...old,id:old?.id||uid(),title:v.title.trim(),owner:v.owner,status:v.status,hasExpiry:v.hasExpiry==="yes",expiryDate:v.hasExpiry==="yes"?v.expiryDate:"",due:v.hasExpiry==="yes"?v.expiryDate:"",note:v.note.trim()};if(!item.title){notify(t("title"));return false}if(item.hasExpiry&&!item.expiryDate){notify(pt?"Selecione a data de validade.":"Select the expiry date.");return false}const file=$("#f-pdfFile")?.files?.[0];if(file){if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){notify(pt?"Envie um arquivo PDF.":"Please upload a PDF file.");return false}if(file.size>20*1024*1024){notify(pt?"O PDF deve ter no máximo 20 MB.":"PDF must be 20 MB or smaller.");return false}if(!currentUser){notify(pt?"Entre na conta para enviar arquivos.":"Sign in to upload files.");return false}const path=`shared/${item.id}.pdf`;const {error:uploadError}=await supabaseClient.storage.from("kiwipath-documents").upload(path,file,{upsert:true,contentType:"application/pdf"});if(uploadError){console.error(uploadError);notify(pt?"Não foi possível enviar o PDF. Confira a configuração do Storage no Supabase.":"PDF upload failed. Check Supabase Storage setup.");return false}item.filePath=path;item.fileName=file.name;item.fileSize=file.size;item.fileUpdatedAt=new Date().toISOString()}if(old)data.documents=data.documents.map(x=>x.id===id?item:x);else data.documents.push(item)})} 
+async function documentFileAction(id,download=false){const x=data.documents.find(d=>d.id===id);if(!x?.filePath)return notify(data.language==="pt"?"Este documento não tem PDF anexado.":"No PDF is attached to this document.");try{const {data:result,error}=await supabaseClient.storage.from("kiwipath-documents").createSignedUrl(x.filePath,300,{download:download?(x.fileName||true):undefined});if(error)throw error;if(download){const a=document.createElement("a");a.href=result.signedUrl;a.download=x.fileName||"documento.pdf";a.target="_blank";a.rel="noopener";a.click()}else{const html=`<div class="pdf-modal-backdrop" id="pdfPreviewBackdrop"><section class="pdf-modal-panel"><div class="pdf-modal-head"><strong>${esc(x.title)} · ${esc(x.fileName||"PDF")}</strong><div class="pdf-preview-actions"><button type="button" id="pdfDownloadBtn">${data.language==="pt"?"Baixar PDF":"Download PDF"}</button><button type="button" id="pdfCloseBtn">${data.language==="pt"?"Fechar":"Close"}</button></div></div><iframe class="pdf-preview-frame" title="PDF preview" src="${esc(result.signedUrl)}#toolbar=1&navpanes=0"></iframe></section></div>`;document.body.insertAdjacentHTML("beforeend",html);const close=()=>$("#pdfPreviewBackdrop")?.remove();$("#pdfCloseBtn").onclick=close;$("#pdfPreviewBackdrop").addEventListener("click",e=>{if(e.target.id==="pdfPreviewBackdrop")close()});$("#pdfDownloadBtn").onclick=()=>documentFileAction(id,true)}}catch(e){console.error(e);notify(data.language==="pt"?"Não foi possível abrir o PDF. Confira as permissões do Supabase Storage.":"Could not open PDF. Check Supabase Storage permissions.")}}
+function editEvent(id){const old=data.events.find(x=>x.id===id);modal(old?t("editItem"):t("addEvent"),field("title",t("eventTitle"),old?.title||"","text","full")+field("date",t("date"),old?.date||"","date")+textareaField("note",t("notes"),old?.note||"","full"),v=>{const item={id:old?.id||uid(),title:v.title.trim(),date:v.date,note:v.note.trim()};if(!item.title)return notify(t("title"));if(old)data.events=data.events.map(x=>x.id===id?item:x);else data.events.push(item)})}
+function editTransaction(){modal(t("addTransaction"),field("title",t("transactionTitle"),"","text","full")+selectField("type",t("type"),[["expense",t("expense")],["income",t("income")]],"expense")+field("amount",t("amount"),"","number")+field("date",t("date"),today(),"date")+selectField("createdBy",data.language==='pt'?'Lançado por':'Entered by',[['vitor','Vitor'],['zack','Zack']],currentMemberKey()),v=>{const amount=parseAmount(v.amount);if(!v.title.trim()||!Number.isFinite(amount)||amount<=0)return notify(t("amount"));data.transactions.push({id:uid(),title:v.title.trim(),type:v.type,amount,date:v.date,createdBy:v.createdBy})})}
+function editProjectCost(id){const old=(data.projectCosts||[]).find(x=>x.id===id);modal(old?(data.language==='pt'?'Editar custo do projeto':'Edit project cost'):(data.language==='pt'?'Adicionar custo do projeto':'Add project cost'),field('title',t('title'),old?.title||'','text','full')+selectField('category',t('category'),[['Visa','Visto'],['Exames','Exames médicos'],['Tuition','Tuition / mensalidade'],['Viagem','Viagem'],['Documentos','Documentos e traduções'],['Seguro','Seguro'],['Moradia','Moradia'],['Outro','Outro']],old?.category||'Outro')+selectField('status',data.language==='pt'?'Situação':'Status',[['paid',data.language==='pt'?'Já pago':'Paid'],['planned',data.language==='pt'?'Ainda previsto':'Planned']],old?.status||'paid')+field('amount',t('amount'),old?.amount??'','number')+selectField('currency',t('currency'),[['NZD','NZD'],['BRL','BRL (R$)']],old?.currency||'NZD')+field('rate',data.language==='pt'?'Cotação: quantos R$ valem 1 NZD':'Exchange rate: BRL for 1 NZD',old?.rate??'','number')+field('date',t('date'),old?.date||today(),'date')+selectField('createdBy',data.language==='pt'?'Lançado por':'Entered by',[['vitor','Vitor'],['zack','Zack']],old?.createdBy||currentMemberKey())+textareaField('note',t('notes'),old?.note||'','full'),v=>{const amount=parseAmount(v.amount),rate=parseAmount(v.rate||0);if(!v.title.trim()){notify(data.language==='pt'?'Informe o nome do gasto.':'Enter an expense name.');return false}if(!Number.isFinite(amount)||amount<=0){notify(data.language==='pt'?'Informe um valor válido.':'Enter a valid amount.');return false}if(v.currency==='BRL'&&(!Number.isFinite(rate)||rate<=0)){notify(data.language==='pt'?'Informe uma cotação válida, como 2,94.':'Enter a valid exchange rate, e.g. 2.94.');return false}const nzd=v.currency==='BRL'?amount/rate:amount;const item={id:old?.id||uid(),title:v.title.trim(),category:v.category,status:v.status,amount,currency:v.currency,rate:v.currency==='BRL'?rate:null,nzdAmount:nzd,date:v.date,createdBy:v.createdBy,note:v.note};if(old)data.projectCosts=data.projectCosts.map(x=>x.id===id?item:x);else data.projectCosts.push(item)})}
+function addTransactionWizard(){
+ const pt=data.language==='pt';
+ const expenseCats=[['Alimentação',pt?'Mercado / alimentação':'Groceries / food'],['Transporte',pt?'Transporte':'Transport'],['Moradia',pt?'Moradia':'Housing'],['Lazer',pt?'Lazer':'Leisure'],['Estudos',pt?'Estudos':'Study'],['Saúde',pt?'Saúde':'Health'],['Outro',t('other')]];
+ const incomeCats=[['Salário',pt?'Salário':'Salary'],['Transferência',pt?'Transferência':'Transfer'],['Outro',t('other')]];
+ const fields=selectField('type',pt?'1. Despesa ou entrada?':'1. Expense or income?',[['expense',t('expense')],['income',t('income')]],'expense','full')+
+ `<div class="field full"><label for="f-category">${pt?'2. Categoria?':'2. Category?'}</label><select id="f-category" name="category">${expenseCats.map(([v,l])=>`<option value="${v}">${esc(l)}</option>`).join('')}</select></div>`+
+ ((data.accounts||[]).length?selectField('accountId',pt?'Conta / caixinha':'Account / money box',data.accounts.map(a=>[a.id,`${a.name} (${a.currency})`]),data.accounts[0]?.id||'','full'):`<div class="field full"><p class="note">${pt?'Antes de lançar uma movimentação, crie uma caixinha em Finanças → Caixinhas.':'Create a money box in Finance → Money boxes before recording a transaction.'}</p></div>`)+
+ selectField('paymentMethod',pt?'Forma de pagamento':'Payment method',[['transfer',pt?'Transferência':'Transfer']], 'transfer','full')+
+ field('amount',pt?'3. Valor?':'3. Amount?','','number','full')+
+ field('title',pt?'4. Nome da movimentação?':'4. Transaction name?','','text','full')+
+ textareaField('note',pt?'5. Notas? (opcional)':'5. Notes? (optional)','','full')+
+ `<div class="field full"><label>${pt?'6. Lançar com a data de hoje?':'6. Use today’s date?'}</label><label style="display:flex;align-items:center;gap:9px;font-weight:500"><input type="checkbox" id="f-useToday" name="useToday" value="yes" checked style="width:auto"> ${pt?'Sim, usar hoje':'Yes, use today'}</label></div>`+
+ `<div class="field full" id="manualDateWrap" hidden><label for="f-date">${pt?'Escolher data':'Choose date'}</label><input id="f-date" name="date" type="date" value="${today()}"></div>`;
+ modal(pt?'Adicionar movimentação':'Add transaction',fields,v=>{
+   const amount=parseAmount(v.amount);const title=String(v.title||'').trim();
+   if(!Number.isFinite(amount)||amount<=0){notify(pt?'Informe um valor válido, como 10 ou 10,50.':'Enter a valid amount, e.g. 10 or 10.50.');return false}
+   if(!title){notify(pt?'Informe o nome da movimentação.':'Enter a transaction name.');return false}
+   const date=v.useToday==='yes'?today():(v.date||'');if(!date){notify(pt?'Escolha a data da movimentação.':'Choose a transaction date.');return false}
+   if(!Array.isArray(data.transactions))data.transactions=[];
+   const account=(data.accounts||[]).find(a=>a.id===v.accountId);if(!account){notify(pt?'Crie ou selecione uma caixinha antes de salvar.':'Create or select a money box before saving.');return false}
+   if(!(account.paymentMethods||['transfer']).includes(v.paymentMethod)){notify(pt?'Essa forma de pagamento não está habilitada para a conta.':'This payment method is not enabled for the account.');return false}
+   data.transactions.push({id:uid(),type:v.type,category:v.category,amount,title,date,accountId:account.id,paymentMethod:v.paymentMethod,createdBy:currentMemberKey(),note:String(v.note||'').trim()});
+ });
+ const typeEl=$('#f-type'),catEl=$('#f-category'),todayEl=$('#f-useToday'),dateWrap=$('#manualDateWrap');
+ const updateCategories=()=>{const choices=typeEl.value==='income'?incomeCats:expenseCats;const previous=catEl.value;catEl.innerHTML=choices.map(([v,l])=>`<option value="${v}">${esc(l)}</option>`).join('');if(choices.some(([v])=>v===previous))catEl.value=previous;};
+ typeEl.addEventListener('change',updateCategories);
+ const accountEl=$('#f-accountId'),paymentEl=$('#f-paymentMethod');if(accountEl&&paymentEl){const updatePayments=()=>{const account=(data.accounts||[]).find(a=>a.id===accountEl.value);const methods=account?.paymentMethods||['transfer'];paymentEl.innerHTML=methods.map(m=>`<option value="${m}">${({debit:'Débito',credit:'Crédito',cash:'Cash',transfer:'Transferência'})[m]||m}</option>`).join('');};accountEl.addEventListener('change',updatePayments);updatePayments();}
+ todayEl.addEventListener('change',()=>{dateWrap.hidden=todayEl.checked;if(!todayEl.checked&&!$('#f-date').value)$('#f-date').value=today()});
+}
+function editAccount(id=null){if(!Array.isArray(data.accounts))data.accounts=[];const old=id?data.accounts.find(a=>a.id===id):null;const pt=data.language==='pt';const methods=old?.paymentMethods||['transfer'];modal(old?(pt?'Editar caixinha':'Edit money box'):(pt?'Criar nova caixinha':'Create money box'),field('name',pt?'Nome da conta':'Account name',old?.name||'','text','full')+selectField('currency',pt?'Conta em Reais ou Dólares?':'Account in Reais or Dollars?',[['BRL','Reais (BRL)'],['NZD','Dólares neozelandeses (NZD)']],old?.currency||'NZD','full')+field('bank',pt?'Qual o banco?':'Bank',old?.bank||'','text','full')+field('initialBalance',pt?'Saldo inicial':'Opening balance',old?.initialBalance??'0','number','full')+`<div class="field full"><label>${pt?'Quais formas de pagamento habilitar?':'Which payment methods should be enabled?'}</label><div style="display:flex;gap:14px;flex-wrap:wrap">${[['debit',pt?'Débito':'Debit'],['credit',pt?'Crédito':'Credit'],['cash','Cash']].map(([v,l])=>`<label style="display:flex;gap:7px;align-items:center;font-weight:500"><input type="checkbox" name="payment_${v}" value="yes" ${methods.includes(v)?'checked':''} style="width:auto">${l}</label>`).join('')}<span class="badge">↔ ${pt?'Transferência sempre ativa':'Transfer always enabled'}</span></div></div>`,v=>{const balance=parseAmount(v.initialBalance||'0');if(!v.name.trim()){notify(pt?'Dê um nome para a caixinha.':'Enter an account name.');return false}if(!v.bank.trim()){notify(pt?'Informe o banco.':'Enter the bank.');return false}if(!Number.isFinite(balance)||balance<0){notify(pt?'Informe um saldo inicial válido.':'Enter a valid opening balance.');return false}const paymentMethods=['transfer',...['debit','credit','cash'].filter(m=>v['payment_'+m]==='yes')];const item={id:old?.id||uid(),name:v.name.trim(),currency:v.currency,bank:v.bank.trim(),initialBalance:balance,paymentMethods};if(old)data.accounts=data.accounts.map(a=>a.id===id?item:a);else data.accounts.push(item)});}
+function editFinanceTransaction(reserve=false,id=null,preset=null){const arrName=reserve?'nzReserve':'transactions';if(!Array.isArray(data[arrName]))data[arrName]=[];const arr=data[arrName];const old=id?arr.find(x=>x.id===id):null;const quick=preset?({market:{title:'Weekly Grocery Shopping',category:'Alimentação'},transport:{title:'Public Transport',category:'Transporte'},leisure:{title:'Dinner / Eating out',category:'Lazer'}}[preset]||{}):{};const accountFields=reserve?'':((data.accounts||[]).length?selectField('accountId',data.language==='pt'?'Conta / caixinha':'Account / money box',data.accounts.map(a=>[a.id,`${a.name} (${a.currency})`]),old?.accountId||data.accounts[0]?.id||'','full')+selectField('paymentMethod',data.language==='pt'?'Forma de pagamento':'Payment method',[['transfer','Transferência']],old?.paymentMethod||'transfer','full'):`<div class="field full"><p class="note">${data.language==='pt'?'Crie uma caixinha antes de lançar movimentações.':'Create a money box before recording transactions.'}</p></div>`);modal(old?(data.language==='pt'?'Editar movimento':'Edit transaction'):(reserve?(data.language==='pt'?'Movimento da reserva NZ':'NZ savings movement'):t('addTransaction')),field('title',t('transactionTitle'),old?.title||quick.title||'','text','full')+selectField('type',t('type'),[['expense',t('expense')],['income',t('income')]],old?.type||'expense')+field('amount',t('amount'),old?.amount??'','number')+selectField('category',t('category'),[['Moradia',data.language==='pt'?'Moradia':'Housing'],['Alimentação',data.language==='pt'?'Alimentação':'Food'],['Transporte',data.language==='pt'?'Transporte':'Transport'],['Estudos',data.language==='pt'?'Estudos':'Study'],['Saúde',data.language==='pt'?'Saúde':'Health'],['Lazer',data.language==='pt'?'Lazer':'Leisure'],['Salário',data.language==='pt'?'Salário':'Salary'],['Transferência',data.language==='pt'?'Transferência':'Transfer'],['Outro',t('other')]],old?.category||quick.category||'Outro')+accountFields+field('date',t('date'),old?.date||today(),'date')+selectField('createdBy',data.language==='pt'?'Lançado por':'Entered by',[['vitor','Vitor'],['zack','Zack']],old?.createdBy||currentMemberKey())+(reserve?textareaField('note',t('notes'),old?.note||'','full'):textareaField('note',t('notes'),old?.note||'','full')),v=>{const amount=parseAmount(v.amount);if(!v.title.trim()){notify(data.language==='pt'?'Informe o nome do movimento.':'Enter a transaction name.');return false}if(!Number.isFinite(amount)||amount<=0){notify(data.language==='pt'?'Informe um valor válido, como 10,56.':'Enter a valid amount, e.g. 10.56.');return false}const account=reserve?null:(data.accounts||[]).find(a=>a.id===v.accountId);if(!reserve&&!account){notify(data.language==='pt'?'Selecione uma caixinha válida.':'Select a valid money box.');return false}const paymentMethod=reserve?'transfer':(v.paymentMethod||'transfer');if(!reserve&&!(account.paymentMethods||['transfer']).includes(paymentMethod)){notify(data.language==='pt'?'Forma de pagamento não habilitada nesta conta.':'Payment method is not enabled for this account.');return false}const item={...old,id:old?.id||uid(),title:v.title.trim(),type:v.type,amount,category:v.category,date:v.date,createdBy:v.createdBy,note:v.note||'',...(reserve?{}:{accountId:account.id,paymentMethod})};if(old)data[arrName]=data[arrName].map(x=>x.id===id?item:x);else data[arrName].push(item)});const accountEl=$('#f-accountId'),paymentEl=$('#f-paymentMethod');if(accountEl&&paymentEl){const update=()=>{const account=data.accounts.find(a=>a.id===accountEl.value);const methods=account?.paymentMethods||['transfer'];paymentEl.innerHTML=methods.map(m=>`<option value="${m}">${({debit:'Débito',credit:'Crédito',cash:'Cash',transfer:'Transferência'})[m]||m}</option>`).join('');if(old?.paymentMethod&&methods.includes(old.paymentMethod))paymentEl.value=old.paymentMethod};accountEl.addEventListener('change',update);update()}}
+function editStudy(id){const old=data.study.find(x=>x.id===id);modal(old?t("editItem"):t("addStudy"),field("title",t("studyTitle"),old?.title||"","text","full")+selectField("category",t("category"),[["course",t("course")],["career",t("career")],["other",t("other")]],old?.category||"course")+selectField("status",t("status"),[["todo",t("todo")],["active",t("active")],["paused",t("paused")],["done",t("done")]],old?.status||"todo")+field("date",t("date"),old?.date||"","date")+textareaField("note",t("notes"),old?.note||"","full"),v=>{const item={id:old?.id||uid(),title:v.title.trim(),category:v.category,status:v.status,date:v.date,note:v.note.trim()};if(!item.title)return notify(t("title"));if(old)data.study=data.study.map(x=>x.id===id?item:x);else data.study.push(item)})}
+function editDream(id){const old=data.dreams.find(x=>x.id===id);modal(old?t("editItem"):t("addDream"),field("title",t("dreamTitle"),old?.title||"","text","full")+textareaField("note",t("notes"),old?.note||"","full"),v=>{if(!v.title.trim())return notify(t("title"));const item={id:old?.id||uid(),title:v.title.trim(),note:v.note.trim(),done:old?.done||false};if(old)data.dreams=data.dreams.map(x=>x.id===id?item:x);else data.dreams.push(item)})}
+function editGoal(){modal(t("setGoal"),field("goal",t("goal"),data.savingsGoal||"","number","full"),v=>{const n=Number(v.goal);if(!Number.isFinite(n)||n<0)return notify(t("amount"));data.savingsGoal=n})}
+function removeItem(collection,id){if(!confirm(t("confirmDelete")))return;const removed=(data[collection]||[]).find(x=>x.id===id);data[collection]=data[collection].filter(x=>x.id!==id);if(collection==="documents"&&removed?.filePath) supabaseClient.storage.from("kiwipath-documents").remove([removed.filePath]).catch(e=>console.warn(e));save();render();notify(t("deleted"))}
+$("#navigation").addEventListener("click",e=>{const b=e.target.closest("button[data-page]");if(!b)return;page=b.dataset.page;render();window.scrollTo({top:0,behavior:"smooth"})});
+function closeProfileMenu(){const menu=$("#profileMenu"),toggle=$("#profileMenuToggle");if(menu)menu.hidden=true;if(toggle)toggle.setAttribute("aria-expanded","false")}
+$("#profileMenuToggle").addEventListener("click",()=>{const menu=$("#profileMenu"),toggle=$("#profileMenuToggle");const willOpen=menu.hidden;menu.hidden=!willOpen;toggle.setAttribute("aria-expanded",String(willOpen))});
+document.addEventListener("click",e=>{if(!e.target.closest("#profileMenuWrap"))closeProfileMenu()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfileMenu()});
+$("#languageBtn").onclick=()=>{data.language=data.language==="pt"?"en":"pt";save();render();closeProfileMenu();notify(t("languageChanged"))};
+$("#refreshAppBtn").onclick=()=>{closeProfileMenu();window.location.reload()};
+$("#syncNowBtn").onclick=async()=>{const b=$("#syncNowBtn");const label=b.querySelector("span:last-child");const old=label.textContent;b.disabled=true;label.textContent=data.language==="pt"?"Sincronizando…":"Syncing…";try{await syncToCloud();notify(data.language==="pt"?"Sincronização solicitada.":"Sync requested.")}catch(e){notify(data.language==="pt"?"Não foi possível sincronizar agora.":"Could not sync right now.")}finally{b.disabled=false;label.textContent=old;closeProfileMenu()}};
+$("#pageContent").addEventListener("click",e=>{const pie=e.target.closest("[data-pie-category]");if(pie){selectedPieCategory=pie.dataset.pieCategory;render();return}const pieCycle=e.target.closest("[data-pie-cycle]");if(pieCycle){const cats=[...new Set((data.transactions||[]).filter(x=>x.type==="expense"&&x.category).map(x=>x.category))];const next=cats.indexOf(selectedPieCategory)+1;selectedPieCategory=cats.length?cats[next%cats.length]:"";render();return}const b=e.target.closest("[data-action]");if(!b)return;const a=b.dataset.action;if(a.startsWith("edit-project-cost:"))return editProjectCost(a.split(":")[1]);if(a.startsWith("edit-transaction:"))return editFinanceTransaction(false,a.split(":")[1]);if(a.startsWith("edit-reserve:"))return editFinanceTransaction(true,a.split(":")[1]);if(a.startsWith('edit-account:'))return editAccount(a.split(':')[1]);if(a.startsWith('delete-account:')){const id=a.split(':')[1];if((data.transactions||[]).some(x=>x.accountId===id)){notify(data.language==='pt'?'Esta caixinha tem movimentações associadas e não pode ser excluída.':'This money box has linked transactions and cannot be deleted.');return}return removeItem('accounts',id)}if(a.startsWith("finance-tab:")){financeSubpage=a.split(":")[1];render();return}if(a.startsWith("finance-period:")){financePeriod=a.split(":")[1];render();return}if(a.startsWith("quick-transaction:"))return editFinanceTransaction(false,null,a.split(":")[1]);if(a==="add-project-cost")return editProjectCost();if(a==="add-reserve")return editFinanceTransaction(true);if(a==='add-account')return editAccount();if(a==="add-transaction")return addTransactionWizard();if(a.startsWith("go-")){page=a.slice(3);render();window.scrollTo({top:0,behavior:"smooth"});return}if(a==="add-document")return editDoc();if(a.startsWith("preview-document:"))return documentFileAction(a.slice(17),false);if(a.startsWith("download-document:"))return documentFileAction(a.slice(18),true);if(a==="add-event")return editEvent();if(a==="add-alert")return editAlert();if(a==="refresh-alerts"){loadCustomAlerts().then(render).catch(err=>{console.error(err);notify(data.language==="pt"?"Falha ao carregar alertas.":"Could not load alerts.")});return}if(a.startsWith("edit-alert:"))return editAlert(a.slice(11));if(a.startsWith("cancel-alert:")){cancelAlert(a.slice(13));return}if(a.startsWith("delete-alert:")){deleteAlert(a.slice(13));return}if(a==="add-transaction")return editTransaction();if(a==="add-study")return editStudy();if(a==="add-dream")return editDream();if(a==="edit-goal")return editGoal();for(const [prefix,fn] of [["edit-document:",editDoc],["edit-event:",editEvent],["edit-study:",editStudy],["edit-dream:",editDream]])if(a.startsWith(prefix))return fn(a.slice(prefix.length));for(const [prefix,col] of [["delete-document:","documents"],["delete-event:","events"],["delete-transaction:","transactions"],["delete-project-cost:","projectCosts"],["delete-reserve:","nzReserve"],["delete-study:","study"],["delete-dream:","dreams"]])if(a.startsWith(prefix))return removeItem(col,a.slice(prefix.length));if(a.startsWith("toggle-dream:")){const x=data.dreams.find(x=>x.id===a.slice(12));if(x)x.done=!x.done;save();render()}});
+$("#pageContent").addEventListener("change",e=>{if(e.target.id==="financeCategoryFilter"){financeCategory=e.target.value;render();return}if(e.target.id==="financeFrom"){financeFrom=e.target.value;render();return}if(e.target.id==="financeTo"){financeTo=e.target.value;render();return}const cb=e.target.closest("[data-toggle-doc]");if(!cb)return;const x=data.documents.find(x=>x.id===cb.dataset.toggleDoc);if(x)x.status=cb.checked?"done":"todo";save();render()});
+$("#pageContent").addEventListener("input",e=>{if(e.target.id==="docSearch")applyDocumentFilters()});
+function applyDocumentFilters(){const q=( $("#docSearch")?.value||"").toLowerCase();const owner=$("#docOwnerFilter")?.value||"all";$$('#docList [data-searchable]').forEach(row=>{const ownerMatch=owner==="all"||row.dataset.owner===owner;const textMatch=row.dataset.searchable.includes(q);row.classList.toggle("hidden",!(ownerMatch&&textMatch))})}
+$("#pageContent").addEventListener("change",e=>{if(e.target.id==="docOwnerFilter")applyDocumentFilters()});
+window.addEventListener("storage",e=>{if(e.key===STORE){try{data={...initial(),...JSON.parse(e.newValue)};render()}catch(_){}}});
+
+// Formatação monetária: aceita 500, 500.5, 500,5 e exibe sempre duas casas decimais.
+document.addEventListener("blur",e=>{
+  const el=e.target;
+  if(!el || !el.matches('#itemForm input[name="amount"], #itemForm input[name="rate"]')) return;
+  const raw=String(el.value||"").trim();
+  if(!raw) return;
+  const n=parseAmount(raw);
+  if(Number.isFinite(n) && n>=0) el.value=n.toFixed(el.name==='rate'?4:2);
+},true);
+
+$("#authForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const email=$("#authEmail").value.trim();
+  const password=$("#authPassword").value;
+  const submit=$("#authSubmit");
+  submit.disabled=true; submit.textContent="Entrando…";
+  $("#authMessage").textContent="";
+  try{
+    const {data:result,error}=await supabaseClient.auth.signInWithPassword({email,password});
+    if(error) throw error;
+    await startApp(result.session);
+  }catch(error){
+    $("#authMessage").textContent=error.message || "Não foi possível entrar.";
+  }finally{
+    submit.disabled=false;submit.textContent="Entrar no KiwiPath";
+  }
+});
+$("#enablePushBtn").addEventListener("click",async()=>{
+  const button=$("#enablePushBtn");
+  button.disabled=true;
+  try{await enablePushNotifications();closeProfileMenu();}
+  catch(error){console.error("KiwiPath push setup error:",error);notify(error.message||"Could not enable notifications.");}
+  finally{button.disabled=false;}
+});
+$("#testPushBtn").addEventListener("click",async()=>{
+  const button=$("#testPushBtn");
+  button.disabled=true;
+  try{await sendPushTest();closeProfileMenu();}
+  catch(error){console.error("KiwiPath push test error:",error);notify(error.message||"Could not send test notification.");}
+  finally{button.disabled=false;}
+});
+
+$("#logoutBtn").addEventListener("click",async()=>{
+  if(!confirm("Deseja sair da sua conta?"))return;
+  await supabaseClient.auth.signOut();
+  currentUser=null;cloudRecordId=null;
+  if(realtimeChannel){await supabaseClient.removeChannel(realtimeChannel);realtimeChannel=null;}
+  showAuth();
+});
+supabaseClient.auth.getSession().then(({data:sessionData,error})=>{
+  if(error){showAuth("Erro ao verificar a sessão.");return;}
+  startApp(sessionData.session);
+});
+supabaseClient.auth.onAuthStateChange((event,session)=>{
+  if(event==="SIGNED_OUT"){currentUser=null;cloudRecordId=null;showAuth();}
+  else if(event==="SIGNED_IN" && session?.user){currentUser=session.user;updateProfile();}
+});
+})();
+</script>
+
+<script>
+// KiwiPath PWA: registration is scoped to the GitHub Pages /kiwipath/ path.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", { scope: "./" })
+      .then(registration => {
+        console.info("KiwiPath service worker ready:", registration.scope);
+      })
+      .catch(error => {
+        console.error("KiwiPath service worker registration failed:", error);
+      });
+  });
+}
+</script>
+</body>
+</html>
