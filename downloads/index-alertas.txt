@@ -491,15 +491,25 @@ function displayAlertDate(iso){
 }
 async function syncDocumentExpiryAlerts(){
   if(!currentUser||!data.documents)return;
+  const {data:member,error:memberError}=await supabaseClient.from("kiwipath_members").select("role").eq("user_id",currentUser.id).maybeSingle();
+  if(memberError)throw memberError;
+  const role=member?.role||"member";
+  const person=role==="owner"?"vitor":"zack";
   const now=new Date();
   const makeAt=(date,daysBefore)=>{const [y,m,d]=date.split("-").map(Number);const wall=Date.UTC(y,m-1,d-daysBefore,9,0,0);let utc=wall-timezoneOffsetMs(new Date(wall),ALERT_TIMEZONE);utc=wall-timezoneOffsetMs(new Date(utc),ALERT_TIMEZONE);return new Date(utc).toISOString()};
   for(const doc of data.documents){
     const expiry=doc.expiryDate||((doc.hasExpiry&&doc.due)?doc.due:"");const prefix="document-expiry:"+doc.id+":";
-    if(!expiry||doc.hasExpiry===false){await supabaseClient.from("kiwipath_custom_alerts").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("user_id",currentUser.id).like("source_key",prefix+"%").eq("status","pending");continue}
+    const owner=String(doc.owner||"both").toLowerCase();
+    const assigned=owner==="both"||owner==="ambos"||owner===person;
+    if(!assigned||!expiry||doc.hasExpiry===false){
+      await supabaseClient.from("kiwipath_custom_alerts").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("user_id",currentUser.id).like("source_key",prefix+"%").eq("status","pending");
+      continue;
+    }
     for(const days of [30,15,7,0]){
       const at=makeAt(expiry,days),key=prefix+days;
       if(new Date(at)<=now){await supabaseClient.from("kiwipath_custom_alerts").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("user_id",currentUser.id).eq("source_key",key).eq("status","pending");continue}
-      const payload={user_id:currentUser.id,title:data.language==="pt"?"Vencimento de documento":"Document expiry",message:data.language==="pt"?"\""+doc.title+"\" "+(days===0?"vence hoje":"vence em "+days+" dias")+".":"\""+doc.title+"\" "+(days===0?"expires today":"expires in "+days+" days")+".",scheduled_at:at,timezone:ALERT_TIMEZONE,status:"pending",recurrence:"once",linked_type:"document",linked_id:String(doc.id),source_key:key,updated_at:new Date().toISOString()};
+      const message=data.language==="pt"?"\""+doc.title+"\" "+(days===0?"vence hoje":"vence em "+days+" dias")+".":"\""+doc.title+"\" "+(days===0?"expires today":"expires in "+days+" days")+".";
+      const payload={user_id:currentUser.id,title:data.language==="pt"?"Vencimento de documento":"Document expiry",message,scheduled_at:at,timezone:ALERT_TIMEZONE,status:"pending",recurrence:"once",linked_type:"document",linked_id:String(doc.id),source_key:key,updated_at:new Date().toISOString()};
       const {error}=await supabaseClient.from("kiwipath_custom_alerts").upsert(payload,{onConflict:"user_id,source_key"});if(error)console.error("Could not sync document expiry alert:",error);
     }
   }
