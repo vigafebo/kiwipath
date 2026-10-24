@@ -346,6 +346,8 @@ h1{font-size:28px}
           <button type="button" class="profile-menu-item" id="languageBtn"><span class="menu-item-icon">文</span><span id="languageMenuLabel">Mudar idioma para English</span></button>
           <button type="button" class="profile-menu-item" id="syncNowBtn"><span class="menu-item-icon">↻</span><span data-i18n="syncNow">Sincronizar agora</span></button>
           <button type="button" class="profile-menu-item" id="refreshAppBtn"><span class="menu-item-icon">⟳</span><span data-i18n="refreshApp">Atualizar aplicativo</span></button>
+          <button type="button" class="profile-menu-item" id="enablePushBtn"><span class="menu-item-icon">🔔</span><span id="enablePushLabel">Ativar notificações</span></button>
+          <button type="button" class="profile-menu-item" id="testPushBtn"><span class="menu-item-icon">📲</span><span id="testPushLabel">Enviar notificação de teste</span></button>
           <div class="profile-menu-divider"></div>
           <button type="button" class="profile-menu-item profile-menu-logout" id="logoutBtn"><span class="menu-item-icon">↪</span><span data-i18n="logout">Sair da conta</span></button>
         </div>
@@ -385,6 +387,54 @@ function currentMemberKey(){
   return "vitor";
 }
 function currentMemberName(){return currentMemberKey()==="zack"?"Zack":"Vitor";}
+
+// Web Push integration for KiwiPath. Public VAPID key only; private key stays in Supabase Secrets.
+const PUSH_FUNCTION_URL = SUPABASE_URL + "/functions/v1/kiwipath-notifications";
+const VAPID_PUBLIC_KEY = "BOnL2dafmSU4QstCiIwxTLYK2nFQInl0IM_UU5HmkM6vhtcm5H3mitTpVlhJz7RVd7d2ppFeV6xOIfVX5kiM-hg";
+function urlBase64ToUint8Array(base64String){
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(ch => ch.charCodeAt(0)));
+}
+async function callPushFunction(payload){
+  const {data:sessionData,error:sessionError}=await supabaseClient.auth.getSession();
+  if(sessionError) throw sessionError;
+  const token=sessionData?.session?.access_token;
+  if(!token) throw new Error(data.language==="pt"?"Entre na sua conta primeiro.":"Please sign in first.");
+  const response=await fetch(PUSH_FUNCTION_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+token,"apikey":SUPABASE_PUBLISHABLE_KEY},
+    body:JSON.stringify(payload)
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok) throw new Error(result.error||result.message||("HTTP "+response.status));
+  return result;
+}
+async function enablePushNotifications(){
+  if(!currentUser) throw new Error(data.language==="pt"?"Entre na sua conta primeiro.":"Please sign in first.");
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
+    throw new Error(data.language==="pt"?"Este navegador não suporta notificações Push. No iPhone, adicione o KiwiPath à Tela de Início e abra pelo ícone.":"This browser does not support push notifications. On iPhone, add KiwiPath to the Home Screen and open it from its icon.");
+  }
+  if(!window.matchMedia("(display-mode: standalone)").matches && !navigator.standalone){
+    const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    if(isIOS) throw new Error(data.language==="pt"?"No iPhone, primeiro use Compartilhar → Adicionar à Tela de Início e abra o KiwiPath pelo ícone.":"On iPhone, first use Share → Add to Home Screen and open KiwiPath from its icon.");
+  }
+  let permission=Notification.permission;
+  if(permission!=="granted") permission=await Notification.requestPermission();
+  if(permission!=="granted") throw new Error(data.language==="pt"?"Permissão de notificações não concedida.":"Notification permission was not granted.");
+  const registration=await navigator.serviceWorker.ready;
+  let subscription=await registration.pushManager.getSubscription();
+  if(!subscription){
+    subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+  }
+  await callPushFunction({action:"subscribe",subscription:subscription.toJSON()});
+  notify(data.language==="pt"?"Este dispositivo foi registrado para notificações!":"This device is registered for notifications!");
+}
+async function sendPushTest(){
+  const result=await callPushFunction({action:"test"});
+  notify(result.message||(data.language==="pt"?"Solicitação de teste enviada.":"Test request sent."));
+}
 function updateProfile(){
   const name=currentMemberName();
   const avatar=$("#profileAvatar");
@@ -392,6 +442,8 @@ function updateProfile(){
   if(avatar) avatar.textContent=name==="Zack"?"Z":"V";
   if(label) label.textContent=name;
   const menuName=$("#profileMenuName"); if(menuName) menuName.textContent=name;
+  const pushEnableLabel=$("#enablePushLabel"); if(pushEnableLabel) pushEnableLabel.textContent=data.language==="pt"?"Ativar notificações":"Enable notifications";
+  const pushTestLabel=$("#testPushLabel"); if(pushTestLabel) pushTestLabel.textContent=data.language==="pt"?"Enviar notificação de teste":"Send test notification";
 }
 
 const today = () => {const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;};
@@ -714,6 +766,21 @@ $("#authForm").addEventListener("submit",async e=>{
     submit.disabled=false;submit.textContent="Entrar no KiwiPath";
   }
 });
+$("#enablePushBtn").addEventListener("click",async()=>{
+  const button=$("#enablePushBtn");
+  button.disabled=true;
+  try{await enablePushNotifications();closeProfileMenu();}
+  catch(error){console.error("KiwiPath push setup error:",error);notify(error.message||"Could not enable notifications.");}
+  finally{button.disabled=false;}
+});
+$("#testPushBtn").addEventListener("click",async()=>{
+  const button=$("#testPushBtn");
+  button.disabled=true;
+  try{await sendPushTest();closeProfileMenu();}
+  catch(error){console.error("KiwiPath push test error:",error);notify(error.message||"Could not send test notification.");}
+  finally{button.disabled=false;}
+});
+
 $("#logoutBtn").addEventListener("click",async()=>{
   if(!confirm("Deseja sair da sua conta?"))return;
   await supabaseClient.auth.signOut();
