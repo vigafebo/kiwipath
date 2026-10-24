@@ -320,7 +320,6 @@ h1{font-size:28px}
     <button class="active" data-page="home"><span class="nav-icon">⌂</span><span data-i18n="home">Início</span></button>
     <button data-page="documents"><span class="nav-icon">▤</span><span data-i18n="documents">Documentos</span></button>
     <button data-page="timeline"><span class="nav-icon">◷</span><span data-i18n="timeline">Cronograma</span></button>
-    <button data-page="alerts"><span class="nav-icon">🔔</span><span data-i18n="customAlertsNav">Alertas</span></button>
     <button data-page="finances"><span class="nav-icon">＄</span><span data-i18n="finances">Finanças</span></button>
     <button data-page="study"><span class="nav-icon">⌑</span><span data-i18n="study">Estudos e carreira</span></button>
     <button data-page="dreams"><span class="nav-icon">♡</span><span data-i18n="dreams">Nossos sonhos</span></button>
@@ -444,16 +443,38 @@ async function loadCustomAlerts(){
   if(error) throw error;
   customAlerts=rows||[];
 }
+const ALERT_TIMEZONE="Pacific/Auckland";
+function zonedParts(date,timeZone=ALERT_TIMEZONE){
+  const parts=new Intl.DateTimeFormat("en-CA",{timeZone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(date);
+  return Object.fromEntries(parts.filter(p=>p.type!=="literal").map(p=>[p.type,Number(p.value)]));
+}
+function timezoneOffsetMs(date,timeZone=ALERT_TIMEZONE){
+  const p=zonedParts(date,timeZone);
+  return Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second)-Math.floor(date.getTime()/1000)*1000;
+}
 function localDateTimeValue(iso){
   if(!iso)return "";
   const d=new Date(iso);if(Number.isNaN(d.getTime()))return "";
+  const p=zonedParts(d);
   const pad=n=>String(n).padStart(2,"0");
-  return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes());
+  return p.year+"-"+pad(p.month)+"-"+pad(p.day)+"T"+pad(p.hour)+":"+pad(p.minute);
+}
+function zonedDateTimeToIso(value,timeZone=ALERT_TIMEZONE){
+  const match=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(value||""));
+  if(!match)return null;
+  const [,ys,mos,ds,hs,mis]=match;
+  const [year,month,day,hour,minute]=[ys,mos,ds,hs,mis].map(Number);
+  const wallUtc=Date.UTC(year,month-1,day,hour,minute,0);
+  let utc=wallUtc-timezoneOffsetMs(new Date(wallUtc),timeZone);
+  utc=wallUtc-timezoneOffsetMs(new Date(utc),timeZone);
+  const p=zonedParts(new Date(utc),timeZone);
+  if(p.year!==year||p.month!==month||p.day!==day||p.hour!==hour||p.minute!==minute)return null;
+  return new Date(utc).toISOString();
 }
 function displayAlertDate(iso){
   if(!iso)return "";
   const d=new Date(iso);
-  return Number.isNaN(d.getTime())?esc(iso):d.toLocaleString(data.language==="pt"?"pt-BR":"en-NZ",{dateStyle:"medium",timeStyle:"short"});
+  return Number.isNaN(d.getTime())?esc(iso):d.toLocaleString(data.language==="pt"?"pt-BR":"en-NZ",{timeZone:ALERT_TIMEZONE,dateStyle:"medium",timeStyle:"short"});
 }
 function alertStatusLabel(status){
   const pt=data.language==="pt";
@@ -473,15 +494,15 @@ function alertPage(){
 }
 function editAlert(id){
   const old=customAlerts.find(a=>a.id===id);const pt=data.language==="pt";
-  const fields=field("title",pt?"Título do alerta":"Alert title",old?.title||"","text","full")+textareaField("message",pt?"Mensagem da notificação":"Notification message",old?.message||"","full")+field("scheduledAt",pt?"Data e horário":"Date and time",localDateTimeValue(old?.scheduled_at),"datetime-local","full")+ `<div class="field full"><p class="file-hint">${pt?"Escolha o horário no seu dispositivo. O alerta será enviado pelo servidor mesmo que o aplicativo esteja fechado.":"Choose the time on your device. The server will send the alert even when the app is closed."}</p></div>`;
+  const fields=field("title",pt?"Título do alerta":"Alert title",old?.title||"","text","full")+textareaField("message",pt?"Mensagem da notificação":"Notification message",old?.message||"","full")+field("scheduledAt",pt?"Data e horário":"Date and time",localDateTimeValue(old?.scheduled_at),"datetime-local","full")+ `<div class="field full"><p class="file-hint">${pt?"Todos os horários são no fuso da Nova Zelândia (Auckland). O servidor enviará o alerta mesmo que o aplicativo esteja fechado.":"All times use New Zealand time (Auckland). The server will send the alert even when the app is closed."}</p></div>`;
   modal(old?(pt?"Editar alerta":"Edit alert"):(pt?"Novo alerta":"New alert"),fields,async v=>{
     const title=String(v.title||"").trim(),message=String(v.message||"").trim();
     if(!title){notify(pt?"Informe um título.":"Enter a title.");return false}
     if(!v.scheduledAt){notify(pt?"Escolha data e horário.":"Choose a date and time.");return false}
-    const localDate=new Date(v.scheduledAt);
-    if(Number.isNaN(localDate.getTime())){notify(pt?"Data ou horário inválido.":"Invalid date or time.");return false}
-    if(localDate.getTime()<=Date.now()){notify(pt?"Escolha um horário futuro.":"Choose a future time.");return false}
-    const payload={title,message,scheduled_at:localDate.toISOString(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"Pacific/Auckland",status:"pending",updated_at:new Date().toISOString()};
+    const scheduledIso=zonedDateTimeToIso(v.scheduledAt,ALERT_TIMEZONE);
+    if(!scheduledIso){notify(pt?"Data/horário inválido ou inexistente na Nova Zelândia. Escolha outro horário.":"Invalid or nonexistent New Zealand date/time. Please choose another time.");return false}
+    if(new Date(scheduledIso).getTime()<=Date.now()){notify(pt?"Escolha um horário futuro no fuso da Nova Zelândia.":"Choose a future time in New Zealand time.");return false}
+    const payload={title,message,scheduled_at:scheduledIso,timezone:ALERT_TIMEZONE,status:"pending",updated_at:new Date().toISOString()};
     const result=old?await supabaseClient.from("kiwipath_custom_alerts").update(payload).eq("id",old.id).eq("user_id",currentUser.id):await supabaseClient.from("kiwipath_custom_alerts").insert({...payload,user_id:currentUser.id});
     if(result.error)throw result.error;
     await loadCustomAlerts();return true;
