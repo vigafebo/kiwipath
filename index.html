@@ -65,6 +65,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .profile-menu-logout{color:#914636}
 .profile-menu-logout .menu-item-icon{background:#f7e5e0;color:#914636}
 .profile-menu-logout:hover{background:#fbefeb}
+ .profile-alerts-submenu{margin:0 0 4px 12px;padding-left:8px;border-left:1px solid var(--line)}
+ .profile-menu-subitem{font-size:11px;padding-top:9px;padding-bottom:9px}
+ #profileAlertsBtn[aria-expanded="true"] .profile-chevron{transform:rotate(180deg)}
 .avatar{width:36px;height:36px;border-radius:50%;background:var(--sage);
   display:grid;place-items:center;color:var(--forest);font-weight:750}
 .profile small{display:block;color:var(--muted);font-size:11px}
@@ -351,19 +354,21 @@ h1{font-size:28px}
       <div class="profile-menu-wrap" id="profileMenuWrap">
         <button class="profile profile-trigger" id="profileMenuToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="profileMenu" title="Abrir menu da conta">
           <span class="avatar" id="profileAvatar">V</span>
-          <span class="profile-copy"><strong id="profileName" style="font-size:12px">Vitor</strong><small data-i18n="ourJourney">Nossa jornada</small></span>
+          <span class="profile-copy"><strong id="profileName" style="font-size:12px">Vitor</strong></span>
           <span class="profile-chevron" aria-hidden="true">⌄</span>
         </button>
         <div class="profile-menu" id="profileMenu" hidden>
           <div class="profile-menu-heading"><strong id="profileMenuName">Vitor</strong><small data-i18n="accountMenuSubtitle">Conta e preferências</small></div>
           <button type="button" class="profile-menu-item" id="languageBtn"><span class="menu-item-icon">文</span><span id="languageMenuLabel">Mudar idioma para English</span></button>
-          <button type="button" class="profile-menu-item" id="syncNowBtn"><span class="menu-item-icon">↻</span><span data-i18n="syncNow">Sincronizar agora</span></button>
-          <button type="button" class="profile-menu-item" id="refreshAppBtn"><span class="menu-item-icon">⟳</span><span data-i18n="refreshApp">Atualizar aplicativo</span></button>
-          <button type="button" class="profile-menu-item" id="enablePushBtn"><span class="menu-item-icon">🔔</span><span id="enablePushLabel">Ativar notificações</span></button>
-          <button type="button" class="profile-menu-item" id="testPushBtn"><span class="menu-item-icon">📲</span><span id="testPushLabel">Enviar notificação de teste</span></button>
-          <button type="button" class="profile-menu-item" id="profileAlertsBtn"><span class="menu-item-icon">🔔</span><span id="alertsMenuLabel">Meus alertas</span></button>
+          <button type="button" class="profile-menu-item" id="syncRefreshBtn"><span class="menu-item-icon">↻</span><span data-i18n="syncRefresh">Sincronizar e atualizar</span></button>
+          <button type="button" class="profile-menu-item" id="profileAlertsBtn" aria-expanded="false" aria-controls="profileAlertsSubmenu"><span class="menu-item-icon">♧</span><span id="alertsMenuLabel">Meus alertas</span><span class="profile-chevron" aria-hidden="true">⌄</span></button>
+          <div id="profileAlertsSubmenu" class="profile-alerts-submenu" hidden>
+            <button type="button" class="profile-menu-item profile-menu-subitem" id="openAlertsCenterBtn"><span class="menu-item-icon">◷</span><span data-i18n="openAlertsCenter">Central de alertas</span></button>
+            <button type="button" class="profile-menu-item profile-menu-subitem" id="enablePushBtn"><span class="menu-item-icon">♧</span><span id="enablePushLabel">Ativar notificações</span></button>
+            <button type="button" class="profile-menu-item profile-menu-subitem" id="testPushBtn"><span class="menu-item-icon">⌁</span><span id="testPushLabel">Enviar notificação de teste</span></button>
+          </div>
           <div class="profile-menu-divider"></div>
-          <button type="button" class="profile-menu-item profile-menu-logout" id="logoutBtn"><span class="menu-item-icon">↪</span><span data-i18n="logout">Sair da conta</span></button>
+          <button type="button" class="profile-menu-item profile-menu-logout" id="logoutBtn"><span class="menu-item-icon">⇥</span><span data-i18n="logout">Sair da conta</span></button>
         </div>
       </div>
     </div>
@@ -657,7 +662,7 @@ const copy = {
  pt:{
   workspace:"Espaço de vocês",home:"Início",documents:"Documentos",timeline:"Cronograma",
   finances:"Finanças",study:"Estudos e carreira",dreams:"Nossos sonhos",motto:"Cada passo nos aproxima.",
-  ourJourney:"Nossa jornada",footer:"Um passo de cada vez, juntos.",
+  ourJourney:"Nossa jornada",syncRefresh:"Sincronizar e atualizar",openAlertsCenter:"Central de alertas",footer:"Um passo de cada vez, juntos.",
   welcome:"NOSSO PRÓXIMO CAPÍTULO",hero:"A vida que estamos construindo.",heroText:"Do Brasil à Nova Zelândia: cada conquista nos aproxima do futuro que imaginamos.",openTasks:"Tarefas pendentes",completed:"Concluídas",milestones:"Próximas etapas",quickTasks:"Prioridades da jornada",viewAll:"Ver todas",noTasks:"Nenhuma tarefa pendente. Bom trabalho!",noEvents:"Adicione uma data importante para começar sua timeline.",
   progress:"Progresso dos documentos",of:"de",items:"itens",modules:"Nosso espaço de planejamento",moduleText:"Tudo o que precisamos, organizado em um só lugar.",
   docDesc:"Organize documentos e acompanhe pendências.",timeDesc:"Datas, prazos e próximos marcos.",finDesc:"Registre gastos e acompanhe a meta.",studyDesc:"Acompanhe formação e carreira.",dreamDesc:"Guardem as metas que querem realizar juntos.",
@@ -665,7 +670,7 @@ const copy = {
  },
  en:{
   workspace:"Your workspace",home:"Home",documents:"Documents",timeline:"Timeline",finances:"Finances",study:"Study & career",dreams:"Our dreams",motto:"Every step brings us closer.",
-  ourJourney:"Our journey",footer:"One step at a time, together.",
+  ourJourney:"Our journey",syncRefresh:"Sync and refresh",openAlertsCenter:"Alerts centre",footer:"One step at a time, together.",
   welcome:"OUR NEXT CHAPTER",hero:"The life we're building.",heroText:"From Brazil to New Zealand: every milestone brings us closer to the future we imagine.",openTasks:"Open tasks",completed:"Completed",milestones:"Upcoming milestones",quickTasks:"Journey priorities",viewAll:"View all",noTasks:"No pending tasks. Well done!",noEvents:"Add an important date to start your timeline.",
   progress:"Document progress",of:"of",items:"items",modules:"Our planning space",moduleText:"Everything we need, organised in one place.",
   docDesc:"Organise documents and track outstanding tasks.",timeDesc:"Dates, deadlines and upcoming milestones.",finDesc:"Track expenses and your savings goal.",studyDesc:"Follow your education and career.",dreamDesc:"Keep the goals you want to achieve together.",
@@ -926,9 +931,9 @@ $("#profileMenuToggle").addEventListener("click",()=>{const menu=$("#profileMenu
 document.addEventListener("click",e=>{if(!e.target.closest("#profileMenuWrap"))closeProfileMenu()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfileMenu()});
 $("#languageBtn").onclick=()=>{data.language=data.language==="pt"?"en":"pt";save();render();closeProfileMenu();notify(t("languageChanged"))};
-$("#refreshAppBtn").onclick=()=>{closeProfileMenu();window.location.reload()};
-$("#profileAlertsBtn").onclick=async()=>{page="alerts";closeProfileMenu();render();window.scrollTo({top:0,behavior:"smooth"});try{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()}catch(e){console.error("Alert sync:",e);notify(data.language==="pt"?"Não foi possível sincronizar os alertas.":"Could not sync alerts.")}};
-$("#syncNowBtn").onclick=async()=>{const b=$("#syncNowBtn");const label=b.querySelector("span:last-child");const old=label.textContent;b.disabled=true;label.textContent=data.language==="pt"?"Sincronizando…":"Syncing…";try{await syncToCloud();notify(data.language==="pt"?"Sincronização solicitada.":"Sync requested.")}catch(e){notify(data.language==="pt"?"Não foi possível sincronizar agora.":"Could not sync right now.")}finally{b.disabled=false;label.textContent=old;closeProfileMenu()}};
+$("#profileAlertsBtn").onclick=()=>{const sub=$("#profileAlertsSubmenu"),b=$("#profileAlertsBtn");sub.hidden=!sub.hidden;b.setAttribute("aria-expanded",String(!sub.hidden))};
+$("#openAlertsCenterBtn").onclick=async()=>{page="alerts";closeProfileMenu();render();window.scrollTo({top:0,behavior:"smooth"});try{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()}catch(e){console.error("Alert sync:",e);notify(data.language==="pt"?"Não foi possível sincronizar os alertas.":"Could not sync alerts.")}};
+$("#syncRefreshBtn").onclick=async()=>{const b=$("#syncRefreshBtn"),label=b.querySelector("span:last-child"),old=label.textContent;b.disabled=true;label.textContent=data.language==="pt"?"Sincronizando e atualizando…":"Syncing and refreshing…";try{await syncToCloud();await new Promise(resolve=>setTimeout(resolve,350));window.location.reload()}catch(e){notify(data.language==="pt"?"Não foi possível sincronizar agora.":"Could not sync right now.");b.disabled=false;label.textContent=old}};
 $("#pageContent").addEventListener("change",e=>{if(e.target.id==="alertTypeFilter"){alertTypeFilter=e.target.value;render()}else if(e.target.id==="alertStatusFilter"){alertStatusFilter=e.target.value;render()}});
 $("#pageContent").addEventListener("click",e=>{const pie=e.target.closest("[data-pie-category]");if(pie){selectedPieCategory=pie.dataset.pieCategory;render();return}const pieCycle=e.target.closest("[data-pie-cycle]");if(pieCycle){const cats=[...new Set((data.transactions||[]).filter(x=>x.type==="expense"&&x.category).map(x=>x.category))];const next=cats.indexOf(selectedPieCategory)+1;selectedPieCategory=cats.length?cats[next%cats.length]:"";render();return}const b=e.target.closest("[data-action]");if(!b)return;const a=b.dataset.action;if(a.startsWith("edit-project-cost:"))return editProjectCost(a.split(":")[1]);if(a.startsWith("edit-transaction:"))return editFinanceTransaction(false,a.split(":")[1]);if(a.startsWith("edit-reserve:"))return editFinanceTransaction(true,a.split(":")[1]);if(a.startsWith('edit-account:'))return editAccount(a.split(':')[1]);if(a.startsWith('delete-account:')){const id=a.split(':')[1];if((data.transactions||[]).some(x=>x.accountId===id)){notify(data.language==='pt'?'Esta caixinha tem movimentações associadas e não pode ser excluída.':'This money box has linked transactions and cannot be deleted.');return}return removeItem('accounts',id)}if(a.startsWith("finance-tab:")){financeSubpage=a.split(":")[1];render();return}if(a.startsWith("finance-period:")){financePeriod=a.split(":")[1];render();return}if(a.startsWith("quick-transaction:"))return editFinanceTransaction(false,null,a.split(":")[1]);if(a==="add-project-cost")return editProjectCost();if(a==="add-reserve")return editFinanceTransaction(true);if(a==='add-account')return editAccount();if(a==="add-transaction")return addTransactionWizard();if(a.startsWith("go-")){page=a.slice(3);render();window.scrollTo({top:0,behavior:"smooth"});return}if(a==="add-document")return editDoc();if(a.startsWith("preview-document:"))return documentFileAction(a.slice(17),false);if(a.startsWith("download-document:"))return documentFileAction(a.slice(18),true);if(a==="add-event")return editEvent();if(a==="add-alert")return editAlert();if(a==="refresh-alerts"){(async()=>{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()})().catch(err=>{console.error(err);notify(data.language==="pt"?"Falha ao carregar alertas.":"Could not load alerts.")});return}if(a.startsWith("edit-alert:"))return editAlert(a.slice(11));if(a.startsWith("cancel-alert:")){cancelAlert(a.slice(13));return}if(a.startsWith("delete-alert:")){deleteAlert(a.slice(13));return}if(a==="add-transaction")return editTransaction();if(a==="add-study")return editStudy();if(a==="add-dream")return editDream();if(a==="edit-goal")return editGoal();for(const [prefix,fn] of [["edit-document:",editDoc],["edit-event:",editEvent],["edit-study:",editStudy],["edit-dream:",editDream]])if(a.startsWith(prefix))return fn(a.slice(prefix.length));for(const [prefix,col] of [["delete-document:","documents"],["delete-event:","events"],["delete-transaction:","transactions"],["delete-project-cost:","projectCosts"],["delete-reserve:","nzReserve"],["delete-study:","study"],["delete-dream:","dreams"]])if(a.startsWith(prefix))return removeItem(col,a.slice(prefix.length));if(a.startsWith("toggle-dream:")){const x=data.dreams.find(x=>x.id===a.slice(12));if(x)x.done=!x.done;save();render()}});
 $("#pageContent").addEventListener("change",e=>{if(e.target.id==="financeCategoryFilter"){financeCategory=e.target.value;render();return}if(e.target.id==="financeFrom"){financeFrom=e.target.value;render();return}if(e.target.id==="financeTo"){financeTo=e.target.value;render();return}const cb=e.target.closest("[data-toggle-doc]");if(!cb)return;const x=data.documents.find(x=>x.id===cb.dataset.toggleDoc);if(x)x.status=cb.checked?"done":"todo";save();render()});
