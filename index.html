@@ -712,9 +712,10 @@ function save(){
   catch(e) { console.error("KiwiPath local recovery copy:",e); notify(t("saveError")); }
   if (currentUser && !isApplyingCloudData) {
     clearTimeout(cloudSaveTimer);
-    cloudSaveTimer = setTimeout(() => syncToCloud(), 400);
     const status=$("#syncStatus");
-    if(status)status.textContent=navigator.onLine?"Alterações pendentes…":"Offline · aguardando sincronização";
+    if(status)status.textContent=navigator.onLine?"Salvando na nuvem…":"Offline · aguardando sincronização";
+    // Start cloud persistence immediately after every committed app-data change.
+    cloudSaveTimer = setTimeout(() => { if(currentUser) syncToCloud(); }, 0);
   }
 }
 async function syncToCloud(){
@@ -817,6 +818,7 @@ async function loadCloudData(){
 window.addEventListener("online",()=>{if(currentUser)syncToCloud()});
 window.addEventListener("focus",()=>{if(currentUser&&navigator.onLine)syncToCloud()});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&currentUser&&navigator.onLine)syncToCloud()});
+window.addEventListener("pagehide",()=>{if(currentUser&&navigator.onLine){clearTimeout(cloudSaveTimer);syncToCloud()}});
 function showAuth(message=""){
   $("#authScreen").style.display="grid";
   $("#kiwiApp").style.visibility="hidden";
