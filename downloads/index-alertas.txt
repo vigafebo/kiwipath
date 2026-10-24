@@ -451,11 +451,16 @@ async function sendPushTest(){
   notify(result.message||(data.language==="pt"?"Solicitação de teste enviada.":"Test request sent."));
 }
 async function loadCustomAlerts(){
-  if(!currentUser){customAlerts=[];return}
-  const {data:rows,error}=await supabaseClient.from("kiwipath_custom_alerts").select("id,title,message,scheduled_at,timezone,status,sent_at,created_at,recurrence,recurrence_end,linked_type,linked_id,source_key").eq("user_id",currentUser.id).order("scheduled_at",{ascending:true});
-  if(error) throw error;
-  customAlerts=rows||[];
-}
+   if(!currentUser){customAlerts=[];return}
+   const {data:archiveRows,error:archiveError}=await supabaseClient.from("kiwipath_custom_alerts").select("id,status,sent_at,updated_at,created_at").eq("user_id",currentUser.id).in("status",["sent","cancelled","deleted"]);
+   if(archiveError) throw archiveError;
+   const retentionCutoff=Date.now()-30*24*60*60*1000;
+   const expiredIds=(archiveRows||[]).filter(a=>{const stamp=a.sent_at||a.updated_at||a.created_at;const time=stamp?new Date(stamp).getTime():NaN;return Number.isFinite(time)&&time<retentionCutoff}).map(a=>a.id);
+   if(expiredIds.length){const {error:purgeError}=await supabaseClient.from("kiwipath_custom_alerts").delete().in("id",expiredIds).eq("user_id",currentUser.id);if(purgeError)throw purgeError}
+   const {data:rows,error}=await supabaseClient.from("kiwipath_custom_alerts").select("id,title,message,scheduled_at,timezone,status,sent_at,created_at,updated_at,recurrence,recurrence_end,linked_type,linked_id,source_key").eq("user_id",currentUser.id).order("scheduled_at",{ascending:true});
+   if(error)throw error;customAlerts=rows||[];
+ }
+ 
 const ALERT_TIMEZONE="Pacific/Auckland";
 function zonedParts(date,timeZone=ALERT_TIMEZONE){
   const parts=new Intl.DateTimeFormat("en-CA",{timeZone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(date);
@@ -515,26 +520,37 @@ async function syncDocumentExpiryAlerts(){
   if(desired.length){const {error}=await supabaseClient.from("kiwipath_custom_alerts").upsert(desired,{onConflict:"user_id,source_key"});if(error)throw error}
 }
 function alertStatusLabel(status){
-  const pt=data.language==="pt";
-  return ({pending:pt?"Agendado":"Scheduled",processing:pt?"Enviando":"Sending",sent:pt?"Enviado":"Sent",cancelled:pt?"Cancelado":"Cancelled"})[status]||status;
-}
-function alertPage(){
-  const pt=data.language==="pt";
-  const rows=customAlerts.map(a=>{
-    const repeat=({once:pt?"Único":"Once",daily:pt?"Diário":"Daily",weekly:pt?"A cada 7 dias":"Every 7 days",monthly:pt?"Mensal":"Monthly"})[a.recurrence||"once"];
-    const linked=a.linked_type==="document"?data.documents.find(x=>String(x.id)===String(a.linked_id)):a.linked_type==="event"?data.events.find(x=>String(x.id)===String(a.linked_id)):null;
-    const relation=linked?(pt?"Vinculado a: ":"Linked to: ")+linked.title:(a.source_key?(pt?"Lembrete automático de validade":"Automatic expiry reminder"):"");
-    return `<div class="item-row">
-    <div class="item-date">${esc(displayAlertDate(a.scheduled_at))}</div>
-    <div class="item-main"><strong>${esc(a.title)}</strong><p>${esc(a.message||"")}</p><span class="tag ${a.status==="sent"?"":a.status==="cancelled"?"":"gold"}">${esc(alertStatusLabel(a.status))}</span> <span class="tag">${esc(repeat)}</span>${relation?`<p>${esc(relation)}</p>`:""}</div>
-    <div class="item-actions">${a.status==="pending"&&!a.source_key?button("✎","edit-alert:"+a.id,"btn-small"):""}${a.status==="pending"&&!a.source_key?button(pt?"Cancelar":"Cancel","cancel-alert:"+a.id,"btn-small"):""}${!a.source_key?button("×","delete-alert:"+a.id,"btn-small btn-danger"):""}</div>
-  </div>`;
-  }).join("");
-  return `${pageHead(pt?"Alertas personalizados":"Custom alerts",pt?"Crie lembretes que o KiwiPath enviará no dia e horário escolhidos.":"Create reminders for KiwiPath to send at the date and time you choose.","add-alert",pt?"Criar alerta":"Create alert")}
-  <section class="panel"><div class="panel-head"><div><h2>${pt?"Seus alertas":"Your alerts"}</h2><p>${customAlerts.length} ${pt?"alerta(s)":"alert(s)"}</p></div><button class="btn btn-soft btn-small" data-action="refresh-alerts">${pt?"Atualizar":"Refresh"}</button></div>
-  ${rows||empty(pt?"Você ainda não criou alertas. Use “Criar alerta” para começar.":"You have no custom alerts yet. Choose “Create alert” to get started.")}</section>
-  <div class="note">${pt?"Os alertas são enviados por notificação push. Ative as notificações no menu do perfil e mantenha um dispositivo registrado. O servidor verifica alertas pendentes a cada minuto.":"Alerts are delivered by push notification. Enable notifications from the profile menu and keep a device registered. The server checks pending alerts every minute."}</div>`;
-}
+   const pt=data.language==="pt";
+   return ({pending:pt?"A enviar":"Pending",processing:pt?"Enviando":"Sending",sent:pt?"Enviada":"Sent",cancelled:pt?"Cancelada":"Cancelled",deleted:pt?"Apagada":"Deleted"})[status]||status;
+ }
+ let alertTypeFilter="all";
+ let alertStatusFilter="all";
+ function alertPage(){
+   const pt=data.language==="pt";
+   const dateKey=d=>new Intl.DateTimeFormat("en-CA",{timeZone:ALERT_TIMEZONE,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
+   const todayKey=dateKey(new Date());
+   const filtered=customAlerts.filter(a=>{
+     const typeOk=alertTypeFilter==="all"||(alertTypeFilter==="automatic"?!!a.source_key:!a.source_key);
+     if(!typeOk)return false;
+     if(alertStatusFilter==="today")return dateKey(new Date(a.scheduled_at))===todayKey&&a.status!=="deleted"&&a.status!=="cancelled";
+     if(alertStatusFilter==="pending")return a.status==="pending"||a.status==="processing";
+     if(alertStatusFilter==="sent")return a.status==="sent";
+     if(alertStatusFilter==="archived")return a.status==="cancelled"||a.status==="deleted";
+     return true;
+   });
+   const rows=filtered.map(a=>{
+     const repeat=({once:pt?"Único":"Once",daily:pt?"Diário":"Daily",weekly:pt?"A cada 7 dias":"Every 7 days",monthly:pt?"Mensal":"Monthly"})[a.recurrence||"once"];
+     const linked=a.linked_type==="document"?data.documents.find(x=>String(x.id)===String(a.linked_id)):a.linked_type==="event"?data.events.find(x=>String(x.id)===String(a.linked_id)):null;
+     const relation=linked?(pt?"Vinculado a: ":"Linked to: ")+linked.title:(a.source_key?(pt?"Lembrete automático de validade":"Automatic expiry reminder"):"");
+     return `<div class="item-row"><div class="item-date">${esc(displayAlertDate(a.scheduled_at))}</div><div class="item-main"><strong>${esc(a.title)}</strong><p>${esc(a.message||"")}</p><span class="tag ${a.status==="sent"||a.status==="cancelled"||a.status==="deleted"?"":"gold"}">${esc(alertStatusLabel(a.status))}</span> <span class="tag">${esc(a.source_key?(pt?"Automática":"Automatic"):(pt?"Manual":"Manual"))}</span> <span class="tag">${esc(repeat)}</span>${relation?`<p>${esc(relation)}</p>`:""}</div><div class="item-actions">${a.status==="pending"&&!a.source_key?button("✎","edit-alert:"+a.id,"btn-small"):""}${a.status==="pending"&&!a.source_key?button(pt?"Cancelar":"Cancel","cancel-alert:"+a.id,"btn-small"):""}${!["sent","cancelled","deleted"].includes(a.status)&&!a.source_key?button("×","delete-alert:"+a.id,"btn-small btn-danger"):""}</div></div>`;
+   }).join("");
+   return `${pageHead(pt?"Alertas personalizados":"Custom alerts",pt?"Crie lembretes que o KiwiPath enviará no dia e horário escolhidos.":"Create reminders that KiwiPath will send at the date and time you choose.","add-alert",pt?"Criar alerta":"Create alert")}
+   <section class="panel"><div class="panel-head"><div><h2>${pt?"Seus alertas":"Your alerts"}</h2><p>${filtered.length} ${pt?"alerta(s) exibido(s)":"alert(s) shown"} · ${customAlerts.length} ${pt?"no total":"total"}</p></div><button class="btn btn-soft btn-small" data-action="refresh-alerts">${pt?"Atualizar":"Refresh"}</button></div>
+   <div class="finance-filters" style="margin:16px 0;display:flex;gap:12px;flex-wrap:wrap"><label style="flex:1;min-width:180px">${pt?"Tipo de notificação":"Notification type"}<select id="alertTypeFilter" style="width:100%"><option value="all" ${alertTypeFilter==="all"?"selected":""}>${pt?"Todas":"All types"}</option><option value="automatic" ${alertTypeFilter==="automatic"?"selected":""}>${pt?"Automáticas":"Automatic"}</option><option value="manual" ${alertTypeFilter==="manual"?"selected":""}>${pt?"Criadas pelo usuário":"Created by user"}</option></select></label><label style="flex:1;min-width:210px">${pt?"Estado / período":"Status / period"}<select id="alertStatusFilter" style="width:100%"><option value="all" ${alertStatusFilter==="all"?"selected":""}>${pt?"Todas as notificações":"All notifications"}</option><option value="today" ${alertStatusFilter==="today"?"selected":""}>${pt?"Hoje":"Today"}</option><option value="pending" ${alertStatusFilter==="pending"?"selected":""}>${pt?"A serem enviadas":"To be sent"}</option><option value="sent" ${alertStatusFilter==="sent"?"selected":""}>${pt?"Já enviadas":"Already sent"}</option><option value="archived" ${alertStatusFilter==="archived"?"selected":""}>${pt?"Canceladas ou apagadas":"Cancelled or deleted"}</option></select></label></div>
+   ${rows||empty(pt?"Nenhuma notificação corresponde a estes filtros.":"No notifications match these filters.")}</section>
+   <div class="note">${pt?"Notificações enviadas, canceladas ou apagadas ficam arquivadas por 30 dias e depois são removidas automaticamente. Os horários usam o fuso de Auckland, Nova Zelândia.":"Sent, cancelled or deleted notifications are archived for 30 days, then automatically removed. Times use Auckland, New Zealand time."}</div>`;
+ }
+ 
 function editAlert(id){
   const old=customAlerts.find(a=>a.id===id);const pt=data.language==="pt";
   const linkOptions=[["","— "+(pt?"Nenhum vínculo":"No link")+" —"],...data.documents.map(x=>["document|"+x.id,(pt?"Documento: ":"Document: ")+x.title]),...data.events.map(x=>["event|"+x.id,(pt?"Evento: ":"Event: ")+x.title])];
@@ -564,11 +580,12 @@ async function cancelAlert(id){
 }
 async function deleteAlert(id){
   const pt=data.language==="pt";
-  if(!await confirmDialog({title:pt?"Excluir alerta?":"Delete alert?",message:pt?"Este lembrete será excluído permanentemente. Esta ação não pode ser desfeita.":"This reminder will be permanently deleted. This action cannot be undone.",confirmText:pt?"Excluir alerta":"Delete alert"}))return;
-  const {error}=await supabaseClient.from("kiwipath_custom_alerts").delete().eq("id",id).eq("user_id",currentUser.id);
-  if(error){console.error(error);notify(pt?"Não foi possível excluir o alerta.":"Could not delete alert.");return}
-  await loadCustomAlerts();render();notify(pt?"Alerta excluído.":"Alert deleted.");
+  if(!await confirmDialog({title:pt?"Apagar notificação?":"Delete notification?",message:pt?"A notificação ficará arquivada por 30 dias e será apagada automaticamente depois desse prazo.":"This notification will be archived for 30 days, then permanently removed.",confirmText:pt?"Arquivar notificação":"Archive notification"}))return;
+  const {error}=await supabaseClient.from("kiwipath_custom_alerts").update({status:"deleted",updated_at:new Date().toISOString()}).eq("id",id).eq("user_id",currentUser.id);
+  if(error){console.error(error);notify(pt?"Não foi possível arquivar a notificação.":"Could not archive notification.");return}
+  await loadCustomAlerts();render();notify(pt?"Notificação arquivada por 30 dias.":"Notification archived for 30 days.");
 }
+
 function updateProfile(){
   const name=currentMemberName();
   const avatar=$("#profileAvatar");
@@ -923,6 +940,7 @@ $("#languageBtn").onclick=()=>{data.language=data.language==="pt"?"en":"pt";save
 $("#refreshAppBtn").onclick=()=>{closeProfileMenu();window.location.reload()};
 $("#profileAlertsBtn").onclick=async()=>{page="alerts";closeProfileMenu();render();window.scrollTo({top:0,behavior:"smooth"});try{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()}catch(e){console.error("Alert sync:",e);notify(data.language==="pt"?"Não foi possível sincronizar os alertas.":"Could not sync alerts.")}};
 $("#syncNowBtn").onclick=async()=>{const b=$("#syncNowBtn");const label=b.querySelector("span:last-child");const old=label.textContent;b.disabled=true;label.textContent=data.language==="pt"?"Sincronizando…":"Syncing…";try{await syncToCloud();notify(data.language==="pt"?"Sincronização solicitada.":"Sync requested.")}catch(e){notify(data.language==="pt"?"Não foi possível sincronizar agora.":"Could not sync right now.")}finally{b.disabled=false;label.textContent=old;closeProfileMenu()}};
+$("#pageContent").addEventListener("change",e=>{if(e.target.id==="alertTypeFilter"){alertTypeFilter=e.target.value;render()}else if(e.target.id==="alertStatusFilter"){alertStatusFilter=e.target.value;render()}});
 $("#pageContent").addEventListener("click",e=>{const pie=e.target.closest("[data-pie-category]");if(pie){selectedPieCategory=pie.dataset.pieCategory;render();return}const pieCycle=e.target.closest("[data-pie-cycle]");if(pieCycle){const cats=[...new Set((data.transactions||[]).filter(x=>x.type==="expense"&&x.category).map(x=>x.category))];const next=cats.indexOf(selectedPieCategory)+1;selectedPieCategory=cats.length?cats[next%cats.length]:"";render();return}const b=e.target.closest("[data-action]");if(!b)return;const a=b.dataset.action;if(a.startsWith("edit-project-cost:"))return editProjectCost(a.split(":")[1]);if(a.startsWith("edit-transaction:"))return editFinanceTransaction(false,a.split(":")[1]);if(a.startsWith("edit-reserve:"))return editFinanceTransaction(true,a.split(":")[1]);if(a.startsWith('edit-account:'))return editAccount(a.split(':')[1]);if(a.startsWith('delete-account:')){const id=a.split(':')[1];if((data.transactions||[]).some(x=>x.accountId===id)){notify(data.language==='pt'?'Esta caixinha tem movimentações associadas e não pode ser excluída.':'This money box has linked transactions and cannot be deleted.');return}return removeItem('accounts',id)}if(a.startsWith("finance-tab:")){financeSubpage=a.split(":")[1];render();return}if(a.startsWith("finance-period:")){financePeriod=a.split(":")[1];render();return}if(a.startsWith("quick-transaction:"))return editFinanceTransaction(false,null,a.split(":")[1]);if(a==="add-project-cost")return editProjectCost();if(a==="add-reserve")return editFinanceTransaction(true);if(a==='add-account')return editAccount();if(a==="add-transaction")return addTransactionWizard();if(a.startsWith("go-")){page=a.slice(3);render();window.scrollTo({top:0,behavior:"smooth"});return}if(a==="add-document")return editDoc();if(a.startsWith("preview-document:"))return documentFileAction(a.slice(17),false);if(a.startsWith("download-document:"))return documentFileAction(a.slice(18),true);if(a==="add-event")return editEvent();if(a==="add-alert")return editAlert();if(a==="refresh-alerts"){(async()=>{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()})().catch(err=>{console.error(err);notify(data.language==="pt"?"Falha ao carregar alertas.":"Could not load alerts.")});return}if(a.startsWith("edit-alert:"))return editAlert(a.slice(11));if(a.startsWith("cancel-alert:")){cancelAlert(a.slice(13));return}if(a.startsWith("delete-alert:")){deleteAlert(a.slice(13));return}if(a==="add-transaction")return editTransaction();if(a==="add-study")return editStudy();if(a==="add-dream")return editDream();if(a==="edit-goal")return editGoal();for(const [prefix,fn] of [["edit-document:",editDoc],["edit-event:",editEvent],["edit-study:",editStudy],["edit-dream:",editDream]])if(a.startsWith(prefix))return fn(a.slice(prefix.length));for(const [prefix,col] of [["delete-document:","documents"],["delete-event:","events"],["delete-transaction:","transactions"],["delete-project-cost:","projectCosts"],["delete-reserve:","nzReserve"],["delete-study:","study"],["delete-dream:","dreams"]])if(a.startsWith(prefix))return removeItem(col,a.slice(prefix.length));if(a.startsWith("toggle-dream:")){const x=data.dreams.find(x=>x.id===a.slice(12));if(x)x.done=!x.done;save();render()}});
 $("#pageContent").addEventListener("change",e=>{if(e.target.id==="financeCategoryFilter"){financeCategory=e.target.value;render();return}if(e.target.id==="financeFrom"){financeFrom=e.target.value;render();return}if(e.target.id==="financeTo"){financeTo=e.target.value;render();return}const cb=e.target.closest("[data-toggle-doc]");if(!cb)return;const x=data.documents.find(x=>x.id===cb.dataset.toggleDoc);if(x)x.status=cb.checked?"done":"todo";save();render()});
 $("#pageContent").addEventListener("input",e=>{if(e.target.id==="docSearch")applyDocumentFilters()});
