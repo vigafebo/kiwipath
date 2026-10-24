@@ -498,11 +498,16 @@ function alertStatusLabel(status){
 }
 function alertPage(){
   const pt=data.language==="pt";
-  const rows=customAlerts.map(a=>`<div class="item-row">
+  const rows=customAlerts.map(a=>{
+    const repeat=({once:pt?"Único":"Once",daily:pt?"Diário":"Daily",weekly:pt?"A cada 7 dias":"Every 7 days",monthly:pt?"Mensal":"Monthly"})[a.recurrence||"once"];
+    const linked=a.linked_type==="document"?data.documents.find(x=>String(x.id)===String(a.linked_id)):a.linked_type==="event"?data.events.find(x=>String(x.id)===String(a.linked_id)):null;
+    const relation=linked?(pt?"Vinculado a: ":"Linked to: ")+linked.title:(a.source_key?(pt?"Lembrete automático de validade":"Automatic expiry reminder"):"");
+    return `<div class="item-row">
     <div class="item-date">${esc(displayAlertDate(a.scheduled_at))}</div>
-    <div class="item-main"><strong>${esc(a.title)}</strong><p>${esc(a.message||"")}</p><span class="tag ${a.status==="sent"?"":a.status==="cancelled"?"":"gold"}">${esc(alertStatusLabel(a.status))}</span></div>
-    <div class="item-actions">${a.status==="pending"?button("✎","edit-alert:"+a.id,"btn-small"):""}${a.status==="pending"?button(pt?"Cancelar":"Cancel","cancel-alert:"+a.id,"btn-small"):""}${button("×","delete-alert:"+a.id,"btn-small btn-danger")}</div>
-  </div>`).join("");
+    <div class="item-main"><strong>${esc(a.title)}</strong><p>${esc(a.message||"")}</p><span class="tag ${a.status==="sent"?"":a.status==="cancelled"?"":"gold"}">${esc(alertStatusLabel(a.status))}</span> <span class="tag">${esc(repeat)}</span>${relation?`<p>${esc(relation)}</p>`:""}</div>
+    <div class="item-actions">${a.status==="pending"&&!a.source_key?button("✎","edit-alert:"+a.id,"btn-small"):""}${a.status==="pending"&&!a.source_key?button(pt?"Cancelar":"Cancel","cancel-alert:"+a.id,"btn-small"):""}${!a.source_key?button("×","delete-alert:"+a.id,"btn-small btn-danger"):""}</div>
+  </div>`;
+  }).join("");
   return `${pageHead(pt?"Alertas personalizados":"Custom alerts",pt?"Crie lembretes que o KiwiPath enviará no dia e horário escolhidos.":"Create reminders for KiwiPath to send at the date and time you choose.","add-alert",pt?"Criar alerta":"Create alert")}
   <section class="panel"><div class="panel-head"><div><h2>${pt?"Seus alertas":"Your alerts"}</h2><p>${customAlerts.length} ${pt?"alerta(s)":"alert(s)"}</p></div><button class="btn btn-soft btn-small" data-action="refresh-alerts">${pt?"Atualizar":"Refresh"}</button></div>
   ${rows||empty(pt?"Você ainda não criou alertas. Use “Criar alerta” para começar.":"You have no custom alerts yet. Choose “Create alert” to get started.")}</section>
