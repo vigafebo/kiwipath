@@ -71,6 +71,16 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @media(max-width:850px){.calendar-layout{grid-template-columns:1fr}.calendar-day{min-height:52px}.calendar-event-chip{display:none}}@media(max-width:480px){.calendar-day{min-height:44px;padding:4px 2px}.calendar-grid,.calendar-weekdays{gap:3px}.calendar-stats{gap:6px}.calendar-stat{padding:8px}}
  .profile-alerts-submenu{margin:0 0 4px 12px;padding-left:8px;border-left:1px solid var(--line)}
  .profile-menu-subitem{font-size:11px;padding-top:9px;padding-bottom:9px}
+ #profileAlertsBtn[aria-expanded="true"] .profile-chevron,#profileMenusBtn[aria-expanded="true"] .profile-chevron{transform:rotate(180deg)}
+ .profile-menu-subitem .menu-item-icon{width:20px;height:20px}
+ .customize-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(105px,145px);gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+ .customize-row:last-child{border-bottom:0}
+ .customize-row label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600}
+ .customize-row input[type="checkbox"]{accent-color:var(--green);width:16px;height:16px}
+ .customize-row select{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px;background:var(--paper);color:var(--ink);font-size:12px}
+ .customize-help{font-size:12px;color:var(--muted);margin:0 0 8px}
+ @media(max-width:700px){.profile-menu{max-height:calc(100vh - 95px);overflow-y:auto}.customize-row{grid-template-columns:minmax(0,1fr) 105px}}
+ .profile-menu-subitem{font-size:11px;padding-top:9px;padding-bottom:9px}
  #profileAlertsBtn[aria-expanded="true"] .profile-chevron{transform:rotate(180deg)}
 .avatar{width:36px;height:36px;border-radius:50%;background:var(--sage);
   display:grid;place-items:center;color:var(--forest);font-weight:750}
@@ -365,6 +375,9 @@ h1{font-size:28px}
           <div class="profile-menu-heading"><strong id="profileMenuName">Vitor</strong><small data-i18n="accountMenuSubtitle">Conta e preferências</small></div>
           <button type="button" class="profile-menu-item" id="languageBtn"><span class="menu-item-icon">文</span><span id="languageMenuLabel">Mudar idioma para English</span></button>
           <button type="button" class="profile-menu-item" id="syncRefreshBtn"><span class="menu-item-icon">↻</span><span data-i18n="syncRefresh">Sincronizar e atualizar</span></button>
+          <button type="button" class="profile-menu-item" id="profileMenusBtn" aria-expanded="false" aria-controls="profileMenusSubmenu"><span class="menu-item-icon">☷</span><span data-i18n="profileMenus">Menus</span><span class="profile-chevron" aria-hidden="true">⌄</span></button>
+          <div id="profileMenusSubmenu" class="profile-alerts-submenu" hidden></div>
+          <button type="button" class="profile-menu-item" id="profileCustomizeBtn"><span class="menu-item-icon">⚙</span><span data-i18n="personalization">Personalização</span></button>
           <button type="button" class="profile-menu-item" id="profileAlertsBtn" aria-expanded="false" aria-controls="profileAlertsSubmenu"><span class="menu-item-icon">♧</span><span id="alertsMenuLabel">Meus alertas</span><span class="profile-chevron" aria-hidden="true">⌄</span></button>
           <div id="profileAlertsSubmenu" class="profile-alerts-submenu" hidden>
             <button type="button" class="profile-menu-item profile-menu-subitem" id="openAlertsCenterBtn"><span class="menu-item-icon">◷</span><span data-i18n="openAlertsCenter">Central de alertas</span></button>
@@ -849,7 +862,48 @@ function financesPage(){return `${pageHead(t('finances'),data.language==='pt'?'O
 
 function studyPage(){return `${pageHead(t("study"),t("studyNote"),"add-study",t("add"))}<section class="panel"><div class="panel-head"><div><h2>${t("target")}</h2><p>${data.study.length} ${t("studyCount")}</p></div></div>${data.study.length?data.study.map(x=>`<div class="item-row"><div class="module-icon" style="margin:0;width:37px;height:37px;flex:0 0 37px">⌑</div><div class="item-main"><strong>${esc(x.title)}</strong><p>${esc(x.category||t("other"))} · ${esc(x.note||"")}</p>${x.date?`<p>${t("date")}: ${fmtDate(x.date)}</p>`:""}<span class="tag ${x.status==="active"?"":"gold"}">${t(x.status)}</span></div><div class="item-actions">${button("✎","edit-study:"+x.id,"btn-small")}${button("×","delete-study:"+x.id,"btn-small btn-danger")}</div></div>`).join(""):empty()}</section><div class="note">${t("officialNote")}</div>`}
 function dreamsPage(){return `${pageHead(t("dreams"),t("dreamDesc"),"add-dream",t("add"))}<section class="panel"><div class="panel-head"><div><h2>♡ ${t("ourJourney")}</h2><p>${data.dreams.filter(x=>x.done).length} ${t("of")} ${data.dreams.length} ${t("items")}</p></div></div>${data.dreams.length?data.dreams.map(x=>`<div class="dream-card"><div class="dream-star">${x.done?"🌿":"✧"}</div><div class="item-main"><div class="task-title">${esc(x.title)}</div><div class="task-meta">${esc(x.note||"")}</div><div class="dream-actions">${button(x.done?t("dreamDone"):t("markDone"),"toggle-dream:"+x.id,"btn-soft btn-small")}${button("✎ "+t("edit"),"edit-dream:"+x.id,"btn-small")}${button("×","delete-dream:"+x.id,"btn-small btn-danger")}</div></div></div>`).join(""):empty()}</section><div class="note">${t("dreamNote")}</div>`}
-function render(){const names={home:"home",documents:"documents",timeline:"timeline",alerts:"customAlertsNav",finances:"finances",study:"study",dreams:"dreams"};$("#crumb").textContent=page==="alerts"?(data.language==="pt"?"Alertas":"Alerts"):t(names[page]||"home");$$("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));const views={home:dashboard,documents:documentPage,timeline:timelinePage,alerts:alertPage,finances:financesPage,study:studyPage,dreams:dreamsPage};$("#pageContent").innerHTML=(views[page]||dashboard)();document.documentElement.lang=data.language==="pt"?"pt-BR":"en";$$("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});$("#languageMenuLabel").textContent=data.language==="pt"?"Mudar idioma para English":"Change language to Português"}
+
+const NAV_PAGES=[
+ {id:"home",label:"Início",en:"Home",icon:"⌂"},
+ {id:"documents",label:"Documentos",en:"Documents",icon:"▤"},
+ {id:"timeline",label:"Cronograma",en:"Schedule",icon:"◷"},
+ {id:"finances",label:"Finanças",en:"Finances",icon:"＄"},
+ {id:"study",label:"Estudos e carreira",en:"Study & career",icon:"⌑"},
+ {id:"dreams",label:"Nossos sonhos",en:"Our dreams",icon:"♡"}
+];
+function personalizationKey(){return "kiwipath.navigation."+String(currentUser?.id||currentMemberKey())}
+function getNavigationPrefs(){
+ try{const p=JSON.parse(localStorage.getItem(personalizationKey())||"{}");return {hidden:Array.isArray(p.hidden)?p.hidden:[],order:Array.isArray(p.order)?p.order:NAV_PAGES.map(x=>x.id)}}
+ catch(_){return {hidden:[],order:NAV_PAGES.map(x=>x.id)}}
+}
+function applyNavigationPrefs(){
+ const nav=$("#navigation");if(!nav)return;
+ const prefs=getNavigationPrefs();
+ const buttons=new Map([...nav.querySelectorAll("button[data-page]")].map(b=>[b.dataset.page,b]));
+ const ordered=[...prefs.order.filter(id=>buttons.has(id)),...NAV_PAGES.map(x=>x.id).filter(id=>buttons.has(id)&&!prefs.order.includes(id))];
+ ordered.forEach(id=>{const b=buttons.get(id);if(b){b.hidden=prefs.hidden.includes(id);nav.appendChild(b)}});
+}
+function renderProfileMenus(){
+ const box=$("#profileMenusSubmenu");if(!box)return;
+ const pt=data.language==="pt";
+ box.innerHTML=NAV_PAGES.map(p=>'<button type="button" class="profile-menu-item profile-menu-subitem" data-profile-page="'+p.id+'"><span class="menu-item-icon">'+p.icon+'</span><span>'+(pt?p.label:p.en)+'</span></button>').join("");
+}
+function openPersonalization(){
+ const prefs=getNavigationPrefs(),pt=data.language==="pt";
+ const rows=NAV_PAGES.map(p=>{
+  const label=pt?p.label:p.en;
+  const orderValue=prefs.order.indexOf(p.id)>=0?prefs.order.indexOf(p.id):NAV_PAGES.findIndex(x=>x.id===p.id);
+  return '<div class="customize-row"><label><input type="checkbox" name="visible_'+p.id+'" value="yes" '+(!prefs.hidden.includes(p.id)?"checked":"")+'><span>'+label+'</span></label><select name="order_'+p.id+'" aria-label="'+(pt?"Ordem de ":"Order for ")+label+'">'+NAV_PAGES.map((o,index)=>'<option value="'+(index+1)+'" '+(orderValue===index?'selected':'')+'>'+ (index+1)+' · '+(pt?o.label:o.en)+'</option>').join("")+'</select></div>';
+ }).join("");
+ modal(pt?"Personalização do menu":"Menu personalization",'<p class="customize-help field full">'+(pt?"Marque os menus que deseja mostrar e escolha a posição de cada um. As preferências ficam salvas para esta conta neste navegador.":"Choose which menus to show and select their order. Preferences are saved for this account in this browser.")+'</p>'+rows,v=>{
+  const hidden=NAV_PAGES.filter(p=>v["visible_"+p.id]!=="yes").map(p=>p.id);
+  const order=NAV_PAGES.map((p,index)=>({id:p.id,pos:Number(v["order_"+p.id]||index+1),index})).sort((a,b)=>a.pos-b.pos||a.index-b.index).map(x=>x.id);
+  try{localStorage.setItem(personalizationKey(),JSON.stringify({hidden,order}))}
+  catch(e){notify(pt?"Não foi possível salvar a personalização neste navegador.":"Could not save personalization in this browser.");return false}
+  applyNavigationPrefs();
+ });
+}
+function render(){applyNavigationPrefs();renderProfileMenus();const names={home:"home",documents:"documents",timeline:"timeline",alerts:"customAlertsNav",finances:"finances",study:"study",dreams:"dreams"};$("#crumb").textContent=page==="alerts"?(data.language==="pt"?"Alertas":"Alerts"):t(names[page]||"home");$$("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));const views={home:dashboard,documents:documentPage,timeline:timelinePage,alerts:alertPage,finances:financesPage,study:studyPage,dreams:dreamsPage};$("#pageContent").innerHTML=(views[page]||dashboard)();document.documentElement.lang=data.language==="pt"?"pt-BR":"en";$$("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});$("#languageMenuLabel").textContent=data.language==="pt"?"Mudar idioma para English":"Change language to Português"}
 function notify(s){const el=$("#toast");el.textContent=s;el.classList.remove("hidden");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add("hidden"),2600)}
 function confirmDialog({title,message,confirmText,cancelText,danger=true}){
   return new Promise(resolve=>{
@@ -1003,6 +1057,10 @@ document.addEventListener("click",e=>{if(!e.target.closest("#profileMenuWrap"))c
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfileMenu()});
 $("#languageBtn").onclick=()=>{data.language=data.language==="pt"?"en":"pt";save();render();closeProfileMenu();notify(t("languageChanged"))};
 $("#profileAlertsBtn").onclick=()=>{const sub=$("#profileAlertsSubmenu"),b=$("#profileAlertsBtn");sub.hidden=!sub.hidden;b.setAttribute("aria-expanded",String(!sub.hidden))};
+$("#profileMenusBtn").onclick=()=>{const sub=$("#profileMenusSubmenu"),b=$("#profileMenusBtn");sub.hidden=!sub.hidden;b.setAttribute("aria-expanded",String(!sub.hidden))};
+$("#profileMenusSubmenu").addEventListener("click",e=>{const b=e.target.closest("[data-profile-page]");if(!b)return;page=b.dataset.profilePage;closeProfileMenu();render();window.scrollTo({top:0,behavior:"smooth"})});
+$("#profileCustomizeBtn").onclick=()=>{closeProfileMenu();openPersonalization()};
+
 $("#openAlertsCenterBtn").onclick=async()=>{page="alerts";closeProfileMenu();render();window.scrollTo({top:0,behavior:"smooth"});try{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()}catch(e){console.error("Alert sync:",e);notify(data.language==="pt"?"Não foi possível sincronizar os alertas.":"Could not sync alerts.")}};
 $("#syncRefreshBtn").onclick=async()=>{const b=$("#syncRefreshBtn"),label=b.querySelector("span:last-child"),old=label.textContent;b.disabled=true;label.textContent=data.language==="pt"?"Sincronizando e atualizando…":"Syncing and refreshing…";try{await syncToCloud();await new Promise(resolve=>setTimeout(resolve,350));window.location.reload()}catch(e){notify(data.language==="pt"?"Não foi possível sincronizar agora.":"Could not sync right now.");b.disabled=false;label.textContent=old}};
 $("#pageContent").addEventListener("change",e=>{if(e.target.id==="alertTypeFilter"){alertTypeFilter=e.target.value;render()}else if(e.target.id==="alertStatusFilter"){alertStatusFilter=e.target.value;render()}});
