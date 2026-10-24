@@ -490,30 +490,29 @@ function displayAlertDate(iso){
   return Number.isNaN(d.getTime())?esc(iso):d.toLocaleString(data.language==="pt"?"pt-BR":"en-NZ",{timeZone:ALERT_TIMEZONE,dateStyle:"medium",timeStyle:"short"});
 }
 async function syncDocumentExpiryAlerts(){
-  if(!currentUser||!data.documents)return;
+  if(!currentUser||!Array.isArray(data.documents))return;
   const {data:member,error:memberError}=await supabaseClient.from("kiwipath_members").select("role").eq("user_id",currentUser.id).maybeSingle();
   if(memberError)throw memberError;
-  const role=member?.role||"member";
-  const person=role==="owner"?"vitor":"zack";
-  const now=new Date();
+  const person=(member?.role||"member")==="owner"?"vitor":"zack";
+  const now=new Date(), desired=[], desiredKeys=[];
   const makeAt=(date,daysBefore)=>{const [y,m,d]=date.split("-").map(Number);const wall=Date.UTC(y,m-1,d-daysBefore,9,0,0);let utc=wall-timezoneOffsetMs(new Date(wall),ALERT_TIMEZONE);utc=wall-timezoneOffsetMs(new Date(utc),ALERT_TIMEZONE);return new Date(utc).toISOString()};
   for(const doc of data.documents){
-    const expiry=doc.expiryDate||((doc.hasExpiry&&doc.due)?doc.due:"");const prefix="document-expiry:"+doc.id+":";
+    const expiry=doc.expiryDate||((doc.hasExpiry&&doc.due)?doc.due:"");
     const owner=String(doc.owner||"both").toLowerCase();
-    const assigned=owner==="both"||owner==="ambos"||owner===person;
-    if(!assigned||!expiry||doc.hasExpiry===false){
-      await supabaseClient.from("kiwipath_custom_alerts").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("user_id",currentUser.id).like("source_key",prefix+"%").eq("status","pending");
-      continue;
-    }
+    if(!expiry||doc.hasExpiry===false||!(owner==="both"||owner==="ambos"||owner===person))continue;
     for(const days of [30,15,7,0]){
-      const at=makeAt(expiry,days),key=prefix+days;
-      if(new Date(at)<=now){await supabaseClient.from("kiwipath_custom_alerts").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("user_id",currentUser.id).eq("source_key",key).eq("status","pending");continue}
+      const at=makeAt(expiry,days),key="document-expiry:"+doc.id+":"+days;
+      if(new Date(at)<=now)continue;
+      desiredKeys.push(key);
       const message=data.language==="pt"?"\""+doc.title+"\" "+(days===0?"vence hoje":"vence em "+days+" dias")+".":"\""+doc.title+"\" "+(days===0?"expires today":"expires in "+days+" days")+".";
-      const payload={user_id:currentUser.id,title:data.language==="pt"?"Vencimento de documento":"Document expiry",message,scheduled_at:at,timezone:ALERT_TIMEZONE,status:"pending",recurrence:"once",linked_type:"document",linked_id:String(doc.id),source_key:key,updated_at:new Date().toISOString()};
-      const {error}=await supabaseClient.from("kiwipath_custom_alerts").upsert(payload,{onConflict:"user_id,source_key"});if(error)console.error("Could not sync document expiry alert:",error);
+      desired.push({user_id:currentUser.id,title:data.language==="pt"?"Vencimento de documento":"Document expiry",message,scheduled_at:at,timezone:ALERT_TIMEZONE,status:"pending",recurrence:"once",linked_type:"document",linked_id:String(doc.id),source_key:key,updated_at:now.toISOString()});
     }
   }
-  await loadCustomAlerts();
+  const {data:existing,error:existingError}=await supabaseClient.from("kiwipath_custom_alerts").select("id,source_key,status").eq("user_id",currentUser.id).like("source_key","document-expiry:%");
+  if(existingError)throw existingError;
+  const stale=(existing||[]).filter(a=>!desiredKeys.includes(a.source_key)).map(a=>a.id);
+  if(stale.length){const {error}=await supabaseClient.from("kiwipath_custom_alerts").delete().in("id",stale).eq("user_id",currentUser.id);if(error)throw error}
+  if(desired.length){const {error}=await supabaseClient.from("kiwipath_custom_alerts").upsert(desired,{onConflict:"user_id,source_key"});if(error)throw error}
 }
 function alertStatusLabel(status){
   const pt=data.language==="pt";
@@ -888,7 +887,25 @@ function editFinanceTransaction(reserve=false,id=null,preset=null){const arrName
 function editStudy(id){const old=data.study.find(x=>x.id===id);modal(old?t("editItem"):t("addStudy"),field("title",t("studyTitle"),old?.title||"","text","full")+selectField("category",t("category"),[["course",t("course")],["career",t("career")],["other",t("other")]],old?.category||"course")+selectField("status",t("status"),[["todo",t("todo")],["active",t("active")],["paused",t("paused")],["done",t("done")]],old?.status||"todo")+field("date",t("date"),old?.date||"","date")+textareaField("note",t("notes"),old?.note||"","full"),v=>{const item={id:old?.id||uid(),title:v.title.trim(),category:v.category,status:v.status,date:v.date,note:v.note.trim()};if(!item.title)return notify(t("title"));if(old)data.study=data.study.map(x=>x.id===id?item:x);else data.study.push(item)})}
 function editDream(id){const old=data.dreams.find(x=>x.id===id);modal(old?t("editItem"):t("addDream"),field("title",t("dreamTitle"),old?.title||"","text","full")+textareaField("note",t("notes"),old?.note||"","full"),v=>{if(!v.title.trim())return notify(t("title"));const item={id:old?.id||uid(),title:v.title.trim(),note:v.note.trim(),done:old?.done||false};if(old)data.dreams=data.dreams.map(x=>x.id===id?item:x);else data.dreams.push(item)})}
 function editGoal(){modal(t("setGoal"),field("goal",t("goal"),data.savingsGoal||"","number","full"),v=>{const n=Number(v.goal);if(!Number.isFinite(n)||n<0)return notify(t("amount"));data.savingsGoal=n})}
-async function removeItem(collection,id){if(!await confirmDialog({title:t("confirmDelete"),message:t("confirmDelete"),confirmText:t("delete")}))return;const removed=(data[collection]||[]).find(x=>x.id===id);data[collection]=data[collection].filter(x=>x.id!==id);if(collection==="documents"&&removed?.filePath) supabaseClient.storage.from("kiwipath-documents").remove([removed.filePath]).catch(e=>console.warn(e));save();render();notify(t("deleted"))}
+async async function removeItem(collection,id){
+  if(!await confirmDialog({title:t("confirmDelete"),message:t("confirmDelete"),confirmText:t("delete")}))return;
+  const removed=(data[collection]||[]).find(x=>x.id===id);
+  if(collection==="documents"&&removed){
+    const docId=String(removed.id);
+    const [linkedResult,autoResult]=await Promise.all([
+      supabaseClient.from("kiwipath_custom_alerts").delete().eq("linked_type","document").eq("linked_id",docId),
+      supabaseClient.from("kiwipath_custom_alerts").delete().like("source_key","document-expiry:"+docId+":%")
+    ]);
+    if(linkedResult.error||autoResult.error){
+      console.error("Failed to remove document alerts:",linkedResult.error||autoResult.error);
+      notify(data.language==="pt"?"Documento não excluído: não foi possível remover os alertas vinculados. Tente novamente.":"Document not deleted: linked alerts could not be removed. Please try again.");
+      return;
+    }
+    if(removed.filePath)supabaseClient.storage.from("kiwipath-documents").remove([removed.filePath]).catch(e=>console.warn(e));
+  }
+  data[collection]=(data[collection]||[]).filter(x=>x.id!==id);
+  save();render();notify(t("deleted"));
+}
 $("#navigation").addEventListener("click",e=>{const b=e.target.closest("button[data-page]");if(!b)return;page=b.dataset.page;render();window.scrollTo({top:0,behavior:"smooth"})});
 function closeProfileMenu(){const menu=$("#profileMenu"),toggle=$("#profileMenuToggle");if(menu)menu.hidden=true;if(toggle)toggle.setAttribute("aria-expanded","false")}
 $("#profileMenuToggle").addEventListener("click",()=>{const menu=$("#profileMenu"),toggle=$("#profileMenuToggle");const willOpen=menu.hidden;menu.hidden=!willOpen;toggle.setAttribute("aria-expanded",String(willOpen))});
@@ -896,7 +913,7 @@ document.addEventListener("click",e=>{if(!e.target.closest("#profileMenuWrap"))c
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfileMenu()});
 $("#languageBtn").onclick=()=>{data.language=data.language==="pt"?"en":"pt";save();render();closeProfileMenu();notify(t("languageChanged"))};
 $("#refreshAppBtn").onclick=()=>{closeProfileMenu();window.location.reload()};
-$("#profileAlertsBtn").onclick=async()=>{page="alerts";closeProfileMenu();try{await syncDocumentExpiryAlerts();await loadCustomAlerts()}catch(e){console.error("Alert sync:",e)}render();window.scrollTo({top:0,behavior:"smooth"})};
+$("#profileAlertsBtn").onclick=async()=>{page="alerts";closeProfileMenu();render();window.scrollTo({top:0,behavior:"smooth"});try{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()}catch(e){console.error("Alert sync:",e);notify(data.language==="pt"?"Não foi possível sincronizar os alertas.":"Could not sync alerts.")}};
 $("#syncNowBtn").onclick=async()=>{const b=$("#syncNowBtn");const label=b.querySelector("span:last-child");const old=label.textContent;b.disabled=true;label.textContent=data.language==="pt"?"Sincronizando…":"Syncing…";try{await syncToCloud();notify(data.language==="pt"?"Sincronização solicitada.":"Sync requested.")}catch(e){notify(data.language==="pt"?"Não foi possível sincronizar agora.":"Could not sync right now.")}finally{b.disabled=false;label.textContent=old;closeProfileMenu()}};
 $("#pageContent").addEventListener("click",e=>{const pie=e.target.closest("[data-pie-category]");if(pie){selectedPieCategory=pie.dataset.pieCategory;render();return}const pieCycle=e.target.closest("[data-pie-cycle]");if(pieCycle){const cats=[...new Set((data.transactions||[]).filter(x=>x.type==="expense"&&x.category).map(x=>x.category))];const next=cats.indexOf(selectedPieCategory)+1;selectedPieCategory=cats.length?cats[next%cats.length]:"";render();return}const b=e.target.closest("[data-action]");if(!b)return;const a=b.dataset.action;if(a.startsWith("edit-project-cost:"))return editProjectCost(a.split(":")[1]);if(a.startsWith("edit-transaction:"))return editFinanceTransaction(false,a.split(":")[1]);if(a.startsWith("edit-reserve:"))return editFinanceTransaction(true,a.split(":")[1]);if(a.startsWith('edit-account:'))return editAccount(a.split(':')[1]);if(a.startsWith('delete-account:')){const id=a.split(':')[1];if((data.transactions||[]).some(x=>x.accountId===id)){notify(data.language==='pt'?'Esta caixinha tem movimentações associadas e não pode ser excluída.':'This money box has linked transactions and cannot be deleted.');return}return removeItem('accounts',id)}if(a.startsWith("finance-tab:")){financeSubpage=a.split(":")[1];render();return}if(a.startsWith("finance-period:")){financePeriod=a.split(":")[1];render();return}if(a.startsWith("quick-transaction:"))return editFinanceTransaction(false,null,a.split(":")[1]);if(a==="add-project-cost")return editProjectCost();if(a==="add-reserve")return editFinanceTransaction(true);if(a==='add-account')return editAccount();if(a==="add-transaction")return addTransactionWizard();if(a.startsWith("go-")){page=a.slice(3);render();window.scrollTo({top:0,behavior:"smooth"});return}if(a==="add-document")return editDoc();if(a.startsWith("preview-document:"))return documentFileAction(a.slice(17),false);if(a.startsWith("download-document:"))return documentFileAction(a.slice(18),true);if(a==="add-event")return editEvent();if(a==="add-alert")return editAlert();if(a==="refresh-alerts"){(async()=>{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()})().catch(err=>{console.error(err);notify(data.language==="pt"?"Falha ao carregar alertas.":"Could not load alerts.")});return}if(a.startsWith("edit-alert:"))return editAlert(a.slice(11));if(a.startsWith("cancel-alert:")){cancelAlert(a.slice(13));return}if(a.startsWith("delete-alert:")){deleteAlert(a.slice(13));return}if(a==="add-transaction")return editTransaction();if(a==="add-study")return editStudy();if(a==="add-dream")return editDream();if(a==="edit-goal")return editGoal();for(const [prefix,fn] of [["edit-document:",editDoc],["edit-event:",editEvent],["edit-study:",editStudy],["edit-dream:",editDream]])if(a.startsWith(prefix))return fn(a.slice(prefix.length));for(const [prefix,col] of [["delete-document:","documents"],["delete-event:","events"],["delete-transaction:","transactions"],["delete-project-cost:","projectCosts"],["delete-reserve:","nzReserve"],["delete-study:","study"],["delete-dream:","dreams"]])if(a.startsWith(prefix))return removeItem(col,a.slice(prefix.length));if(a.startsWith("toggle-dream:")){const x=data.dreams.find(x=>x.id===a.slice(12));if(x)x.done=!x.done;save();render()}});
 $("#pageContent").addEventListener("change",e=>{if(e.target.id==="financeCategoryFilter"){financeCategory=e.target.value;render();return}if(e.target.id==="financeFrom"){financeFrom=e.target.value;render();return}if(e.target.id==="financeTo"){financeTo=e.target.value;render();return}const cb=e.target.closest("[data-toggle-doc]");if(!cb)return;const x=data.documents.find(x=>x.id===cb.dataset.toggleDoc);if(x)x.status=cb.checked?"done":"todo";save();render()});
