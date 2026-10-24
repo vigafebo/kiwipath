@@ -415,6 +415,7 @@ let currentUser = null;
 let cloudRecordId = null;
 let cloudSaveTimer = null;
 let isApplyingCloudData = false;
+let lastCloudUpdatedAt = null;
 let realtimeChannel = null;
 let customAlerts = [];
 
@@ -723,6 +724,7 @@ async function syncToCloud(){
     updated_at: new Date().toISOString()
   };
   try {
+    lastCloudUpdatedAt = payload.updated_at;
     if (cloudRecordId) {
       const { error } = await supabaseClient.from("kiwipath_records")
         .update({user_id: currentUser.id, content: data, updated_at: payload.updated_at})
@@ -730,12 +732,13 @@ async function syncToCloud(){
       if (error) throw error;
     } else {
       const { data: rows, error: readError } = await supabaseClient
-        .from("kiwipath_records").select("id,content")
+        .from("kiwipath_records").select("id,content,updated_at")
         .eq("record_type","app_state").eq("title","shared")
         .order("created_at",{ascending:true}).limit(1);
       if (readError) throw readError;
       if (rows && rows.length) {
         cloudRecordId = rows[0].id;
+        lastCloudUpdatedAt = payload.updated_at;
         const { error } = await supabaseClient.from("kiwipath_records")
           .update({user_id:currentUser.id,content:data,updated_at:payload.updated_at}).eq("id",cloudRecordId);
         if (error) throw error;
@@ -757,11 +760,12 @@ async function syncToCloud(){
 function migrateLegacyReserve(){if(!Array.isArray(data.accounts))data.accounts=[];if(!Array.isArray(data.transactions))data.transactions=[];if((data.nzReserve||[]).length&&!data.accounts.length){const account={id:uid(),name:'Reserva NZ (saldo anterior)',bank:'Reserva anterior',currency:'NZD',initialBalance:0,paymentMethods:['transfer','debit','credit','cash']};data.accounts.push(account);for(const x of data.nzReserve){data.transactions.push({...x,accountId:account.id,paymentMethod:'transfer',category:x.category||'Outro',note:x.note||''})}data.nzReserve=[];return true}return false}
 async function loadCloudData(){
   const {data: rows,error} = await supabaseClient.from("kiwipath_records")
-    .select("id,content").eq("record_type","app_state").eq("title","shared")
+    .select("id,content,updated_at").eq("record_type","app_state").eq("title","shared")
     .order("created_at",{ascending:true}).limit(1);
   if(error) throw error;
   if(rows && rows.length){
     cloudRecordId = rows[0].id;
+    lastCloudUpdatedAt = rows[0].updated_at || null;
     isApplyingCloudData = true;
     data = {...initial(),...(rows[0].content || {})};
     for(const k of ["documents","events","transactions","study","dreams","projectCosts","nzReserve","accounts"])
@@ -794,11 +798,12 @@ async function startApp(session){
     if(realtimeChannel) await supabaseClient.removeChannel(realtimeChannel);
     realtimeChannel = supabaseClient.channel("kiwipath-shared-records")
       .on("postgres_changes",{event:"UPDATE",schema:"public",table:"kiwipath_records"},async payload=>{
-        if(payload.new && payload.new.id===cloudRecordId && payload.new.user_id!==currentUser.id){
+        if(payload.new && payload.new.id===cloudRecordId && payload.new.updated_at && payload.new.updated_at!==lastCloudUpdatedAt){
           try {
-            const {data:row,error}=await supabaseClient.from("kiwipath_records").select("id,content").eq("id",cloudRecordId).single();
+            const {data:row,error}=await supabaseClient.from("kiwipath_records").select("id,content,updated_at").eq("id",cloudRecordId).single();
             if(error) throw error;
-            if(row && row.content){
+            if(row && row.content && row.updated_at!==lastCloudUpdatedAt){
+              lastCloudUpdatedAt=row.updated_at || null;
               isApplyingCloudData=true;
               data={...initial(),...row.content};
               for(const k of ["documents","events","transactions","study","dreams","projectCosts","nzReserve","accounts"])
@@ -877,8 +882,11 @@ const NAV_PAGES=[
 ];
 function personalizationKey(){return "kiwipath.navigation."+String(currentUser?.id||currentMemberKey())}
 function getNavigationPrefs(){
- try{const p=JSON.parse(localStorage.getItem(personalizationKey())||"{}");return {hidden:Array.isArray(p.hidden)?p.hidden:[],order:Array.isArray(p.order)?p.order:NAV_PAGES.map(x=>x.id)}}
- catch(_){return {hidden:[],order:NAV_PAGES.map(x=>x.id)}}
+ const defaults={hidden:[],order:NAV_PAGES.map(x=>x.id)};
+ const cloudPrefs=data.navigationPrefsByUser?.[String(currentUser?.id||"")];
+ if(cloudPrefs && typeof cloudPrefs==="object")return {hidden:Array.isArray(cloudPrefs.hidden)?cloudPrefs.hidden:[],order:Array.isArray(cloudPrefs.order)?cloudPrefs.order:defaults.order};
+ try{const p=JSON.parse(localStorage.getItem(personalizationKey())||"{}");return {hidden:Array.isArray(p.hidden)?p.hidden:defaults.hidden,order:Array.isArray(p.order)?p.order:defaults.order}}
+ catch(_){return defaults}
 }
 function applyNavigationPrefs(){
  const nav=$("#navigation");if(!nav)return;
@@ -902,8 +910,12 @@ function openPersonalization(){
  modal(pt?"Personalização do menu":"Menu personalization",'<p class="customize-help field full">'+(pt?"Marque os menus que deseja mostrar e escolha a posição de cada um. As preferências ficam salvas para esta conta neste navegador.":"Choose which menus to show and select their order. Preferences are saved for this account in this browser.")+'</p>'+'<div class="customize-grid">'+rows+'</div>',v=>{
   const hidden=NAV_PAGES.filter(p=>v["visible_"+p.id]!=="yes").map(p=>p.id);
   const order=NAV_PAGES.map((p,index)=>({id:p.id,pos:Number(v["order_"+p.id]||index+1),index})).sort((a,b)=>a.pos-b.pos||a.index-b.index).map(x=>x.id);
-  try{localStorage.setItem(personalizationKey(),JSON.stringify({hidden,order}))}
-  catch(e){notify(pt?"Não foi possível salvar a personalização neste navegador.":"Could not save personalization in this browser.");return false}
+  try{
+    localStorage.setItem(personalizationKey(),JSON.stringify({hidden,order}));
+    if(!data.navigationPrefsByUser || typeof data.navigationPrefsByUser!=="object")data.navigationPrefsByUser={};
+    data.navigationPrefsByUser[String(currentUser?.id||currentMemberKey())]={hidden,order};
+    save();
+  }catch(e){notify(pt?"Não foi possível salvar a personalização.":"Could not save personalization.");return false}
   applyNavigationPrefs();
  });
 }
