@@ -1,0 +1,27 @@
+{
+  "id": "/kiwipath/",
+  "name": "KiwiPath — Our journey to New Zealand",
+  "short_name": "KiwiPath",
+  "description": "Nossa jornada para a Nova Zelândia, organizada em um só lugar.",
+  "lang": "pt-BR",
+  "start_url": "/kiwipath/",
+  "scope": "/kiwipath/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f7f5ed",
+  "theme_color": "#183d32",
+  "icons": [
+    {
+      "src": "./icons/kiwipath-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/kiwipath-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
