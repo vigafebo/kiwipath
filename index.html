@@ -961,6 +961,10 @@ function editGoal(){modal(t("setGoal"),field("goal",t("goal"),data.savingsGoal||
 async function removeItem(collection,id){
   if(!await confirmDialog({title:t("confirmDelete"),message:t("confirmDelete"),confirmText:t("delete")}))return;
   const removed=(data[collection]||[]).find(x=>x.id===id);
+  if(collection==="events"&&removed){
+    const {error}=await supabaseClient.from("kiwipath_custom_alerts").delete().eq("linked_type","event").eq("linked_id",String(removed.id)).eq("user_id",currentUser.id);
+    if(error){console.error("Failed to remove event reminders:",error);notify(data.language==="pt"?"Evento não excluído: não foi possível remover os lembretes vinculados.":"Event not deleted: linked reminders could not be removed.");return;}
+  }
   if(collection==="documents"&&removed){
     const docId=String(removed.id);
     const [linkedResult,autoResult]=await Promise.all([
