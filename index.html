@@ -481,9 +481,7 @@ async function loadCustomAlerts(){
    if(!currentUser){customAlerts=[];return}
    const {data:archiveRows,error:archiveError}=await supabaseClient.from("kiwipath_custom_alerts").select("id,status,sent_at,updated_at,created_at").eq("user_id",currentUser.id).in("status",["sent","cancelled","deleted"]);
    if(archiveError) throw archiveError;
-   const retentionCutoff=Date.now()-30*24*60*60*1000;
-   const expiredIds=(archiveRows||[]).filter(a=>{const stamp=a.sent_at||a.updated_at||a.created_at;const time=stamp?new Date(stamp).getTime():NaN;return Number.isFinite(time)&&time<retentionCutoff}).map(a=>a.id);
-   if(expiredIds.length){const {error:purgeError}=await supabaseClient.from("kiwipath_custom_alerts").delete().in("id",expiredIds).eq("user_id",currentUser.id);if(purgeError)throw purgeError}
+   // Keep archived alerts in the cloud; do not silently purge history by age.
    const {data:rows,error}=await supabaseClient.from("kiwipath_custom_alerts").select("id,title,message,scheduled_at,timezone,status,sent_at,created_at,updated_at,recurrence,recurrence_end,linked_type,linked_id,source_key").eq("user_id",currentUser.id).order("scheduled_at",{ascending:true});
    if(error)throw error;customAlerts=rows||[];
  }
@@ -704,58 +702,77 @@ function esc(s=""){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt
 function parseAmount(v){if(typeof v==="number")return v;const q=String(v??"").trim().replace(/\s/g,"");if(!q)return NaN;return Number(q.includes(",")?q.replace(/\./g,"").replace(",","."):q)}
 function money(n){return new Intl.NumberFormat(data.language==="pt"?"pt-BR":"en-NZ",{style:"currency",currency:"NZD",maximumFractionDigits:2}).format(Number(n)||0)}
 function fmtDate(d){if(!d)return t("noDate");const x=new Date(d+"T12:00:00");return isNaN(x)?esc(d):x.toLocaleDateString(data.language==="pt"?"pt-BR":"en-NZ",{day:"2-digit",month:"short",year:"numeric"})}
+let localSaveRevision = 0;
+let cloudSyncPromise = null;
+let cloudSyncRequested = false;
+let cloudRetryTimer = null;
 function save(){
+  localSaveRevision++;
   try { localStorage.setItem(STORE, JSON.stringify(data)); }
-  catch(e) { notify(t("saveError")); }
+  catch(e) { console.error("KiwiPath local recovery copy:",e); notify(t("saveError")); }
   if (currentUser && !isApplyingCloudData) {
     clearTimeout(cloudSaveTimer);
-    cloudSaveTimer = setTimeout(() => syncToCloud(), 500);
+    cloudSaveTimer = setTimeout(() => syncToCloud(), 400);
+    const status=$("#syncStatus");
+    if(status)status.textContent=navigator.onLine?"Alterações pendentes…":"Offline · aguardando sincronização";
   }
 }
 async function syncToCloud(){
-  if (!currentUser || isApplyingCloudData) return;
-  const status = $("#syncStatus");
-  if (status) status.textContent = "Sincronizando…";
-  const payload = {
-    user_id: currentUser.id,
-    record_type: "app_state",
-    title: "shared",
-    content: data,
-    updated_at: new Date().toISOString()
-  };
-  try {
-    lastCloudUpdatedAt = payload.updated_at;
-    if (cloudRecordId) {
-      const { error } = await supabaseClient.from("kiwipath_records")
-        .update({user_id: currentUser.id, content: data, updated_at: payload.updated_at})
-        .eq("id", cloudRecordId);
-      if (error) throw error;
-    } else {
-      const { data: rows, error: readError } = await supabaseClient
-        .from("kiwipath_records").select("id,content,updated_at")
-        .eq("record_type","app_state").eq("title","shared")
-        .order("created_at",{ascending:true}).limit(1);
-      if (readError) throw readError;
-      if (rows && rows.length) {
-        cloudRecordId = rows[0].id;
-        lastCloudUpdatedAt = payload.updated_at;
-        const { error } = await supabaseClient.from("kiwipath_records")
-          .update({user_id:currentUser.id,content:data,updated_at:payload.updated_at}).eq("id",cloudRecordId);
-        if (error) throw error;
-      } else {
-        const { data: inserted, error } = await supabaseClient
-          .from("kiwipath_records").insert(payload).select("id").single();
-        if (error) throw error;
-        cloudRecordId = inserted.id;
-      }
+  if (!currentUser || isApplyingCloudData) return false;
+  if(cloudSyncPromise){cloudSyncRequested=true;return cloudSyncPromise;}
+  cloudSyncPromise=(async()=>{
+    try{
+      do{
+        cloudSyncRequested=false;
+        const revision=localSaveRevision;
+        const snapshot=JSON.parse(JSON.stringify(data));
+        const updatedAt=new Date().toISOString();
+        const status=$("#syncStatus");
+        if(status)status.textContent="Sincronizando…";
+        if(!navigator.onLine)throw new Error("Device is offline");
+        if(cloudRecordId){
+          const {error}=await supabaseClient.from("kiwipath_records")
+            .update({user_id:currentUser.id,content:snapshot,updated_at:updatedAt}).eq("id",cloudRecordId);
+          if(error)throw error;
+        }else{
+          const {data:rows,error:readError}=await supabaseClient.from("kiwipath_records")
+            .select("id,content,updated_at").eq("record_type","app_state").eq("title","shared")
+            .order("created_at",{ascending:true}).limit(1);
+          if(readError)throw readError;
+          if(rows&&rows.length){
+            cloudRecordId=rows[0].id;
+            const {error}=await supabaseClient.from("kiwipath_records")
+              .update({user_id:currentUser.id,content:snapshot,updated_at:updatedAt}).eq("id",cloudRecordId);
+            if(error)throw error;
+          }else{
+            const {data:inserted,error}=await supabaseClient.from("kiwipath_records")
+              .insert({user_id:currentUser.id,record_type:"app_state",title:"shared",content:snapshot,updated_at:updatedAt})
+              .select("id").single();
+            if(error)throw error;
+            cloudRecordId=inserted.id;
+          }
+        }
+        lastCloudUpdatedAt=updatedAt;
+        if(revision!==localSaveRevision)cloudSyncRequested=true;
+      }while(cloudSyncRequested);
+      const status=$("#syncStatus");
+      if(status)status.textContent="Sincronizado ✓";
+      clearTimeout(cloudRetryTimer);
+      try{await syncDocumentExpiryAlerts()}catch(e){console.error("KiwiPath alert sync:",e);if(status)status.textContent="Dados salvos · verificar alertas";}
+      return true;
+    }catch(error){
+      console.error("KiwiPath cloud save:",error);
+      const status=$("#syncStatus");
+      if(status)status.textContent=navigator.onLine?"Não sincronizado · tentando novamente":"Offline · aguardando sincronização";
+      clearTimeout(cloudRetryTimer);
+      if(currentUser)cloudRetryTimer=setTimeout(()=>{if(currentUser)syncToCloud()},10000);
+      return false;
+    }finally{
+      cloudSyncPromise=null;
+      if(cloudSyncRequested&&currentUser)syncToCloud();
     }
-    if (status) status.textContent = "Sincronizado ✓";
-    await syncDocumentExpiryAlerts();
-  } catch (error) {
-    console.error("KiwiPath cloud save:", error);
-    if (status) status.textContent = "Falha na sincronização";
-    notify("Não foi possível sincronizar. Verifique a conexão e as permissões do Supabase.");
-  }
+  })();
+  return cloudSyncPromise;
 }
 function migrateLegacyReserve(){if(!Array.isArray(data.accounts))data.accounts=[];if(!Array.isArray(data.transactions))data.transactions=[];if((data.nzReserve||[]).length&&!data.accounts.length){const account={id:uid(),name:'Reserva NZ (saldo anterior)',bank:'Reserva anterior',currency:'NZD',initialBalance:0,paymentMethods:['transfer','debit','credit','cash']};data.accounts.push(account);for(const x of data.nzReserve){data.transactions.push({...x,accountId:account.id,paymentMethod:'transfer',category:x.category||'Outro',note:x.note||''})}data.nzReserve=[];return true}return false}
 async function loadCloudData(){
@@ -797,6 +814,9 @@ async function loadCloudData(){
   if(migrateLegacyReserve()){localStorage.setItem(STORE,JSON.stringify(data));await syncToCloud()}
   render();
 }
+window.addEventListener("online",()=>{if(currentUser)syncToCloud()});
+window.addEventListener("focus",()=>{if(currentUser&&navigator.onLine)syncToCloud()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&currentUser&&navigator.onLine)syncToCloud()});
 function showAuth(message=""){
   $("#authScreen").style.display="grid";
   $("#kiwiApp").style.visibility="hidden";
@@ -1094,7 +1114,7 @@ $("#profileMenusSubmenu").addEventListener("click",e=>{const b=e.target.closest(
 $("#profileCustomizeBtn").onclick=()=>{closeProfileMenu();openPersonalization()};
 
 $("#openAlertsCenterBtn").onclick=async()=>{page="alerts";closeProfileMenu();render();window.scrollTo({top:0,behavior:"smooth"});try{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()}catch(e){console.error("Alert sync:",e);notify(data.language==="pt"?"Não foi possível sincronizar os alertas.":"Could not sync alerts.")}};
-$("#syncRefreshBtn").onclick=async()=>{const b=$("#syncRefreshBtn"),label=b.querySelector("span:last-child"),old=label.textContent;b.disabled=true;label.textContent=data.language==="pt"?"Sincronizando e atualizando…":"Syncing and refreshing…";try{await syncToCloud();await new Promise(resolve=>setTimeout(resolve,350));window.location.reload()}catch(e){notify(data.language==="pt"?"Não foi possível sincronizar agora.":"Could not sync right now.");b.disabled=false;label.textContent=old}};
+$("#syncRefreshBtn").onclick=async()=>{const b=$("#syncRefreshBtn"),label=b.querySelector("span:last-child"),old=label.textContent;b.disabled=true;label.textContent=data.language==="pt"?"Sincronizando e atualizando…":"Syncing and refreshing…";const ok=await syncToCloud();if(ok){await new Promise(resolve=>setTimeout(resolve,350));window.location.reload()}else{notify(data.language==="pt"?"Os dados ainda não foram confirmados na nuvem. Eles serão reenviados automaticamente quando possível.":"Cloud save not confirmed. Changes will be retried automatically.");b.disabled=false;label.textContent=old}};
 $("#pageContent").addEventListener("change",e=>{if(e.target.id==="alertTypeFilter"){alertTypeFilter=e.target.value;render()}else if(e.target.id==="alertStatusFilter"){alertStatusFilter=e.target.value;render()}});
 $("#pageContent").addEventListener("click",e=>{const calDay=e.target.closest("[data-calendar-date]");if(calDay){calendarSelectedDate=calDay.dataset.calendarDate;calendarFilter="selected";render();return}const pie=e.target.closest("[data-pie-category]");if(pie){selectedPieCategory=pie.dataset.pieCategory;render();return}const pieCycle=e.target.closest("[data-pie-cycle]");if(pieCycle){const cats=[...new Set((data.transactions||[]).filter(x=>x.type==="expense"&&x.category).map(x=>x.category))];const next=cats.indexOf(selectedPieCategory)+1;selectedPieCategory=cats.length?cats[next%cats.length]:"";render();return}const b=e.target.closest("[data-action]");if(!b)return;const a=b.dataset.action;if(a.startsWith("edit-project-cost:"))return editProjectCost(a.split(":")[1]);if(a.startsWith("edit-transaction:"))return editFinanceTransaction(false,a.split(":")[1]);if(a.startsWith("edit-reserve:"))return editFinanceTransaction(true,a.split(":")[1]);if(a.startsWith('edit-account:'))return editAccount(a.split(':')[1]);if(a.startsWith('delete-account:')){const id=a.split(':')[1];if((data.transactions||[]).some(x=>x.accountId===id)){notify(data.language==='pt'?'Esta caixinha tem movimentações associadas e não pode ser excluída.':'This money box has linked transactions and cannot be deleted.');return}return removeItem('accounts',id)}if(a.startsWith("finance-tab:")){financeSubpage=a.split(":")[1];render();return}if(a.startsWith("finance-period:")){financePeriod=a.split(":")[1];render();return}if(a.startsWith("quick-transaction:"))return editFinanceTransaction(false,null,a.split(":")[1]);if(a==="add-project-cost")return editProjectCost();if(a==="add-reserve")return editFinanceTransaction(true);if(a==='add-account')return editAccount();if(a==="add-transaction")return addTransactionWizard();if(a.startsWith("go-")){page=a.slice(3);render();window.scrollTo({top:0,behavior:"smooth"});return}if(a==="add-document")return editDoc();if(a.startsWith("preview-document:"))return documentFileAction(a.slice(17),false);if(a.startsWith("download-document:"))return documentFileAction(a.slice(18),true);if(a.startsWith("calendar-filter:")){calendarFilter=a.slice(16);render();return}if(a==="calendar-prev"){calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1);render();return}if(a==="calendar-next"){calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+1,1);render();return}if(a==="calendar-today"){calendarCursor=new Date();calendarSelectedDate=today();render();return}if(a.startsWith("export-event:"))return downloadEventIcs(a.slice(13));if(a==="add-event")return editEvent();if(a==="add-alert")return editAlert();if(a==="refresh-alerts"){(async()=>{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()})().catch(err=>{console.error(err);notify(data.language==="pt"?"Falha ao carregar alertas.":"Could not load alerts.")});return}if(a.startsWith("edit-alert:"))return editAlert(a.slice(11));if(a.startsWith("cancel-alert:")){cancelAlert(a.slice(13));return}if(a.startsWith("delete-alert:")){deleteAlert(a.slice(13));return}if(a==="add-transaction")return editTransaction();if(a==="add-study")return editStudy();if(a==="add-dream")return editDream();if(a==="edit-goal")return editGoal();for(const [prefix,fn] of [["edit-document:",editDoc],["edit-event:",editEvent],["edit-study:",editStudy],["edit-dream:",editDream]])if(a.startsWith(prefix))return fn(a.slice(prefix.length));for(const [prefix,col] of [["delete-document:","documents"],["delete-event:","events"],["delete-transaction:","transactions"],["delete-project-cost:","projectCosts"],["delete-reserve:","nzReserve"],["delete-study:","study"],["delete-dream:","dreams"]])if(a.startsWith(prefix))return removeItem(col,a.slice(prefix.length));if(a.startsWith("toggle-dream:")){const x=data.dreams.find(x=>x.id===a.slice(12));if(x)x.done=!x.done;save();render()}});
 $("#pageContent").addEventListener("change",e=>{if(e.target.id==="financeCategoryFilter"){financeCategory=e.target.value;render();return}if(e.target.id==="financeFrom"){financeFrom=e.target.value;render();return}if(e.target.id==="financeTo"){financeTo=e.target.value;render();return}const cb=e.target.closest("[data-toggle-doc]");if(!cb)return;const x=data.documents.find(x=>x.id===cb.dataset.toggleDoc);if(x)x.status=cb.checked?"done":"todo";save();render()});
