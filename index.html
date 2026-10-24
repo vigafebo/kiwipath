@@ -446,18 +446,14 @@ function updateProfile(){
   const pushTestLabel=$("#testPushLabel"); if(pushTestLabel) pushTestLabel.textContent=data.language==="pt"?"Enviar notificação de teste":"Send test notification";
 }
 
-const todayconst today = () => {
-  const parts = new Intl.DateTimeFormat("en-GB", {
+const today = () => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Pacific/Auckland",
     year: "numeric",
     month: "2-digit",
     day: "2-digit"
   }).formatToParts(new Date());
-
-  const values = Object.fromEntries(
-    parts.map(part => [part.type, part.value])
-  );
-
+  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
   return `${values.year}-${values.month}-${values.day}`;
 };
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
