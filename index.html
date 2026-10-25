@@ -1090,6 +1090,10 @@ function calendarItems(){
   const finalTime=match?match[1]:time;
   const finalKey=eventTitle.toLowerCase()+"|"+date;
   if(addedBirthdayKeys.has(finalKey))continue;
+  // Se o aniversário já foi cadastrado como evento real nesse dia, não crie
+  // uma segunda cópia artificial a partir dos lembretes automáticos.
+  const birthdayAlreadyInCalendar=out.some(x=>x.type==="event"&&x.date===date&&/birthday|anivers[aá]rio/i.test(String(x.title||"")));
+  if(birthdayAlreadyInCalendar)continue;
   addedBirthdayKeys.add(finalKey);
   out.push({date,time:finalTime,title:eventTitle,type:"event",id:"birthday-alert-"+(a.linked_id||finalKey),record:{title:eventTitle,date,time:finalTime,eventType:"personal",owner:"both",note:"",location:""}});
  }
