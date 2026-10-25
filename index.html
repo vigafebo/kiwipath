@@ -1063,7 +1063,40 @@ function nzHolidays(year){
  const iso=d=>d.toISOString().slice(0,10),add=(d,n)=>new Date(d.getTime()+n*86400000),nth=(m,w,n)=>{const d=new Date(Date.UTC(year,m,1));return add(d,(w-d.getUTCDay()+7)%7+7*(n-1))},good=easter(year),kings=nth(5,1,1),labour=nth(9,1,4);
  return [["01-01","Ano-Novo"],["01-02","Dia seguinte ao Ano-Novo"],["02-06","Waitangi Day"],[iso(add(good,-2)),"Sexta-feira Santa"],[iso(add(good,1)),"Segunda-feira de Páscoa"],[year+"-04-25","ANZAC Day"],[iso(kings),"King’s Birthday"],[iso(labour),"Labour Day"],["12-25","Natal"],["12-26","Boxing Day"]].map(([d,title])=>({date:d.length===5?year+"-"+d:d,title,type:"holiday"}));
 }
-function calendarItems(){const out=[];for(const e of data.events||[])if(e.date)out.push({date:e.date,time:e.time||"",title:e.title,type:"event",id:e.id,record:e});for(const d of data.documents||[]){const date=d.expiryDate||((d.hasExpiry&&d.due)?d.due:"");if(date)out.push({date,time:"",title:(data.language==="pt"?"Vence: ":"Expires: ")+d.title,type:"document",id:d.id,record:d})}for(const y of [calendarCursor.getFullYear()-1,calendarCursor.getFullYear(),calendarCursor.getFullYear()+1])out.push(...nzHolidays(y));return out}
+function calendarItems(){
+ const out=[];
+ const eventIds=new Set();
+ for(const e of data.events||[])if(e.date){out.push({date:e.date,time:e.time||"",title:e.title,type:"event",id:e.id,record:e});eventIds.add(String(e.id))}
+ // Alguns lembretes (como aniversários) podem existir na central de notificações sem
+ // um evento correspondente em data.events. Reconstituímos a data do evento a partir
+ // dos lembretes automáticos de 24 h / 3 h, sem duplicar eventos já presentes.
+ const birthdayRows=(customAlerts||[]).filter(a=>/birthday|anivers[aá]rio/i.test(String(a.message||"")+" "+String(a.title||"")));
+ const addedBirthdayKeys=new Set();
+ for(const a of birthdayRows){
+  if(a.linked_id&&eventIds.has(String(a.linked_id)))continue;
+  const msg=String(a.message||"");
+  const eventTitle=(msg.split(/\s*[·•]\s*/)[0]||a.title||"Aniversário").trim();
+  let target=new Date(a.scheduled_at);
+  const alertTitle=String(a.title||"").toLowerCase();
+  if(/amanh|tomorrow/.test(alertTitle))target=new Date(target.getTime()+24*60*60*1000);
+  else if(/3 horas|3 hours/.test(alertTitle))target=new Date(target.getTime()+3*60*60*1000);
+  if(!Number.isFinite(target.getTime()))continue;
+  const date=new Intl.DateTimeFormat("en-CA",{timeZone:ALERT_TIMEZONE,year:"numeric",month:"2-digit",day:"2-digit"}).format(target);
+  const time=new Intl.DateTimeFormat("en-GB",{timeZone:ALERT_TIMEZONE,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(target);
+  const key=eventTitle.toLowerCase()+"|"+date+"|"+time;
+  if(addedBirthdayKeys.has(key))continue;
+  // Prefer the event's actual time when the notification text includes it.
+  const match=msg.match(/(?:·|•)\s*(\d{1,2}:\d{2})/);
+  const finalTime=match?match[1]:time;
+  const finalKey=eventTitle.toLowerCase()+"|"+date;
+  if(addedBirthdayKeys.has(finalKey))continue;
+  addedBirthdayKeys.add(finalKey);
+  out.push({date,time:finalTime,title:eventTitle,type:"event",id:"birthday-alert-"+(a.linked_id||finalKey),record:{title:eventTitle,date,time:finalTime,eventType:"personal",owner:"both",note:"",location:""}});
+ }
+ for(const d of data.documents||[]){const date=d.expiryDate||((d.hasExpiry&&d.due)?d.due:"");if(date)out.push({date,time:"",title:(data.language==="pt"?"Vence: ":"Expires: ")+d.title,type:"document",id:d.id,record:d})}
+ for(const y of [calendarCursor.getFullYear()-1,calendarCursor.getFullYear(),calendarCursor.getFullYear()+1])out.push(...nzHolidays(y));
+ return out
+}
 
 let shoppingSubpage="lists",activeShoppingListId=null,shoppingHistoryProduct="all",shoppingHistoryCategory="all",shoppingHistorySupplier="all";
 function ensureShoppingData(){for(const k of ["shoppingLists","shoppingSuppliers","shoppingProducts","shoppingPriceHistory"])if(!Array.isArray(data[k]))data[k]=[];if(!data.shoppingSuppliers.length)data.shoppingSuppliers=[{id:uid(),name:"PAK'nSAVE"},{id:uid(),name:"Woolworths"},{id:uid(),name:"New World"}];for(const [key,prop,defaults] of [["shoppingBrands","brand",[]],["shoppingUnits","unit",["un.","kg","g","L","mL","pacote","caixa","garrafa","lata","dúzia"]],["shoppingCategories","category",["Alimentos","Frutas e verduras","Laticínios","Carnes e peixes","Padaria","Congelados","Bebidas","Limpeza","Higiene pessoal","Casa","Pets","Outros"]]]){if(!Array.isArray(data[key]))data[key]=[...defaults];data[key]=[...new Set([...data[key],...data.shoppingProducts.map(p=>String(p[prop]||"").trim()).filter(Boolean)])].filter(Boolean)}}
