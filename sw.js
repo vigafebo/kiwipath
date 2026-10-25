@@ -1,4 +1,4 @@
-const CACHE_NAME = "kiwipath-pwa-v27";
+const CACHE_NAME = "kiwipath-pwa-v28";
 const APP_BASE = "/kiwipath/";
 const APP_SHELL = [APP_BASE, APP_BASE + "manifest.webmanifest"];
 
@@ -18,7 +18,10 @@ self.addEventListener("fetch", event => {
   if (url.origin !== self.location.origin || !url.pathname.startsWith(APP_BASE)) return;
   if (request.mode === "navigate") {
     event.respondWith(fetch(request).then(response => {
-      if (response.ok) caches.open(CACHE_NAME).then(cache => cache.put(APP_BASE, response.clone()));
+      if (response.ok) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(APP_BASE, copy)));
+      }
       return response;
     }).catch(() => caches.match(APP_BASE)));
   }
