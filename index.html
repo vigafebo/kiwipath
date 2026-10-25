@@ -1290,7 +1290,7 @@ $("#profileMenuToggle").addEventListener("click",()=>{const menu=$("#profileMenu
 document.addEventListener("click",e=>{if(!e.target.closest("#profileMenuWrap"))closeProfileMenu()});
 // Fechar o menu da conta e recolher os submenus quando o cursor sair da área inteira do menu.
 const profileMenuWrap=$("#profileMenuWrap");
-if(profileMenuWrap)profileMenuWrap.addEventListener("mouseleave",()=>{closeProfileMenu();const menus=$("#profileMenusSubmenu"),alerts=$("#profileAlertsSubmenu"),menusBtn=$("#profileMenusBtn"),alertsBtn=$("#profileAlertsBtn");if(menus)menus.hidden=true;if(alerts)alerts.hidden=true;if(menusBtn)menusBtn.setAttribute("aria-expanded","false");if(alertsBtn)alertsBtn.setAttribute("aria-expanded","false")});
+if(profileMenuWrap && window.matchMedia("(hover: hover) and (pointer: fine)").matches)profileMenuWrap.addEventListener("mouseleave",()=>{closeProfileMenu();const menus=$("#profileMenusSubmenu"),alerts=$("#profileAlertsSubmenu"),menusBtn=$("#profileMenusBtn"),alertsBtn=$("#profileAlertsBtn");if(menus)menus.hidden=true;if(alerts)alerts.hidden=true;if(menusBtn)menusBtn.setAttribute("aria-expanded","false");if(alertsBtn)alertsBtn.setAttribute("aria-expanded","false")});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfileMenu()});
 $("#languageBtn").onclick=()=>{data.language=data.language==="pt"?"en":"pt";save();render();closeProfileMenu();notify(t("languageChanged"))};
 $("#profileAlertsBtn").onclick=()=>{const sub=$("#profileAlertsSubmenu"),b=$("#profileAlertsBtn");sub.hidden=!sub.hidden;b.setAttribute("aria-expanded",String(!sub.hidden))};
