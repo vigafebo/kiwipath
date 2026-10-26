@@ -1585,7 +1585,8 @@ document.addEventListener("touchend",event=>{
     setTimeout(()=>{
       const currentDestination=swipeBackDestination();
       if(currentDestination){
-        if(currentDestination.page==="shopping"&&currentDestination.subpage)shoppingSubpage=currentDestination.subpage;\n        if(currentDestination.page==="finances"&&currentDestination.subpage)financeSubpage=currentDestination.subpage;
+        if(currentDestination.page==="shopping"&&currentDestination.subpage)shoppingSubpage=currentDestination.subpage;
+        if(currentDestination.page==="finances"&&currentDestination.subpage)financeSubpage=currentDestination.subpage;
         page=currentDestination.page;
         render();
         window.scrollTo({top:0,behavior:"smooth"});
