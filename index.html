@@ -695,6 +695,9 @@ const today = () => {
   return `${values.year}-${values.month}-${values.day}`;
 };
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function languagePreferenceKey(userId=currentUser?.id){return "kiwipath.language."+String(userId||"guest")}
+function loadUserLanguage(userId=currentUser?.id){try{const saved=localStorage.getItem(languagePreferenceKey(userId));return ["pt","en"].includes(saved)?saved:"pt"}catch(e){return "pt"}}
+function persistUserLanguage(language,userId=currentUser?.id){if(!["pt","en"].includes(language))return;try{localStorage.setItem(languagePreferenceKey(userId),language)}catch(e){console.warn("Could not persist personal language preference:",e)}}
 const initial = () => ({
   language:"pt",
   documents:[
@@ -794,6 +797,8 @@ async function syncToCloud(){
         cloudSyncRequested=false;
         const revision=localSaveRevision;
         const snapshot=JSON.parse(JSON.stringify(data));
+         // Language is a personal UI preference, never shared between accounts.
+         snapshot.language="pt";
         const updatedAt=new Date().toISOString();
         const status=$("#syncStatus");
         if(status)status.textContent="Sincronizando…";
@@ -853,6 +858,7 @@ async function loadCloudData(){
     lastCloudUpdatedAt = rows[0].updated_at || null;
     isApplyingCloudData = true;
     data = {...initial(),...(rows[0].content || {})};
+    data.language=loadUserLanguage(currentUser?.id);
     for(const k of ["documents","events","transactions","study","dreams","projectCosts","nzReserve","accounts"])
       if(!Array.isArray(data[k])) data[k]=[];
     if(!["pt","en"].includes(data.language)) data.language="pt";
@@ -912,6 +918,7 @@ async function startApp(session){
               lastCloudUpdatedAt=row.updated_at || null;
               isApplyingCloudData=true;
               data={...initial(),...row.content};
+               data.language=loadUserLanguage(currentUser?.id);
               for(const k of ["documents","events","transactions","study","dreams","projectCosts","nzReserve","accounts"])
                 if(!Array.isArray(data[k])) data[k]=[];
               localStorage.setItem(STORE,JSON.stringify(data));
@@ -1428,7 +1435,7 @@ document.addEventListener("click",e=>{if(!e.target.closest("#profileMenuWrap"))c
 const profileMenuWrap=$("#profileMenuWrap");
 if(profileMenuWrap && window.matchMedia("(hover: hover) and (pointer: fine)").matches)profileMenuWrap.addEventListener("mouseleave",()=>{closeProfileMenu();const menus=$("#profileMenusSubmenu"),alerts=$("#profileAlertsSubmenu"),menusBtn=$("#profileMenusBtn"),alertsBtn=$("#profileAlertsBtn");if(menus)menus.hidden=true;if(alerts)alerts.hidden=true;if(menusBtn)menusBtn.setAttribute("aria-expanded","false");if(alertsBtn)alertsBtn.setAttribute("aria-expanded","false")});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfileMenu()});
-$("#languageBtn").onclick=()=>{data.language=data.language==="pt"?"en":"pt";save();render();closeProfileMenu();notify(t("languageChanged"))};
+$("#languageBtn").onclick=()=>{data.language=data.language==="pt"?"en":"pt";persistUserLanguage(data.language,currentUser?.id);save();render();closeProfileMenu();notify(t("languageChanged"))};
 $("#profileAlertsBtn").onclick=()=>{const sub=$("#profileAlertsSubmenu"),b=$("#profileAlertsBtn");sub.hidden=!sub.hidden;b.setAttribute("aria-expanded",String(!sub.hidden))};
 $("#profileMenusBtn").onclick=()=>{const sub=$("#profileMenusSubmenu"),b=$("#profileMenusBtn");sub.hidden=!sub.hidden;b.setAttribute("aria-expanded",String(!sub.hidden))};
 $("#profileMenusSubmenu").addEventListener("click",e=>{const b=e.target.closest("[data-profile-page]");if(!b)return;page=b.dataset.profilePage;closeProfileMenu();render();window.scrollTo({top:0,behavior:"smooth"})});
