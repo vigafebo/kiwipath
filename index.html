@@ -1492,16 +1492,21 @@ $("#testPushBtn").addEventListener("click",async()=>{
   finally{button.disabled=false;}
 });
 
-// iOS-style edge swipe: enabled only inside an opened shopping list, on touch-sized screens.
-// A live indicator follows the finger so the user can see the gesture before releasing.
+// App-wide iOS-style edge swipe. Nested shopping screens return to shopping lists;
+// other sections return to the home dashboard. The live hint follows the finger.
 let shoppingEdgeTouchStart=null;
 let shoppingSwipeHint=null;
+function swipeBackDestination(){
+  if(page==="shopping"&&shoppingSubpage!=="lists")return {page:"shopping",subpage:"lists",title:data.language==="pt"?"Todas as listas":"All lists",subtitle:data.language==="pt"?"Arraste para voltar":"Swipe to go back"};
+  if(page!=="home")return {page:"home",subpage:null,title:data.language==="pt"?"Início":"Home",subtitle:data.language==="pt"?"Arraste para voltar":"Swipe to go back"};
+  return null;
+}
 function ensureShoppingSwipeHint(){
   if(shoppingSwipeHint)return shoppingSwipeHint;
   const style=document.createElement("style");
   style.id="shoppingSwipeHintStyles";
   style.textContent=`
-    #shoppingSwipeHint{position:fixed;z-index:9998;left:0;top:50%;transform:translate(-110%,-50%);opacity:0;pointer-events:none;display:flex;align-items:center;gap:10px;padding:13px 17px 13px 12px;border:1px solid rgba(255,255,255,.35);border-radius:0 18px 18px 0;background:#193f33;color:#fff;box-shadow:0 8px 28px rgba(15,45,35,.22);font:600 14px/1.2 system-ui,-apple-system,sans-serif;white-space:nowrap;transition:opacity .12s ease}
+    #shoppingSwipeHint{position:fixed;z-index:9998;left:0;top:50%;transform:translate(-110%,-50%);opacity:0;pointer-events:none;display:flex;align-items:center;gap:10px;padding:13px 17px 13px 12px;border:1px solid rgba(255,255,255,.35);border-radius:0 18px 18px 0;background:#193f33;color:#fff;box-shadow:0 8px 28px rgba(15,45,35,.22);font:600 14px/1.2 system-ui,-apple-system,sans-serif;white-space:nowrap;transition:opacity .12s ease,background .12s ease}
     #shoppingSwipeHint .swipe-arrow{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(220,234,215,.18);font-size:21px}
     #shoppingSwipeHint .swipe-copy{display:flex;flex-direction:column;gap:4px}
     #shoppingSwipeHint .swipe-title{font-weight:700}
@@ -1512,19 +1517,19 @@ function ensureShoppingSwipeHint(){
   document.head.appendChild(style);
   shoppingSwipeHint=document.createElement("div");
   shoppingSwipeHint.id="shoppingSwipeHint";
-  shoppingSwipeHint.innerHTML='<span class="swipe-arrow" aria-hidden="true">‹</span><span class="swipe-copy"><span class="swipe-title">Todas as listas</span><span class="swipe-subtitle">Arraste para voltar</span></span>';
+  shoppingSwipeHint.innerHTML='<span class="swipe-arrow" aria-hidden="true">‹</span><span class="swipe-copy"><span class="swipe-title"></span><span class="swipe-subtitle"></span></span>';
   document.body.appendChild(shoppingSwipeHint);
   return shoppingSwipeHint;
 }
 function updateShoppingSwipeHint(dx,progress,ready){
-  const hint=ensureShoppingSwipeHint();
-  const visibleX=Math.max(0,Math.min(dx,190));
-  const width=hint.offsetWidth||190;
+  const hint=ensureShoppingSwipeHint(),destination=swipeBackDestination();
+  if(!destination){hideShoppingSwipeHint();return;}
+  const visibleX=Math.max(0,Math.min(dx,210)),width=hint.offsetWidth||190;
+  hint.querySelector(".swipe-title").textContent=destination.title;
+  hint.querySelector(".swipe-subtitle").textContent=ready?(data.language==="pt"?"Solte para voltar":"Release to go back"):destination.subtitle;
   hint.style.opacity=String(Math.min(1,Math.max(.18,progress*1.25)));
-  hint.style.transform='translate('+Math.max(-width+8,visibleX-width)+'px,-50%)';
+  hint.style.transform="translate("+Math.max(-width+8,visibleX-width)+"px,-50%)";
   hint.classList.toggle("ready",ready);
-  const subtitle=hint.querySelector(".swipe-subtitle");
-  if(subtitle)subtitle.textContent=ready?"Solte para voltar":"Arraste para voltar";
 }
 function hideShoppingSwipeHint(){
   if(!shoppingSwipeHint)return;
@@ -1533,9 +1538,10 @@ function hideShoppingSwipeHint(){
   shoppingSwipeHint.classList.remove("ready");
 }
 document.addEventListener("touchstart",event=>{
-  if(window.innerWidth>650||page!=="shopping"||shoppingSubpage!=="list"||event.touches.length!==1)return;
+  if(window.innerWidth>900||event.touches.length!==1||!swipeBackDestination())return;
   const target=event.target;
-  if(target.closest("#modalBackdrop")&&!target.closest("#modalBackdrop").classList.contains("hidden"))return;
+  const modal=target.closest("#modalBackdrop,.confirm-backdrop,.modal-backdrop");
+  if(modal&&!modal.classList.contains("hidden"))return;
   const touch=event.touches[0];
   if(touch.clientX>28)return;
   shoppingEdgeTouchStart={x:touch.clientX,y:touch.clientY,lastX:touch.clientX,lastY:touch.clientY,tracking:false};
@@ -1547,8 +1553,7 @@ document.addEventListener("touchmove",event=>{
   start.lastX=touch.clientX;start.lastY=touch.clientY;
   if(dx>8&&Math.abs(dx)>Math.abs(dy)*1.15){
     start.tracking=true;
-    const progress=Math.min(1,dx/105);
-    updateShoppingSwipeHint(dx,progress,dx>=85);
+    updateShoppingSwipeHint(dx,Math.min(1,dx/105),dx>=85);
     if(event.cancelable)event.preventDefault();
   }else if(Math.abs(dy)>Math.abs(dx)*1.2){
     start.tracking=false;
@@ -1559,22 +1564,27 @@ document.addEventListener("touchend",event=>{
   const start=shoppingEdgeTouchStart;
   shoppingEdgeTouchStart=null;
   if(!start){hideShoppingSwipeHint();return;}
-  if(window.innerWidth>650||page!=="shopping"||shoppingSubpage!=="list"){hideShoppingSwipeHint();return;}
+  const destination=swipeBackDestination();
+  if(window.innerWidth>900||!destination){hideShoppingSwipeHint();return;}
   const touch=event.changedTouches&&event.changedTouches[0];
   if(!touch){hideShoppingSwipeHint();return;}
   const dx=touch.clientX-start.x,dy=touch.clientY-start.y;
   if(dx>=85&&Math.abs(dy)<75){
     if(shoppingSwipeHint){
       const subtitle=shoppingSwipeHint.querySelector(".swipe-subtitle");
-      if(subtitle)subtitle.textContent="Voltando…";
+      if(subtitle)subtitle.textContent=data.language==="pt"?"Voltando…":"Going back…";
       shoppingSwipeHint.style.opacity="1";
       shoppingSwipeHint.classList.add("ready");
     }
     setTimeout(()=>{
-      shoppingSubpage="lists";
+      const currentDestination=swipeBackDestination();
+      if(currentDestination){
+        if(currentDestination.page==="shopping")shoppingSubpage="lists";
+        page=currentDestination.page;
+        render();
+        window.scrollTo({top:0,behavior:"smooth"});
+      }
       hideShoppingSwipeHint();
-      render();
-      window.scrollTo({top:0,behavior:"smooth"});
     },140);
   }else hideShoppingSwipeHint();
 },{passive:true});
