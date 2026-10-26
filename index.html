@@ -289,6 +289,21 @@ h1{font-size:28px}
 .segmented button.selected{background:#183d32;color:#fff;border-color:#183d32}
 .finance-filters{display:flex;align-items:flex-end;justify-content:flex-start;gap:18px;flex-wrap:wrap;margin:14px 0 18px;padding:16px;background:#fffdf8;border:1px solid var(--line,#e5e2d8);border-radius:16px}.finance-filter-group{display:grid;gap:7px;min-width:0}.finance-filter-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#718078)}.finance-filters .segmented{gap:5px;flex-wrap:wrap}.finance-filters .segmented button{padding:9px 13px}.finance-filter-group select{min-height:40px}.finance-category-group{min-width:190px}.finance-date-range{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}.finance-date-range label{display:grid;gap:7px;font-size:12px;font-weight:650;color:var(--muted,#718078)}.finance-date-range input{min-height:40px;min-width:135px;border:1px solid var(--line,#e5e2d8);border-radius:10px;padding:8px 10px;background:#fffdf8;color:var(--ink,#183d32);font:inherit}.finance-date-range .date-separator{padding-bottom:11px;color:var(--muted,#718078)}.finance-quick-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}.finance-quick-actions .btn{white-space:nowrap}.money-total{padding:18px;border:1px solid var(--line,#e5e2d8);border-radius:16px;background:#f8f7f0;margin-bottom:16px}.money-total .label{font-size:12px;color:var(--muted,#718078)}.money-total .amount{font-size:clamp(23px,3vw,32px);font-weight:800;letter-spacing:-.7px;margin:5px 0}.money-total small{color:var(--muted,#718078);line-height:1.5}.pie-legend{display:grid;gap:8px;font-size:12px}.pie-legend div{display:flex;align-items:center;gap:7px}.pie-legend span{width:10px;height:10px;border-radius:50%;flex:none}.pie-legend strong{margin-left:auto}.summary-line{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid #ece9df}.summary-line:last-child{border-bottom:0}.muted{color:var(--muted,#718078)}@media(max-width:600px){.finance-tabs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.15fr);gap:3px;width:100%;margin-bottom:18px;padding:4px;border-radius:14px}.finance-tabs button{flex-direction:column;gap:5px;min-height:64px;padding:9px 5px;border-radius:10px;font-size:10.5px;line-height:1.2}.finance-tabs button svg{width:18px;height:18px;flex-basis:18px}.finance-filters{align-items:stretch}.finance-filters select{width:100%}}
 
+
+/* Finance filters: restore the app's native field styling and improve alignment. */
+.finance-filters{align-items:flex-end;gap:18px}
+.finance-filter-group{display:grid;gap:8px;min-width:0}
+.finance-filter-group.finance-category-group{width:190px;min-width:170px;flex:0 1 210px}
+.finance-filter-label{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#718078)}
+.finance-filters select{display:block;box-sizing:border-box;width:100%;min-width:0;min-height:42px;padding:10px 36px 10px 12px;border:1px solid var(--line,#e5e2d8);border-radius:11px;background-color:#fffdf8;color:var(--ink,#183d32);font:inherit;font-size:13px;line-height:1.35;box-shadow:0 1px 2px rgba(24,61,50,.035);appearance:auto}
+.finance-filters select:hover{border-color:#c8d6c4}
+.finance-filters select:focus-visible{outline:3px solid rgba(83,126,94,.24);outline-offset:2px;border-color:#719579}
+.money-total{background:var(--forest,#183d32);color:#fff;border:1px solid var(--forest,#183d32);border-radius:16px;padding:20px;margin-bottom:17px}
+.money-total .label{font-size:11px;color:#d1dfd0}
+.money-total .amount{color:#fff;font-size:32px;font-weight:750;letter-spacing:-1px;margin:6px 0}
+.money-total small{color:#d1dfd0;line-height:1.5}
+@media(max-width:600px){.finance-filters{align-items:stretch;padding:12px;gap:12px}.finance-filter-group,.finance-filter-group.finance-category-group{width:100%;min-width:0;flex:1 1 100%}.finance-filters select{width:100%}}
+
 .countdown-message{margin:13px 0 0;padding:11px 14px;border-radius:12px;background:#eef2e8;color:#183d32;font-weight:750;letter-spacing:.1px;animation:countdown-pop .35s ease both}
 .countdown-track .progress-fill{transition:width .7s ease,filter .25s ease}
 .countdown-panel:hover .countdown-fill{filter:saturate(1.12)}
