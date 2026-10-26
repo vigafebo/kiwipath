@@ -1492,6 +1492,38 @@ $("#testPushBtn").addEventListener("click",async()=>{
   finally{button.disabled=false;}
 });
 
+// iOS-style edge swipe: enabled only inside an opened shopping list, on touch-sized screens.
+let shoppingEdgeTouchStart=null;
+document.addEventListener("touchstart",event=>{
+  if(window.innerWidth>650||page!=="shopping"||shoppingSubpage!=="list"||event.touches.length!==1)return;
+  const target=event.target;
+  if(target.closest("#modalBackdrop")&&!target.closest("#modalBackdrop").classList.contains("hidden"))return;
+  const touch=event.touches[0];
+  if(touch.clientX>28)return;
+  shoppingEdgeTouchStart={x:touch.clientX,y:touch.clientY,lastX:touch.clientX,lastY:touch.clientY,triggered:false};
+},{passive:true});
+document.addEventListener("touchmove",event=>{
+  const start=shoppingEdgeTouchStart;
+  if(!start||event.touches.length!==1)return;
+  const touch=event.touches[0],dx=touch.clientX-start.x,dy=touch.clientY-start.y;
+  start.lastX=touch.clientX;start.lastY=touch.clientY;
+  if(dx>12&&Math.abs(dx)>Math.abs(dy)*1.15&&event.cancelable)event.preventDefault();
+},{passive:false});
+document.addEventListener("touchend",event=>{
+  const start=shoppingEdgeTouchStart;
+  shoppingEdgeTouchStart=null;
+  if(!start||window.innerWidth>650||page!=="shopping"||shoppingSubpage!=="list")return;
+  const touch=event.changedTouches&&event.changedTouches[0];
+  if(!touch)return;
+  const dx=touch.clientX-start.x,dy=touch.clientY-start.y;
+  if(dx>=85&&Math.abs(dy)<75){
+    shoppingSubpage="lists";
+    render();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+},{passive:true});
+document.addEventListener("touchcancel",()=>{shoppingEdgeTouchStart=null;},{passive:true});
+
 $("#logoutBtn").addEventListener("click",async()=>{
   if(!await confirmDialog({title:"Sair do KiwiPath?",message:"Deseja realmente sair da sua conta?",confirmText:"Sair",danger:false}))return;
   await supabaseClient.auth.signOut();
