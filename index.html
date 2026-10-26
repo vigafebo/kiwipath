@@ -1297,17 +1297,25 @@ function editAccount(id=null){
  +selectField("owner",pt?"De quem é esta caixinha?":"Who owns this money box?",[["vitor","Vitor"],["zack","Zack"],["both",pt?"Ambos":"Both"]],old?.owner||"both","full")
  +`<div class="field full"><label>${pt?"Quais formas de pagamento habilitar?":"Which payment methods should be enabled?"}</label><div style="display:flex;gap:14px;flex-wrap:wrap">${[["debit",pt?"Débito":"Debit"],["credit",pt?"Crédito":"Credit"],["cash","Cash"]].map(([v,l])=>`<label style="display:flex;gap:7px;align-items:center;font-weight:500"><input type="checkbox" name="payment_${v}" value="yes" ${methods.includes(v)?"checked":""} style="width:auto">${l}</label>`).join("")}<span class="badge">↔ ${pt?"Transferência sempre ativa":"Transfer always enabled"}</span></div></div>`
  +`<div class="field full"><label style="display:flex;gap:9px;align-items:center;font-weight:600"><input type="checkbox" name="makeDefault" value="yes" ${defaultForMember?"checked":""} style="width:auto">${pt?"Definir como minha caixinha padrão":"Set as my default money box"}</label><small class="muted">${pt?"Esta conta será selecionada automaticamente quando você lançar uma despesa ou entrada.":"This account will be selected automatically when you record income or an expense."}</small></div>`;
- modal(old?(pt?"Editar caixinha":"Edit money box"):(pt?"Criar nova caixinha":"Create money box"),fields,v=>{
+ modal(old?(pt?"Editar caixinha":"Edit money box"):(pt?"Criar nova caixinha":"Create money box"),fields,async v=>{
   const balance=parseAmount(v.initialBalance||"0");
   if(!String(v.name||"").trim()){notify(pt?"Dê um nome para a caixinha.":"Enter an account name.");return false}
   if(!String(v.bank||"").trim()){notify(pt?"Informe o banco.":"Enter the bank.");return false}
   if(!Number.isFinite(balance)||balance<0){notify(pt?"Informe um saldo inicial válido.":"Enter a valid opening balance.");return false}
   const owner=v.owner||"both",idForItem=old?.id||uid();
+  const permitted=owner==="both"||owner===member;
+  const previousDefaultId=String(data.defaultAccounts?.[member]||"");
+  if(v.makeDefault==="yes"&&permitted&&previousDefaultId&&previousDefaultId!==String(idForItem)){
+   const previousDefault=(data.accounts||[]).find(a=>String(a.id)===previousDefaultId);
+   if(previousDefault){
+    const accepted=await confirmDialog({title:pt?"Alterar caixinha padrão?":"Change default money box?",message:pt?`Sua caixinha padrão atual é “${previousDefault.name}”. Deseja realmente alterá-la para “${String(v.name).trim()}”? A nova conta será usada automaticamente nos próximos lançamentos.`:`Your current default money box is “${previousDefault.name}”. Do you really want to change it to “${String(v.name).trim()}”? The new account will be selected automatically for future transactions.`,confirmText:pt?"Sim, alterar padrão":"Yes, change default",cancelText:pt?"Manter atual":"Keep current",danger:false});
+    if(!accepted)return false;
+   }
+  }
   const paymentMethods=["transfer",...["debit","credit","cash"].filter(m=>v["payment_"+m]==="yes")];
   const item={id:idForItem,name:String(v.name).trim(),currency:v.currency,bank:String(v.bank).trim(),initialBalance:balance,paymentMethods,owner};
   if(old)data.accounts=data.accounts.map(a=>a.id===old.id?item:a);else data.accounts.push(item);
   if(!data.defaultAccounts||typeof data.defaultAccounts!=="object")data.defaultAccounts={vitor:"",zack:""};
-  const permitted=owner==="both"||owner===member;
   if(v.makeDefault==="yes"&&permitted)data.defaultAccounts[member]=idForItem;
   else if(String(data.defaultAccounts[member]||"")===String(idForItem))delete data.defaultAccounts[member];
   if(!permitted&&String(data.defaultAccounts[member]||"")===String(idForItem))delete data.defaultAccounts[member];
