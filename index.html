@@ -1236,9 +1236,9 @@ function addShoppingItem(listId,itemId){
  const selectedName=data.shoppingProducts.find(p=>p.id===initialItem?.productId)?.name||"";
  const fields='<div class="field full"><label for="f-productSearch">'+(pt?"Pesquisar produto":"Search products")+'</label><input id="f-productSearch" name="productSearch" type="search" autocomplete="off" autocapitalize="none" spellcheck="false" aria-autocomplete="list" aria-controls="shoppingProductResults" value="'+esc(selectedName)+'" placeholder="'+(pt?"Digite o nome do produto…":"Type a product name…")+'"><div id="shoppingProductResults" class="shopping-search-results hidden" role="listbox"></div><button type="button" class="btn btn-soft btn-small" data-action="shopping-inline-new:'+listId+'">＋ '+(pt?"Cadastrar novo produto":"Add new product")+'</button></div>'
  +field("name",pt?"Nome personalizado (opcional)":"Custom name (optional)",initialItem?.name||"","text","full")
+ +selectField("supplierId",pt?"Fornecedor":"Supplier",[["","—"],...ss.map(x=>[x.id,x.name])],initialItem?.supplierId||"","full")
  +'<div class="field"><label>'+(pt?"Quantidade":"Quantity")+'</label><div class="quantity-stepper"><button type="button" class="btn btn-soft" data-action="shopping-qty:-1">−</button><input id="f-quantity" name="quantity" type="number" min="1" step="1" value="'+Math.max(1,Math.floor(Number(initialItem?.quantity)||1))+'"><button type="button" class="btn btn-soft" data-action="shopping-qty:1">＋</button></div></div>'
- +field("unitPrice",pt?"Preço unitário (NZD)":"Unit price (NZD)",initialItem?.unitPrice||"","text")
- +selectField("supplierId",pt?"Fornecedor":"Supplier",[["","—"],...ss.map(x=>[x.id,x.name])],initialItem?.supplierId||"","full");
+ +field("unitPrice",pt?"Preço unitário (NZD)":"Unit price (NZD)",initialItem?.unitPrice||"","text");
  modal(initialItem?(pt?"Editar item":"Edit item"):(pt?"Adicionar item":"Add item"),fields,v=>{
    // Resolve current records at submit time; cloud refreshes can replace the data arrays while the modal is open.
    const liveList=(data.shoppingLists||[]).find(x=>String(x.id)===String(listId));
