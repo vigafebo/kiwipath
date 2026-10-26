@@ -1205,6 +1205,25 @@ function editShoppingProduct(id,seedName="",addToListId=null){
  q("add-shopping-supplier").addEventListener("click",()=>{const used=Array.from(rowsEl.querySelectorAll('select[name^="supplier_"]')).map(x=>x.value).filter(Boolean),sup=data.shoppingSuppliers.find(x=>!used.includes(String(x.id)));if(!sup){confirmDialog({title:pt?"Limite de fornecedores atingido":"Supplier limit reached",message:pt?"Todos os fornecedores cadastrados já foram adicionados a este produto. Para comparar outro supermercado, cadastre primeiro um novo fornecedor em Lista de compras → Outras funções → Fornecedores.":"All registered suppliers have already been added to this product. To compare another supermarket, first register a new supplier under Shopping list → Other functions → Suppliers.",confirmText:pt?"Entendi":"Got it",cancelText:pt?"Fechar":"Close",danger:false});return}const index=Math.max(-1,...Array.from(rowsEl.querySelectorAll('select[name^="supplier_"]')).map(x=>Number(x.name.match(/supplier_(\d+)/)?.[1]??-1)))+1;rowsEl.insertAdjacentHTML("beforeend",priceRow(index,sup.id,""));const row=rowsEl.lastElementChild;row.querySelector(".product-remove-price").addEventListener("click",()=>row.remove());});
 }
 
+function autofillShoppingItemPrice(){
+ const productInput=document.querySelector('#modalBackdrop #f-productSearch');
+ const supplierInput=document.querySelector('#modalBackdrop #f-supplierId');
+ const priceInput=document.querySelector('#modalBackdrop #f-unitPrice');
+ if(!productInput||!supplierInput||!priceInput)return;
+ const product=(data.shoppingProducts||[]).find(p=>String(p.name||"").trim().toLocaleLowerCase()===String(productInput.value||"").trim().toLocaleLowerCase());
+ const supplierId=String(supplierInput.value||"");
+ if(!product||!supplierId)return;
+ const latest=(data.shoppingPriceHistory||[])
+  .filter(h=>String(h.productId)===String(product.id)&&String(h.supplierId)===supplierId&&Number.isFinite(Number(h.price))&&Number(h.price)>0)
+  .sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")))[0];
+ if(!latest)return;
+ const cents=String(Math.round(Number(latest.price)*100));
+ priceInput.dataset.priceDigits=cents;
+ priceInput.value=(Number(cents)/100).toFixed(2);
+}
+document.addEventListener("change",e=>{
+ if(e.target.matches('#modalBackdrop #f-productSearch,#modalBackdrop #f-supplierId'))autofillShoppingItemPrice();
+});
 function addShoppingItem(listId,itemId){
  ensureShoppingData();
  const initialList=data.shoppingLists.find(x=>String(x.id)===String(listId));
