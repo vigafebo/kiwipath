@@ -475,7 +475,7 @@ function bindCurrencyInput(id,initialValue){
  }
  input.type="text";input.inputMode="decimal";input.autocomplete="off";
  input.addEventListener("input",()=>{
-  const digits=input.value.replace(/\\D/g,"");
+  const digits=input.value.replace(/\D/g,"");
   if(!digits){input.value="";return}
   const cents=Math.min(Number(digits),999999999999);
   input.value=formatCents(cents);
@@ -1312,7 +1312,7 @@ function editAccount(id=null){
   else if(String(data.defaultAccounts[member]||"")===String(idForItem))delete data.defaultAccounts[member];
   if(!permitted&&String(data.defaultAccounts[member]||"")===String(idForItem))delete data.defaultAccounts[member];
  });
- bindCurrencyInput("f-initialBalance",old?.initialBalance??"");
+ bindCurrencyInput("f-initialBalance",old?.initialBalance??0);
 }function editFinanceTransaction(reserve=false,id=null,preset=null){
  const arrName=reserve?"nzReserve":"transactions";
  if(!Array.isArray(data[arrName]))data[arrName]=[];
