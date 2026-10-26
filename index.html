@@ -1497,7 +1497,12 @@ $("#testPushBtn").addEventListener("click",async()=>{
 let shoppingEdgeTouchStart=null;
 let shoppingSwipeHint=null;
 function swipeBackDestination(){
-  if(page==="shopping"&&shoppingSubpage!=="lists")return {page:"shopping",subpage:"lists",title:data.language==="pt"?"Todas as listas":"All lists",subtitle:data.language==="pt"?"Arraste para voltar":"Swipe to go back"};
+  if(page==="shopping"){
+    const pt=data.language==="pt";
+    if(["products","suppliers","brands","units","categories","history"].includes(shoppingSubpage))return {page:"shopping",subpage:"functions",title:pt?"Outras funções":"Other functions",subtitle:pt?"Arraste para voltar":"Swipe to go back"};
+    if(shoppingSubpage==="list")return {page:"shopping",subpage:"lists",title:pt?"Todas as listas":"All lists",subtitle:pt?"Arraste para voltar":"Swipe to go back"};
+    if(shoppingSubpage==="functions")return {page:"shopping",subpage:"lists",title:pt?"Listas":"Lists",subtitle:pt?"Arraste para voltar":"Swipe to go back"};
+  }
   if(page!=="home")return {page:"home",subpage:null,title:data.language==="pt"?"Início":"Home",subtitle:data.language==="pt"?"Arraste para voltar":"Swipe to go back"};
   return null;
 }
@@ -1528,7 +1533,7 @@ function updateShoppingSwipeHint(dx,progress,ready){
   hint.querySelector(".swipe-title").textContent=destination.title;
   hint.querySelector(".swipe-subtitle").textContent=ready?(data.language==="pt"?"Solte para voltar":"Release to go back"):destination.subtitle;
   hint.style.opacity=String(Math.min(1,Math.max(.18,progress*1.25)));
-  hint.style.transform="translate("+Math.max(-width+8,visibleX-width)+"px,-50%)";
+  hint.style.transform=ready?"translate(0px,-50%)":"translate("+Math.max(-width+8,visibleX-width)+"px,-50%)";
   hint.classList.toggle("ready",ready);
 }
 function hideShoppingSwipeHint(){
@@ -1579,7 +1584,7 @@ document.addEventListener("touchend",event=>{
     setTimeout(()=>{
       const currentDestination=swipeBackDestination();
       if(currentDestination){
-        if(currentDestination.page==="shopping")shoppingSubpage="lists";
+        if(currentDestination.page==="shopping"&&currentDestination.subpage)shoppingSubpage=currentDestination.subpage;
         page=currentDestination.page;
         render();
         window.scrollTo({top:0,behavior:"smooth"});
