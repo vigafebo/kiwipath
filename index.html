@@ -1493,36 +1493,92 @@ $("#testPushBtn").addEventListener("click",async()=>{
 });
 
 // iOS-style edge swipe: enabled only inside an opened shopping list, on touch-sized screens.
+// A live indicator follows the finger so the user can see the gesture before releasing.
 let shoppingEdgeTouchStart=null;
+let shoppingSwipeHint=null;
+function ensureShoppingSwipeHint(){
+  if(shoppingSwipeHint)return shoppingSwipeHint;
+  const style=document.createElement("style");
+  style.id="shoppingSwipeHintStyles";
+  style.textContent=`
+    #shoppingSwipeHint{position:fixed;z-index:9998;left:0;top:50%;transform:translate(-110%,-50%);opacity:0;pointer-events:none;display:flex;align-items:center;gap:10px;padding:13px 17px 13px 12px;border:1px solid rgba(255,255,255,.35);border-radius:0 18px 18px 0;background:#193f33;color:#fff;box-shadow:0 8px 28px rgba(15,45,35,.22);font:600 14px/1.2 system-ui,-apple-system,sans-serif;white-space:nowrap;transition:opacity .12s ease}
+    #shoppingSwipeHint .swipe-arrow{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(220,234,215,.18);font-size:21px}
+    #shoppingSwipeHint .swipe-copy{display:flex;flex-direction:column;gap:4px}
+    #shoppingSwipeHint .swipe-title{font-weight:700}
+    #shoppingSwipeHint .swipe-subtitle{font-size:11px;font-weight:500;opacity:.78}
+    #shoppingSwipeHint.ready{background:#2f6b50;box-shadow:0 8px 30px rgba(15,45,35,.3)}
+    @media(prefers-reduced-motion:reduce){#shoppingSwipeHint{transition:none}}
+  `;
+  document.head.appendChild(style);
+  shoppingSwipeHint=document.createElement("div");
+  shoppingSwipeHint.id="shoppingSwipeHint";
+  shoppingSwipeHint.innerHTML='<span class="swipe-arrow" aria-hidden="true">‹</span><span class="swipe-copy"><span class="swipe-title">Todas as listas</span><span class="swipe-subtitle">Arraste para voltar</span></span>';
+  document.body.appendChild(shoppingSwipeHint);
+  return shoppingSwipeHint;
+}
+function updateShoppingSwipeHint(dx,progress,ready){
+  const hint=ensureShoppingSwipeHint();
+  const visibleX=Math.max(0,Math.min(dx,190));
+  const width=hint.offsetWidth||190;
+  hint.style.opacity=String(Math.min(1,Math.max(.18,progress*1.25)));
+  hint.style.transform='translate('+Math.max(-width+8,visibleX-width)+'px,-50%)';
+  hint.classList.toggle("ready",ready);
+  const subtitle=hint.querySelector(".swipe-subtitle");
+  if(subtitle)subtitle.textContent=ready?"Solte para voltar":"Arraste para voltar";
+}
+function hideShoppingSwipeHint(){
+  if(!shoppingSwipeHint)return;
+  shoppingSwipeHint.style.opacity="0";
+  shoppingSwipeHint.style.transform="translate(-110%,-50%)";
+  shoppingSwipeHint.classList.remove("ready");
+}
 document.addEventListener("touchstart",event=>{
   if(window.innerWidth>650||page!=="shopping"||shoppingSubpage!=="list"||event.touches.length!==1)return;
   const target=event.target;
   if(target.closest("#modalBackdrop")&&!target.closest("#modalBackdrop").classList.contains("hidden"))return;
   const touch=event.touches[0];
   if(touch.clientX>28)return;
-  shoppingEdgeTouchStart={x:touch.clientX,y:touch.clientY,lastX:touch.clientX,lastY:touch.clientY,triggered:false};
+  shoppingEdgeTouchStart={x:touch.clientX,y:touch.clientY,lastX:touch.clientX,lastY:touch.clientY,tracking:false};
 },{passive:true});
 document.addEventListener("touchmove",event=>{
   const start=shoppingEdgeTouchStart;
   if(!start||event.touches.length!==1)return;
   const touch=event.touches[0],dx=touch.clientX-start.x,dy=touch.clientY-start.y;
   start.lastX=touch.clientX;start.lastY=touch.clientY;
-  if(dx>12&&Math.abs(dx)>Math.abs(dy)*1.15&&event.cancelable)event.preventDefault();
+  if(dx>8&&Math.abs(dx)>Math.abs(dy)*1.15){
+    start.tracking=true;
+    const progress=Math.min(1,dx/105);
+    updateShoppingSwipeHint(dx,progress,dx>=85);
+    if(event.cancelable)event.preventDefault();
+  }else if(Math.abs(dy)>Math.abs(dx)*1.2){
+    start.tracking=false;
+    hideShoppingSwipeHint();
+  }
 },{passive:false});
 document.addEventListener("touchend",event=>{
   const start=shoppingEdgeTouchStart;
   shoppingEdgeTouchStart=null;
-  if(!start||window.innerWidth>650||page!=="shopping"||shoppingSubpage!=="list")return;
+  if(!start){hideShoppingSwipeHint();return;}
+  if(window.innerWidth>650||page!=="shopping"||shoppingSubpage!=="list"){hideShoppingSwipeHint();return;}
   const touch=event.changedTouches&&event.changedTouches[0];
-  if(!touch)return;
+  if(!touch){hideShoppingSwipeHint();return;}
   const dx=touch.clientX-start.x,dy=touch.clientY-start.y;
   if(dx>=85&&Math.abs(dy)<75){
-    shoppingSubpage="lists";
-    render();
-    window.scrollTo({top:0,behavior:"smooth"});
-  }
+    if(shoppingSwipeHint){
+      const subtitle=shoppingSwipeHint.querySelector(".swipe-subtitle");
+      if(subtitle)subtitle.textContent="Voltando…";
+      shoppingSwipeHint.style.opacity="1";
+      shoppingSwipeHint.classList.add("ready");
+    }
+    setTimeout(()=>{
+      shoppingSubpage="lists";
+      hideShoppingSwipeHint();
+      render();
+      window.scrollTo({top:0,behavior:"smooth"});
+    },140);
+  }else hideShoppingSwipeHint();
 },{passive:true});
-document.addEventListener("touchcancel",()=>{shoppingEdgeTouchStart=null;},{passive:true});
+document.addEventListener("touchcancel",()=>{shoppingEdgeTouchStart=null;hideShoppingSwipeHint();},{passive:true});
 
 $("#logoutBtn").addEventListener("click",async()=>{
   if(!await confirmDialog({title:"Sair do KiwiPath?",message:"Deseja realmente sair da sua conta?",confirmText:"Sair",danger:false}))return;
