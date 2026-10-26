@@ -696,7 +696,7 @@ const today = () => {
 };
 const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function languagePreferenceKey(userId=currentUser?.id){return "kiwipath.language."+String(userId||"guest")}
-function loadUserLanguage(userId=currentUser?.id){try{const saved=localStorage.getItem(languagePreferenceKey(userId));return ["pt","en"].includes(saved)?saved:"pt"}catch(e){return "pt"}}
+function loadUserLanguage(userId=currentUser?.id){const cloudLanguage=currentUser?.id===userId?currentUser?.user_metadata?.kiwipath_language:null;if(["pt","en"].includes(cloudLanguage))return cloudLanguage;try{const saved=localStorage.getItem(languagePreferenceKey(userId));return ["pt","en"].includes(saved)?saved:"pt"}catch(e){return "pt"}}
 function persistUserLanguage(language,userId=currentUser?.id){if(!["pt","en"].includes(language))return;try{localStorage.setItem(languagePreferenceKey(userId),language)}catch(e){console.warn("Could not persist personal language preference:",e)}}
 const initial = () => ({
   language:"pt",
@@ -1435,7 +1435,7 @@ document.addEventListener("click",e=>{if(!e.target.closest("#profileMenuWrap"))c
 const profileMenuWrap=$("#profileMenuWrap");
 if(profileMenuWrap && window.matchMedia("(hover: hover) and (pointer: fine)").matches)profileMenuWrap.addEventListener("mouseleave",()=>{closeProfileMenu();const menus=$("#profileMenusSubmenu"),alerts=$("#profileAlertsSubmenu"),menusBtn=$("#profileMenusBtn"),alertsBtn=$("#profileAlertsBtn");if(menus)menus.hidden=true;if(alerts)alerts.hidden=true;if(menusBtn)menusBtn.setAttribute("aria-expanded","false");if(alertsBtn)alertsBtn.setAttribute("aria-expanded","false")});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfileMenu()});
-$("#languageBtn").onclick=()=>{data.language=data.language==="pt"?"en":"pt";persistUserLanguage(data.language,currentUser?.id);save();render();closeProfileMenu();notify(t("languageChanged"))};
+$("#languageBtn").onclick=async()=>{data.language=data.language==="pt"?"en":"pt";persistUserLanguage(data.language,currentUser?.id);if(currentUser&&supabaseClient?.auth?.updateUser){try{const {data:updated,error}=await supabaseClient.auth.updateUser({data:{kiwipath_language:data.language}});if(error)throw error;if(updated?.user)currentUser=updated.user}catch(e){console.warn("Could not sync personal language preference to account:",e)}}save();render();closeProfileMenu();notify(t("languageChanged"))};
 $("#profileAlertsBtn").onclick=()=>{const sub=$("#profileAlertsSubmenu"),b=$("#profileAlertsBtn");sub.hidden=!sub.hidden;b.setAttribute("aria-expanded",String(!sub.hidden))};
 $("#profileMenusBtn").onclick=()=>{const sub=$("#profileMenusSubmenu"),b=$("#profileMenusBtn");sub.hidden=!sub.hidden;b.setAttribute("aria-expanded",String(!sub.hidden))};
 $("#profileMenusSubmenu").addEventListener("click",e=>{const b=e.target.closest("[data-profile-page]");if(!b)return;page=b.dataset.profilePage;closeProfileMenu();render();window.scrollTo({top:0,behavior:"smooth"})});
