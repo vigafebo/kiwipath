@@ -1,4 +1,4 @@
-const CACHE_NAME = "kiwipath-pwa-v28";
+const CACHE_NAME = "kiwipath-pwa-v29";
 const APP_BASE = "/kiwipath/";
 const APP_SHELL = [APP_BASE, APP_BASE + "manifest.webmanifest"];
 
