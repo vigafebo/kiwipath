@@ -1214,8 +1214,9 @@ function autofillShoppingItemPrice(){
  const supplierId=String(supplierInput.value||"");
  if(!product||!supplierId)return;
  const latest=(data.shoppingPriceHistory||[])
+  .map((h,index)=>({...h,_index:index}))
   .filter(h=>String(h.productId)===String(product.id)&&String(h.supplierId)===supplierId&&Number.isFinite(Number(h.price))&&Number(h.price)>0)
-  .sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")))[0];
+  .sort((a,b)=>String(b.date||"").localeCompare(String(a.date||""))||(b._index-a._index))[0];
  if(!latest)return;
  const cents=String(Math.round(Number(latest.price)*100));
  priceInput.dataset.priceDigits=cents;
