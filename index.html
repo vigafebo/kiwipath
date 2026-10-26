@@ -337,6 +337,80 @@ h1{font-size:28px}
   .finance-quick-actions .btn:first-child{grid-column:1/-1}
 }
 
+
+/* Targeted mobile corrections: equal quick-action buttons and contained date inputs. */
+@media(max-width:600px){
+  .finance-filters.custom-period-active .finance-date-range{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    align-items:end;
+    gap:12px;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    overflow:hidden;
+  }
+  .finance-filters.custom-period-active .finance-date-range label{
+    display:grid;
+    grid-template-rows:auto auto;
+    gap:7px;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+  }
+  .finance-filters.custom-period-active .finance-date-range input{
+    display:block;
+    box-sizing:border-box;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100%;
+    height:44px;
+    padding:8px 5px;
+    font-size:12px;
+    text-align:center;
+  }
+  .finance-filters.custom-period-active .finance-date-range .finance-date-separator{
+    position:absolute;
+    z-index:1;
+    left:50%;
+    bottom:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:22px;
+    height:22px;
+    padding:0;
+    transform:translateX(-50%);
+    background:var(--paper,#fffdf7);
+    border-radius:50%;
+    pointer-events:none;
+  }
+  .finance-quick-actions{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:9px;
+    width:100%;
+    margin:14px 0 18px;
+  }
+  .finance-quick-actions .btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    box-sizing:border-box;
+    width:100%;
+    min-width:0;
+    min-height:48px;
+    height:48px;
+    padding:10px 8px;
+    font-size:14px;
+    white-space:normal;
+    text-align:center;
+  }
+  .finance-quick-actions .btn:first-child{grid-column:auto}
+}
+
 .confirm-backdrop{position:fixed;inset:0;z-index:1400;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(12,29,22,.58);backdrop-filter:blur(5px);animation:confirmFadeIn .18s ease-out}
 .confirm-card{width:min(420px,100%);background:var(--paper,#fffdf7);color:var(--ink,#23382f);border:1px solid rgba(60,90,72,.12);border-radius:22px;padding:26px;box-shadow:0 24px 80px rgba(0,0,0,.24);animation:confirmPopIn .24s cubic-bezier(.2,.8,.2,1);transform-origin:center}
 .confirm-icon{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:#f8e9d8;color:#8d4a24;font-size:22px;margin-bottom:16px}
