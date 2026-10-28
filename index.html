@@ -433,6 +433,30 @@ h1{font-size:28px}
   .finance-tabs button svg{width:19px;height:19px;flex-basis:19px}
 }
 
+
+/* Desktop custom-period mode: keep period options and all filters on one row. */
+@media(min-width:1051px){
+  .finance-filters.custom-period-active{
+    display:grid;
+    grid-template-columns:minmax(350px,1.2fr) minmax(175px,.72fr) minmax(190px,.82fr) minmax(210px,.95fr);
+    align-items:end;
+    gap:14px;
+  }
+  .finance-filters.custom-period-active>.finance-filter-group{grid-column:auto!important;min-width:0;width:auto}
+  .finance-filters.custom-period-active .finance-date-range{
+    grid-column:auto!important;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr);
+    align-items:end;
+    gap:5px;
+    width:100%;
+    max-width:none;
+    min-width:0;
+  }
+  .finance-filters.custom-period-active .finance-date-range label{min-width:0}
+  .finance-filters.custom-period-active .finance-date-range input{width:100%;min-width:0;padding:9px 5px;font-size:12px}
+}
+
 .confirm-backdrop{position:fixed;inset:0;z-index:1400;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(12,29,22,.58);backdrop-filter:blur(5px);animation:confirmFadeIn .18s ease-out}
 .confirm-card{width:min(420px,100%);background:var(--paper,#fffdf7);color:var(--ink,#23382f);border:1px solid rgba(60,90,72,.12);border-radius:22px;padding:26px;box-shadow:0 24px 80px rgba(0,0,0,.24);animation:confirmPopIn .24s cubic-bezier(.2,.8,.2,1);transform-origin:center}
 .confirm-icon{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:#f8e9d8;color:#8d4a24;font-size:22px;margin-bottom:16px}
