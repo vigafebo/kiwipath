@@ -560,6 +560,98 @@ h1{font-size:28px}
 /* Shopping list detail header: keep back and add controls on one aligned row */
 .panel-head.shopping-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.shopping-detail-back-wrap{min-width:0;flex:1}.shopping-detail-head .shopping-back-button{width:auto;max-width:100%;margin:0}.shopping-detail-head .shopping-toolbar{flex:0 0 auto;display:flex;align-items:flex-start;justify-content:flex-end;margin:0;padding:0}.shopping-detail-head .shopping-add-item-button{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 42px!important;width:42px!important;min-width:42px!important;max-width:42px!important;height:42px!important;min-height:42px!important;max-height:42px!important;padding:0!important;margin:0!important;border-radius:12px;overflow:hidden}.shopping-detail-head .shopping-add-item-icon{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;min-width:0;height:100%;font-size:24px;line-height:1}.shopping-detail-head .shopping-add-item-label{display:none!important}@media(max-width:650px){.panel-head.shopping-detail-head{align-items:flex-start;gap:10px}.shopping-detail-head .shopping-back-button{min-height:46px!important;height:46px!important;display:inline-flex;align-items:center;justify-content:center;width:auto!important}.shopping-detail-head .shopping-toolbar{align-self:flex-start}.shopping-detail-head .shopping-add-item-button{flex-basis:46px!important;width:46px!important;min-width:46px!important;max-width:46px!important;height:46px!important;min-height:46px!important;max-height:46px!important}.shopping-detail-head .shopping-add-item-icon{font-size:25px}}
 @media(hover:hover) and (min-width:651px){.shopping-detail-head .shopping-add-item-button:hover,.shopping-detail-head .shopping-add-item-button:focus-visible{flex-basis:150px!important;width:150px!important;max-width:150px!important;padding:0 12px 0 0!important;justify-content:flex-start!important}.shopping-detail-head .shopping-add-item-button:hover .shopping-add-item-icon,.shopping-detail-head .shopping-add-item-button:focus-visible .shopping-add-item-icon{width:42px;min-width:42px}.shopping-detail-head .shopping-add-item-button:hover .shopping-add-item-label,.shopping-detail-head .shopping-add-item-button:focus-visible .shopping-add-item-label{display:inline!important}}
+
+/* Mobile custom-period finance filter: keep every control inside its card. */
+@media(max-width:650px){
+  .finance-filters.custom-period-active{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:12px;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+  }
+  .finance-filters.custom-period-active>.finance-filter-group,
+  .finance-filters.custom-period-active>.finance-date-range{
+    box-sizing:border-box;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    flex:0 0 auto;
+  }
+  .finance-filters.custom-period-active>.finance-filter-group:not(:first-child){
+    width:100%;
+    min-width:0;
+  }
+  .finance-filters.custom-period-active>.finance-filter-group:first-child .segmented{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+    width:100%;
+    min-width:0;
+  }
+  .finance-filters.custom-period-active>.finance-filter-group:first-child .segmented button{
+    width:100%;
+    min-width:0;
+    padding:9px 7px;
+    white-space:normal;
+  }
+  .finance-filters.custom-period-active .finance-date-range{
+    position:relative;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);
+    align-items:end;
+    gap:4px;
+    margin:0;
+    overflow:hidden;
+  }
+  .finance-filters.custom-period-active .finance-date-range label{
+    display:grid;
+    grid-template-rows:auto 44px;
+    align-content:end;
+    gap:6px;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    font-size:12px;
+  }
+  .finance-filters.custom-period-active .finance-date-range input{
+    display:block;
+    box-sizing:border-box;
+    width:100% !important;
+    min-width:0 !important;
+    max-width:100%;
+    height:44px;
+    padding:8px 5px;
+    font-size:12px;
+  }
+  .finance-filters.custom-period-active .finance-date-range .finance-date-separator{
+    position:static;
+    z-index:auto;
+    left:auto;
+    bottom:auto;
+    align-self:end;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-sizing:border-box;
+    width:24px;
+    height:44px;
+    padding:0;
+    transform:none;
+    background:transparent;
+    border-radius:0;
+    line-height:1;
+    pointer-events:none;
+  }
+  .finance-filters.custom-period-active select{
+    box-sizing:border-box;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+  }
+}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
