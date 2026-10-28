@@ -411,6 +411,28 @@ h1{font-size:28px}
   .finance-quick-actions .btn:first-child{grid-column:auto}
 }
 
+
+/* Desktop only: let the Finance section tabs fill the available content width. */
+@media(min-width:601px){
+  .finance-tabs{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    width:100%;
+    max-width:none;
+    box-sizing:border-box;
+    gap:5px;
+    padding:6px;
+  }
+  .finance-tabs button{
+    width:100%;
+    min-height:54px;
+    padding:14px 20px;
+    gap:11px;
+    font-size:14px;
+  }
+  .finance-tabs button svg{width:19px;height:19px;flex-basis:19px}
+}
+
 .confirm-backdrop{position:fixed;inset:0;z-index:1400;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(12,29,22,.58);backdrop-filter:blur(5px);animation:confirmFadeIn .18s ease-out}
 .confirm-card{width:min(420px,100%);background:var(--paper,#fffdf7);color:var(--ink,#23382f);border:1px solid rgba(60,90,72,.12);border-radius:22px;padding:26px;box-shadow:0 24px 80px rgba(0,0,0,.24);animation:confirmPopIn .24s cubic-bezier(.2,.8,.2,1);transform-origin:center}
 .confirm-icon{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:#f8e9d8;color:#8d4a24;font-size:22px;margin-bottom:16px}
