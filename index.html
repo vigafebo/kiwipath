@@ -1216,7 +1216,7 @@ const copy = {
 function t(k){return copy[data.language]?.[k] || copy.pt[k] || k}
 function esc(s=""){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function parseAmount(v){if(typeof v==="number")return v;const q=String(v??"").trim().replace(/\s/g,"");if(!q)return NaN;return Number(q.includes(",")?q.replace(/\./g,"").replace(",","."):q)}
-function money(n){return new Intl.NumberFormat("en-NZ",{style:"currency",currency:"NZD",minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n)||0)}
+function money(n){return "NZ$ "+new Intl.NumberFormat("en-NZ",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n)||0)}
 function fmtDate(d){if(!d)return t("noDate");const x=new Date(d+"T12:00:00");return isNaN(x)?esc(d):x.toLocaleDateString(data.language==="pt"?"pt-BR":"en-NZ",{day:"2-digit",month:"short",year:"numeric"})}
 let localSaveRevision = 0;
 let cloudSyncPromise = null;
