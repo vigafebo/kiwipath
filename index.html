@@ -1995,32 +1995,32 @@ function deleteTrip(id){
 }
 function addTripReservation(tripId){
  const trip=data.trips.find(x=>x.id===tripId),accounts=accessibleAccounts();
- if(!trip)return;if(trip.status==="done"){notify("Esta é uma viagem já realizada e fica apenas no Histórico.");return;}
+ if(!trip)return;
  const accountOptions=[["","Não lançar agora"],...accounts.map(a=>[a.id,a.name+" · "+a.currency])];
  modal("Adicionar reserva",field("title","Nome da reserva","", "text","full")+selectField("type","Tipo",[["flight","Passagem"],["stay","Hospedagem"],["transport","Transporte"],["activity","Atividade"],["food","Restaurante"],["other","Outro"]],"flight")+field("provider","Companhia / fornecedor","","text")+field("reference","Código de reserva","","text")+field("startDate","Data","","date")+field("time","Horário","","time")+field("location","Local / endereço","","text","full")+field("cost","Valor da reserva","","number")+selectField("accountId","Lançar em qual caixinha?",accountOptions,"","full")+textareaField("note","Notas","","full"),v=>{
   const title=String(v.title||"").trim();if(!title){notify("Informe a reserva.");return false}
   const cost=Math.max(0,parseAmount(v.cost)||0),reservation={id:uid(),title,type:v.type,provider:String(v.provider||"").trim(),reference:String(v.reference||"").trim(),startDate:v.startDate||"",time:v.time||"",location:String(v.location||"").trim(),cost,note:String(v.note||"").trim()};
   trip.reservations.push(reservation);
-  if(reservation.startDate)data.events.push({id:uid(),title:trip.name+" · "+title,date:reservation.startDate,time:reservation.time||"09:00",location:reservation.location,eventType:"personal",owner:trip.owner||"both",note:"Reserva de viagem"+(reservation.reference?" · "+reservation.reference:""),tripId:trip.id,updatedAt:new Date().toISOString()});
+  if(trip.status!=="done"&&reservation.startDate)data.events.push({id:uid(),title:trip.name+" · "+title,date:reservation.startDate,time:reservation.time||"09:00",location:reservation.location,eventType:"personal",owner:trip.owner||"both",note:"Reserva de viagem"+(reservation.reference?" · "+reservation.reference:""),tripId:trip.id,updatedAt:new Date().toISOString()});
   const account=accounts.find(a=>a.id===v.accountId);
-  if(cost&&account)data.transactions.push({id:uid(),title:trip.name+" · "+title,type:"expense",amount:cost,category:"Lazer",date:reservation.startDate||today(),createdBy:currentMemberKey(),note:"Reserva de viagem"+(reservation.reference?" · "+reservation.reference:""),createdAt:new Date().toISOString(),accountId:account.id,paymentMethod:"transfer",tripId:trip.id});
+  if(trip.status!=="done"&&cost&&account)data.transactions.push({id:uid(),title:trip.name+" · "+title,type:"expense",amount:cost,category:"Lazer",date:reservation.startDate||today(),createdBy:currentMemberKey(),note:"Reserva de viagem"+(reservation.reference?" · "+reservation.reference:""),createdAt:new Date().toISOString(),accountId:account.id,paymentMethod:"transfer",tripId:trip.id});
  });
  bindCurrencyInput("f-cost","");
 }
 function addTripItinerary(tripId){
- const trip=data.trips.find(x=>x.id===tripId);if(!trip)return;if(trip.status==="done"){notify("Esta é uma viagem já realizada e fica apenas no Histórico.");return;}
- modal("Adicionar ao roteiro",field("title","Atividade ou compromisso","","text","full")+field("date","Data","","date")+field("time","Horário","","time")+field("location","Localização","","text","full")+selectField("toTimeline","Criar também no Cronograma",[["yes","Sim, manter conectado"],["no","Não agora"]],"yes")+textareaField("note","Notas","","full"),v=>{
+ const trip=data.trips.find(x=>x.id===tripId);if(!trip)return;
+ modal("Adicionar ao roteiro",field("title","Atividade ou compromisso","","text","full")+field("date","Data","","date")+field("time","Horário","","time")+field("location","Localização","","text","full")+selectField("toTimeline","Criar também no Cronograma",[["yes","Sim, manter conectado"],["no","Não agora"]],trip.status==="done"?"no":"yes")+textareaField("note","Notas","","full"),v=>{
   const title=String(v.title||"").trim();if(!title){notify("Informe o item do roteiro.");return false}
   const item={id:uid(),title,date:v.date||"",time:v.time||"",location:String(v.location||"").trim(),note:String(v.note||"").trim()};trip.itinerary.push(item);
-  if(v.toTimeline==="yes"&&item.date)data.events.push({id:uid(),title:trip.name+" · "+item.title,date:item.date,time:item.time||"09:00",location:item.location,eventType:"personal",owner:trip.owner||"both",note:item.note,tripId:trip.id,updatedAt:new Date().toISOString()});
+  if(trip.status!=="done"&&v.toTimeline==="yes"&&item.date)data.events.push({id:uid(),title:trip.name+" · "+item.title,date:item.date,time:item.time||"09:00",location:item.location,eventType:"personal",owner:trip.owner||"both",note:item.note,tripId:trip.id,updatedAt:new Date().toISOString()});
  });
 }
 function addTripChecklist(tripId){
- const trip=data.trips.find(x=>x.id===tripId);if(!trip)return;if(trip.status==="done"){notify("Esta é uma viagem já realizada e fica apenas no Histórico.");return;}
+ const trip=data.trips.find(x=>x.id===tripId);if(!trip)return;
  modal("Novo item do checklist",field("title","Item","","text","full")+selectField("group","Categoria",[["Malas","Malas"],["Documentos","Documentos"],["Saúde","Saúde"],["Casa","Casa"],["Outros","Outros"]],"Malas"),v=>{const title=String(v.title||"").trim();if(!title){notify("Informe o item.");return false}trip.checklist.push({id:uid(),title,group:v.group,done:false})});
 }
 function addTripDocument(tripId){
- const trip=data.trips.find(x=>x.id===tripId);if(!trip)return;if(trip.status==="done"){notify("Esta é uma viagem já realizada e fica apenas no Histórico.");return;}
+ const trip=data.trips.find(x=>x.id===tripId);if(!trip)return;
  modal("Adicionar documento da viagem",field("title","Documento","","text","full")+selectField("owner","Proprietário",[["both","Vitor & Zack"],["vitor","Vitor"],["zack","Zack"]],trip.owner||"both")+field("expiryDate","Validade (opcional)","","date")+textareaField("note","Notas","","full"),v=>{const title=String(v.title||"").trim();if(!title){notify("Informe o documento.");return false}const doc={id:uid(),title,owner:v.owner,status:"todo",hasExpiry:!!v.expiryDate,expiryDate:v.expiryDate||"",due:v.expiryDate||"",note:String(v.note||"").trim(),tripId:trip.id};data.documents.push(doc);trip.documentIds.push(doc.id)});
 }
 function removeTripPart(tripId,part,itemId){
