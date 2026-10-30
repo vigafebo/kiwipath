@@ -890,7 +890,9 @@ h1{font-size:28px}
 @media(max-width:600px){
   .finance-filter-toggle{width:100%;display:flex;align-items:center;gap:9px;padding:7px 8px;border:1px solid var(--line);border-radius:11px;background:#fffdf8;color:var(--ink);font:inherit;text-align:left}
   .finance-filter-controls{display:none;gap:12px}
-  .finance-filters.mobile-filters-open .finance-filter-controls{display:grid}
+  .finance-filters.mobile-filters-open .finance-filter-controls{display:grid;width:100%;grid-template-columns:minmax(0,1fr)}
+  .finance-filters.mobile-filters-open .finance-filter-controls>.finance-filter-group,
+  .finance-filters.mobile-filters-open .finance-filter-controls>.finance-date-range{width:100%;min-width:0}
   .finance-filters:not(.mobile-filters-open){padding:8px}
   .finance-filters.mobile-filters-open{padding:10px}
   .finance-filters.mobile-filters-open .finance-filter-toggle{margin-bottom:1px}
