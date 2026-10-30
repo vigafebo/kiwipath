@@ -24,6 +24,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .sidebar{position:fixed;inset:0 auto 0 0;width:245px;background:var(--forest);
   color:#f9f8ef;padding:28px 17px;display:flex;flex-direction:column;z-index:5}
 .brand{display:flex;align-items:center;gap:11px;padding:0 10px 30px}
+.brand-home{width:100%;border:0;background:transparent;color:inherit;font:inherit;text-align:left;border-radius:16px;transition:background .16s ease,transform .16s ease}
+@media(min-width:701px){.brand-home:hover{background:#ffffff10;transform:translateY(-1px)}.brand-home:active{transform:translateY(0)}}
 .brand-mark{width:43px;height:43px;border-radius:15px;background:#dbe8d6;
   display:grid;place-items:center;flex-shrink:0}
 .brand-name{font-size:22px;font-weight:750;letter-spacing:-.8px}
@@ -950,8 +952,8 @@ h1{font-size:28px}
 </div>
 <div class="app" id="kiwiApp" style="visibility:hidden">
 <aside class="sidebar">
-  <div class="brand">
-    <div class="brand-mark" aria-label="Silver fern">
+  <button type="button" class="brand brand-home" data-action="go-home" aria-label="Ir para o início">
+    <div class="brand-mark" aria-hidden="true">
       <svg viewBox="0 0 48 48" width="31" height="31" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <g stroke="#183D32" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
           <path d="M8 40C17 31 26 21 38 7"/>
@@ -968,7 +970,7 @@ h1{font-size:28px}
     </div>
     <div><div class="brand-name">KiwiPath<span style="color:#a8c5a0">.</span></div>
       <div class="brand-sub">Our journey</div></div>
-  </div>
+  </button>
   <div class="nav-label" data-i18n="workspace">Espaço de vocês</div>
   <nav class="nav" id="navigation">
     <button class="active" data-page="home"><span class="nav-icon">⌂</span><span data-i18n="home">Início</span></button>
