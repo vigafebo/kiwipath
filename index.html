@@ -954,7 +954,7 @@ h1{font-size:28px}
 </div>
 <div class="app" id="kiwiApp" style="visibility:hidden">
 <aside class="sidebar">
-  <button type="button" class="brand brand-home" data-action="go-home" aria-label="Ir para o início">
+  <button type="button" class="brand brand-home" aria-label="Ir para o início">
     <div class="brand-mark" aria-hidden="true">
       <svg viewBox="0 0 48 48" width="31" height="31" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <g stroke="#183D32" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -2278,6 +2278,7 @@ async function removeItem(collection,id){
   save();render();notify(t("deleted"));
 }
 $("#navigation").addEventListener("click",e=>{const b=e.target.closest("button[data-page]");if(!b)return;const nextPage=b.dataset.page;if(nextPage==="finances"&&page!=="finances"){financeChartMode="expense";selectedPieCategory=""}page=nextPage;render();window.scrollTo({top:0,behavior:"smooth"})});
+$(".brand-home").addEventListener("click",()=>{page="home";render();window.scrollTo({top:0,behavior:"smooth"})});
 function closeProfileMenu(){const menu=$("#profileMenu"),toggle=$("#profileMenuToggle");if(menu)menu.hidden=true;if(toggle)toggle.setAttribute("aria-expanded","false")}
 $("#profileMenuToggle").addEventListener("click",()=>{const menu=$("#profileMenu"),toggle=$("#profileMenuToggle");const willOpen=menu.hidden;menu.hidden=!willOpen;toggle.setAttribute("aria-expanded",String(willOpen))});
 document.addEventListener("click",e=>{if(!e.target.closest("#profileMenuWrap"))closeProfileMenu()});
