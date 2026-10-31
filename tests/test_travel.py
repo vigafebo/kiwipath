@@ -6,6 +6,7 @@ these tests never authenticate or change shared Supabase data.
 import json
 from pathlib import Path
 import unittest
+from urllib.parse import parse_qs, urlparse
 
 from playwright.sync_api import sync_playwright
 
@@ -32,6 +33,8 @@ class TravelTests(unittest.TestCase):
         self.context = self.browser.new_context(service_workers="block")
         self.page = self.context.new_page()
         self.errors = []
+        self.route_requests = []
+        self.routing_failure = False
         self.page.on("pageerror", lambda error: self.errors.append(str(error)))
         source = (ROOT / "index.html").read_text()
         hooks = '''window.__travel = {
@@ -39,15 +42,17 @@ class TravelTests(unittest.TestCase):
             activeTripId=trip.id; document.querySelector('#authScreen').style.display='none';
             document.querySelector('#kiwiApp').style.visibility='visible'; render(); },
           state:()=>data, open:()=>addTripItinerary(data.trips[0].id),
-          points:tripMovementPoints
+          points:tripMovementPoints, flight:tripFlightPath
         };'''
         source = source.replace("supabaseClient.auth.getSession().then", hooks + "\nsupabaseClient.auth.getSession().then")
         sdk = "window.supabase={createClient:()=>({auth:{getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange:()=>{}}})};"
         leaflet = '''window.__map={markers:[],lines:[]};
-        window.L={map:()=>({setView(){},fitBounds(){},invalidateSize(){}}),
+        window.L={map:()=>({setView(){},fitBounds(){},invalidateSize(){},remove(){}}),
           tileLayer:()=>({addTo(){}}),latLngBounds:x=>x,
           circleMarker:(ll)=>{__map.markers.push(ll);return {addTo(){return this},bindPopup(){}}},
-          polyline:(ll,options)=>{__map.lines.push({ll,options});return {addTo(){}}}};'''
+          polyline:(ll,options)=>{const record={ll,options};__map.lines.push(record);
+            return {addTo(){return this},setLatLngs(path){record.ll=path;return this},
+              setStyle(style){Object.assign(record.options,style);return this}}}};'''
 
         def route(request):
             url = request.request.url
@@ -57,6 +62,15 @@ class TravelTests(unittest.TestCase):
                 request.fulfill(body=sdk, content_type="application/javascript")
             elif url.endswith("leaflet.js"):
                 request.fulfill(body=leaflet, content_type="application/javascript")
+            elif "brouter.de/brouter?" in url:
+                params = parse_qs(urlparse(url).query)
+                self.route_requests.append(params)
+                if self.routing_failure:
+                    request.fulfill(status=503, body="Unavailable")
+                else:
+                    ends = [[float(x) for x in pair.split(",")] for pair in params["lonlats"][0].split("|")]
+                    coords = [ends[0], [(ends[0][0]+ends[1][0])/2, (ends[0][1]+ends[1][1])/2+0.1], ends[1]]
+                    request.fulfill(body=json.dumps({"features":[{"geometry":{"type":"LineString","coordinates":coords}}]}), content_type="application/json")
             elif "nominatim.openstreetmap.org" in url:
                 request.fulfill(body=json.dumps([dict(name="Barcelona", lat="41.3874", lon="2.1686", address={"country":"España"})]), content_type="application/json")
             else:
@@ -116,6 +130,46 @@ class TravelTests(unittest.TestCase):
         state = self.page.evaluate("__travel.state()")
         self.assertEqual(state["trips"][0]["itinerary"][0]["location"], "Park")
         self.assertEqual(state["events"], [])
+
+    def test_transport_profiles_legend_and_route_cache(self):
+        for mode, profile in [("train", "rail"), ("car", "car-vario"), ("bus", "car-vario"),
+                              ("taxi", "car-vario"), ("walk", "shortest")]:
+            trip = {**TRIP, "itinerary": [dict(title="Stop", date="2026-10-15",
+                    latitude="41.3874", longitude="2.1686", transport=mode)]}
+            self.page.evaluate("trip=>{__map.lines=[];__travel.reset(trip)}", trip)
+            self.page.wait_for_function("__map.lines.length===1 && __map.lines[0].ll.length===3")
+            self.assertIsNone(self.page.evaluate("__map.lines[0].options.dashArray"))
+            self.assertEqual(self.route_requests[-1]["profile"], [profile])
+        # Bus/taxi share the road geometry rather than calling the service again.
+        self.assertEqual(len(self.route_requests), 3)
+        self.assertEqual(self.page.locator(".trip-map-legend span").all_text_contents(),
+                         ["Caminhando", "Carro", "Ônibus", "Trem", "Avião", "Táxi"])
+
+    def test_route_failure_retains_dotted_fallback_and_retries(self):
+        self.routing_failure = True
+        trip = {**TRIP, "itinerary": [dict(title="Stop", date="2026-10-15",
+                latitude="41.3874", longitude="2.1686", transport="train")]}
+        self.page.evaluate("trip=>{__map.lines=[];__travel.reset(trip)}", trip)
+        self.page.wait_for_function("document.querySelector('#tripMapStatus').textContent.includes('sem rota disponível')")
+        self.assertEqual(self.page.evaluate("__map.lines[0].ll.length"), 2)
+        self.assertEqual(self.page.evaluate("__map.lines[0].options.dashArray"), "3 7")
+        self.routing_failure = False
+        self.page.evaluate("trip=>{__map.lines=[];__travel.reset(trip)}", trip)
+        self.page.wait_for_function("__map.lines.length===1 && __map.lines[0].ll.length===3")
+        self.assertEqual(len(self.route_requests), 2)
+
+    def test_flights_curve_without_network_and_cross_date_line_safely(self):
+        trip = {**TRIP, "itinerary": [dict(title="Paris", date="2026-10-15",
+                latitude="48.8566", longitude="2.3522", transport="flight")]}
+        self.page.evaluate("trip=>{__map.lines=[];__travel.reset(trip)}", trip)
+        self.page.wait_for_function("__map.lines.length===1")
+        line = self.page.evaluate("__map.lines[0]")
+        self.assertEqual(len(line["ll"]), 65)
+        self.assertEqual(line["options"]["dashArray"], "8 8")
+        self.assertEqual(self.route_requests, [])
+        path = self.page.evaluate("__travel.flight([35,170],[40,-170])")
+        self.assertTrue(all(abs(b[1]-a[1]) < 180 for a, b in zip(path, path[1:])))
+        self.assertAlmostEqual(path[-1][1], 190)
 
     def test_deleted_trip_does_not_report_a_successful_save(self):
         self.page.evaluate("__travel.open()")
