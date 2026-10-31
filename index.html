@@ -935,6 +935,10 @@ h1{font-size:28px}
 .trip-layout>div,.trip-layout>aside,.trip-dashboard,.trip-section{min-width:0}.trip-day-tabs{max-width:100%}.trip-item-main{overflow-wrap:anywhere}@media(max-width:760px){.trip-layout{grid-template-columns:minmax(0,1fr)}}
 .trip-pdf-dialog{width:min(800px,94vw);max-height:92vh;display:flex;flex-direction:column;gap:12px;padding:22px;overflow:auto}.trip-pdf-dialog .panel-head{margin:0}.trip-pdf-dialog p{margin:0;font-size:12px;line-height:1.5;color:var(--muted)}.trip-pdf-preview{width:100%;height:55vh;min-height:240px;border:1px solid var(--line);border-radius:12px;background:#f5f5ef}.trip-pdf-dialog .form-actions{margin-top:0;flex-wrap:wrap}.trip-pdf-dialog .file-hint{flex:1;min-width:180px}@media(max-width:600px){.trip-pdf-dialog{padding:16px}.trip-pdf-preview{height:42vh}.trip-pdf-dialog .form-actions button{flex:1;min-height:44px}}
 .trip-map-marker{background:none;border:0}.trip-map-pin{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:3px solid var(--marker-color);border-radius:50%;background:#fffef9;color:#183d32;font:800 12px/1 system-ui,sans-serif;box-shadow:0 2px 8px #183d3230;white-space:nowrap}.trip-map-pin.is-cluster{width:66px;border-radius:18px;background:#183d32;color:white;font-size:10px;border-color:#fffef9}.trip-map-marker:focus-visible{outline:3px solid #d5aa45;outline-offset:3px;border-radius:18px}.trip-map-popup{min-width:150px;max-height:240px;overflow:auto}.trip-map-popup-row{padding:8px 0;border-bottom:1px solid #e4eadf}.trip-map-popup-row strong,.trip-map-popup-row small{display:block}.trip-map-popup-row small{color:#687b6c;margin-top:3px}.trip-map-popup button{margin-top:7px;border:0;border-radius:6px;background:#edf4e8;color:#183d32;padding:6px 8px;font:600 11px system-ui;cursor:pointer}
+.trip-map-filter{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 12px;font-size:12px;color:var(--forest)}.trip-map-filter select{max-width:100%;border:1px solid #cbdcc4;border-radius:9px;padding:8px;background:#fffef9;color:var(--forest);font:inherit}.trip-status-label{font-size:10px;font-weight:750;color:var(--green)}.trip-timeline-item.is-done .trip-item-heading>strong{text-decoration:line-through;color:var(--muted)}.trip-timeline-item.is-skipped{opacity:.7}.trip-timeline-item.is-skipped .trip-type-chip{color:var(--muted)}.trip-item-actions [draggable]{cursor:grab;font-size:16px;line-height:22px;user-select:none;-webkit-user-drag:element}.trip-timeline-item.trip-is-dragging{opacity:.6}.trip-timeline-item.drag-target{outline:2px dashed var(--green);background:#edf4e9}.trip-saved-place{padding:12px 0;border-bottom:1px solid var(--line)}.trip-saved-place:last-child{border:0}.trip-saved-place>strong,.trip-saved-place>small{display:block}.trip-saved-place small,.trip-saved-place p{font-size:11px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}.trip-order-preview h3{font-size:15px}.trip-order-preview li,.trip-order-preview p{font-size:12px;line-height:1.7}.trip-order-preview ol{padding-left:20px}#tripReservationOrigin[hidden],#tripReservationTransport[hidden]{display:none!important}@media(max-width:600px){.trip-map-filter select{width:100%}.trip-item-actions button{min-height:34px}.trip-item-actions [draggable]{display:none}}
+.profile-menu{max-height:min(85vh,760px);overflow-y:auto;overscroll-behavior:contain}.profile-timezones{padding:10px 12px;margin:0 2px 6px;border:1px solid #dce6d8;background:#f2f7ed;border-radius:11px;display:grid;gap:10px}.profile-timezones>strong{font-size:11px;color:var(--forest)}.profile-timezones>div{display:grid;gap:3px}.profile-timezones small,.profile-timezones span{font-size:10px;color:var(--muted);overflow-wrap:anywhere}.profile-timezones time{font-size:12px;font-weight:700;color:var(--forest);font-variant-numeric:tabular-nums}.profile-timezones [hidden]{display:none!important}
+@media(max-width:600px){.profile-menu{max-height:calc(100dvh - 160px)}}
+.trip-item-actions [data-action^="travel-order:"]{width:34px;min-height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #dce6d8;border-radius:7px;background:#f4f8f0;font-size:14px}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1026,6 +1030,7 @@ h1{font-size:28px}
         </button>
         <div class="profile-menu" id="profileMenu" hidden>
           <div class="profile-menu-heading"><strong id="profileMenuName">Vitor</strong><small data-i18n="accountMenuSubtitle">Conta e preferências</small></div>
+          <section class="profile-timezones" aria-labelledby="deviceClockHeading"><strong id="deviceClockHeading">Horários</strong><div><small id="deviceClockLabel">Neste dispositivo · automático</small><time id="deviceLocalClock"></time><span id="deviceClockZone"></span></div><div id="deviceNzClockRow"><small id="deviceNzLabel">Nova Zelândia · Auckland</small><time id="deviceNzClock"></time></div></section>
           <button type="button" class="profile-menu-item" id="languageBtn"><span class="menu-item-icon">文</span><span id="languageMenuLabel">Mudar idioma para English</span></button>
           <button type="button" class="profile-menu-item" id="syncRefreshBtn"><span class="menu-item-icon">↻</span><span data-i18n="syncRefresh">Sincronizar e atualizar</span></button>
           <button type="button" class="profile-menu-item" id="profileMenusBtn" aria-expanded="false" aria-controls="profileMenusSubmenu"><span class="menu-item-icon">☷</span><span data-i18n="profileMenus">Menus</span><span class="profile-chevron" aria-hidden="true">⌄</span></button>
@@ -1166,7 +1171,41 @@ async function loadCustomAlerts(){
    if(error)throw error;customAlerts=rows||[];
  }
  
+// Legacy/canonical calendar zone and NZ reference clock; new UI scheduling defaults to DEVICE_TIMEZONE.
 const ALERT_TIMEZONE="Pacific/Auckland";
+function detectDeviceTimeZone(){
+ try{const zone=Intl.DateTimeFormat().resolvedOptions().timeZone;if(zone){new Intl.DateTimeFormat('en',{timeZone:zone});return zone}}catch(error){}
+ return 'UTC';
+}
+let DEVICE_TIMEZONE=detectDeviceTimeZone();
+function deviceDateTime(iso,timeZone=DEVICE_TIMEZONE){
+ const p=zonedParts(new Date(iso),timeZone),pad=n=>String(n).padStart(2,'0');
+ return {date:p.year+'-'+pad(p.month)+'-'+pad(p.day),time:pad(p.hour)+':'+pad(p.minute)};
+}
+function eventInDeviceZone(event){
+ const iso=eventStartIso(event);return iso?{...event,...deviceDateTime(iso),timeZone:DEVICE_TIMEZONE}:event;
+}
+function renderDeviceClocks(){
+ const local=$('#deviceLocalClock'),nz=$('#deviceNzClock');if(!local||!nz)return;
+ const pt=data.language==='pt',locale=pt?'pt-BR':'en-NZ',now=new Date();
+ $('#deviceClockHeading').textContent=pt?'Horários':'Time zones';
+ $('#deviceClockLabel').textContent=pt?'Neste dispositivo · automático':'This device · automatic';
+ $('#deviceClockZone').textContent=DEVICE_TIMEZONE;
+ local.textContent=new Intl.DateTimeFormat(locale,{timeZone:DEVICE_TIMEZONE,dateStyle:'short',timeStyle:'medium',hourCycle:'h23'}).format(now);local.dateTime=now.toISOString();
+ $('#deviceNzLabel').textContent=pt?'Nova Zelândia · Auckland':'New Zealand · Auckland';
+ nz.textContent=new Intl.DateTimeFormat(locale,{timeZone:ALERT_TIMEZONE,dateStyle:'short',timeStyle:'medium',hourCycle:'h23'}).format(now);nz.dateTime=now.toISOString();
+ $('#deviceNzClockRow').hidden=DEVICE_TIMEZONE===ALERT_TIMEZONE;
+}
+let deviceClockDay='';
+function refreshDeviceTimeContext(){
+ const detected=detectDeviceTimeZone(),oldZone=DEVICE_TIMEZONE;DEVICE_TIMEZONE=detected;
+ const day=today(),oldDay=deviceClockDay;deviceClockDay=day;renderDeviceClocks();
+ if(oldZone!==detected||(oldDay&&oldDay!==day)){
+  if(calendarSelectedDate===oldDay)calendarSelectedDate=day;
+  render();
+ }
+}
+
 function zonedParts(date,timeZone=ALERT_TIMEZONE){
   const parts=new Intl.DateTimeFormat("en-CA",{timeZone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(date);
   return Object.fromEntries(parts.filter(p=>p.type!=="literal").map(p=>[p.type,Number(p.value)]));
@@ -1175,10 +1214,10 @@ function timezoneOffsetMs(date,timeZone=ALERT_TIMEZONE){
   const p=zonedParts(date,timeZone);
   return Date.UTC(p.year,p.month-1,p.day,p.hour,p.minute,p.second)-Math.floor(date.getTime()/1000)*1000;
 }
-function localDateTimeValue(iso){
+function localDateTimeValue(iso,timeZone=DEVICE_TIMEZONE){
   if(!iso)return "";
   const d=new Date(iso);if(Number.isNaN(d.getTime()))return "";
-  const p=zonedParts(d);
+  const p=zonedParts(d,timeZone);
   const pad=n=>String(n).padStart(2,"0");
   return p.year+"-"+pad(p.month)+"-"+pad(p.day)+"T"+pad(p.hour)+":"+pad(p.minute);
 }
@@ -1197,7 +1236,7 @@ function zonedDateTimeToIso(value,timeZone=ALERT_TIMEZONE){
 function displayAlertDate(iso){
   if(!iso)return "";
   const d=new Date(iso);
-  return Number.isNaN(d.getTime())?esc(iso):d.toLocaleString(data.language==="pt"?"pt-BR":"en-NZ",{timeZone:ALERT_TIMEZONE,dateStyle:"medium",timeStyle:"short"});
+  return Number.isNaN(d.getTime())?esc(iso):d.toLocaleString(data.language==="pt"?"pt-BR":"en-NZ",{timeZone:DEVICE_TIMEZONE,dateStyle:"medium",timeStyle:"short"});
 }
 async function syncDocumentExpiryAlerts(){
   if(!currentUser||!Array.isArray(data.documents))return;
@@ -1205,7 +1244,7 @@ async function syncDocumentExpiryAlerts(){
   if(memberError)throw memberError;
   const person=(member?.role||"member")==="owner"?"vitor":"zack";
   const now=new Date(), desired=[], desiredKeys=[];
-  const makeAt=(date,daysBefore)=>{const [y,m,d]=date.split("-").map(Number);const wall=Date.UTC(y,m-1,d-daysBefore,9,0,0);let utc=wall-timezoneOffsetMs(new Date(wall),ALERT_TIMEZONE);utc=wall-timezoneOffsetMs(new Date(utc),ALERT_TIMEZONE);return new Date(utc).toISOString()};
+  const makeAt=(date,daysBefore)=>{const [y,m,d]=date.split("-").map(Number);const wall=Date.UTC(y,m-1,d-daysBefore,9,0,0);let utc=wall-timezoneOffsetMs(new Date(wall),DEVICE_TIMEZONE);utc=wall-timezoneOffsetMs(new Date(utc),DEVICE_TIMEZONE);return new Date(utc).toISOString()};
   for(const doc of data.documents){
     const expiry=doc.expiryDate||((doc.hasExpiry&&doc.due)?doc.due:"");
     const owner=String(doc.owner||"both").toLowerCase();
@@ -1215,7 +1254,7 @@ async function syncDocumentExpiryAlerts(){
       if(new Date(at)<=now)continue;
       desiredKeys.push(key);
       const message=data.language==="pt"?"\""+doc.title+"\" "+(days===0?"vence hoje":"vence em "+days+" dias")+".":"\""+doc.title+"\" "+(days===0?"expires today":"expires in "+days+" days")+".";
-      desired.push({user_id:currentUser.id,title:data.language==="pt"?"Vencimento de documento":"Document expiry",message,scheduled_at:at,timezone:ALERT_TIMEZONE,status:"pending",recurrence:"once",linked_type:"document",linked_id:String(doc.id),source_key:key,updated_at:now.toISOString()});
+      desired.push({user_id:currentUser.id,title:data.language==="pt"?"Vencimento de documento":"Document expiry",message,scheduled_at:at,timezone:DEVICE_TIMEZONE,status:"pending",recurrence:"once",linked_type:"document",linked_id:String(doc.id),source_key:key,updated_at:now.toISOString()});
     }
   }
   const {data:existing,error:existingError}=await supabaseClient.from("kiwipath_custom_alerts").select("id,source_key,status").eq("user_id",currentUser.id).like("source_key","document-expiry:%");
@@ -1232,7 +1271,7 @@ function alertStatusLabel(status){
  let alertStatusFilter="all";
  function alertPage(){
    const pt=data.language==="pt";
-   const dateKey=d=>new Intl.DateTimeFormat("en-CA",{timeZone:ALERT_TIMEZONE,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
+   const dateKey=d=>new Intl.DateTimeFormat("en-CA",{timeZone:DEVICE_TIMEZONE,year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
    const todayKey=dateKey(new Date());
    const filtered=customAlerts.filter(a=>{
      const typeOk=alertTypeFilter==="all"||(alertTypeFilter==="automatic"?!!a.source_key:!a.source_key);
@@ -1253,25 +1292,27 @@ function alertStatusLabel(status){
    <section class="panel"><div class="panel-head"><div><h2>${pt?"Seus alertas":"Your alerts"}</h2><p>${filtered.length} ${pt?"alerta(s) exibido(s)":"alert(s) shown"} · ${customAlerts.length} ${pt?"no total":"total"}</p></div><button class="btn btn-soft btn-small" data-action="refresh-alerts">${pt?"Atualizar":"Refresh"}</button></div>
    <div class="finance-filters" style="margin:16px 0;display:flex;gap:12px;flex-wrap:wrap"><label style="flex:1;min-width:180px">${pt?"Tipo de notificação":"Notification type"}<select id="alertTypeFilter" style="width:100%"><option value="all" ${alertTypeFilter==="all"?"selected":""}>${pt?"Todas":"All types"}</option><option value="automatic" ${alertTypeFilter==="automatic"?"selected":""}>${pt?"Automáticas":"Automatic"}</option><option value="manual" ${alertTypeFilter==="manual"?"selected":""}>${pt?"Criadas pelo usuário":"Created by user"}</option></select></label><label style="flex:1;min-width:210px">${pt?"Estado / período":"Status / period"}<select id="alertStatusFilter" style="width:100%"><option value="all" ${alertStatusFilter==="all"?"selected":""}>${pt?"Todas as notificações":"All notifications"}</option><option value="today" ${alertStatusFilter==="today"?"selected":""}>${pt?"Hoje":"Today"}</option><option value="pending" ${alertStatusFilter==="pending"?"selected":""}>${pt?"A serem enviadas":"To be sent"}</option><option value="sent" ${alertStatusFilter==="sent"?"selected":""}>${pt?"Já enviadas":"Already sent"}</option><option value="archived" ${alertStatusFilter==="archived"?"selected":""}>${pt?"Canceladas ou apagadas":"Cancelled or deleted"}</option></select></label></div>
    ${rows||empty(pt?"Nenhuma notificação corresponde a estes filtros.":"No notifications match these filters.")}</section>
-   <div class="note">${pt?"Notificações enviadas, canceladas ou apagadas ficam arquivadas por 30 dias e depois são removidas automaticamente. Os horários usam o fuso de Auckland, Nova Zelândia.":"Sent, cancelled or deleted notifications are archived for 30 days, then automatically removed. Times use Auckland, New Zealand time."}</div>`;
+   <div class="note">${pt?"Notificações enviadas, canceladas ou apagadas ficam arquivadas por 30 dias e depois são removidas automaticamente. Os horários são exibidos no fuso do dispositivo.":"Sent, cancelled or deleted notifications are archived for 30 days, then automatically removed. Times are displayed in your device time zone."}</div>`;
  }
  
 function editAlert(id){
-  const old=customAlerts.find(a=>a.id===id);const pt=data.language==="pt";
+  const old=customAlerts.find(a=>a.id===id);const pt=data.language==="pt",editingZone=old?.recurrence&&old.recurrence!=="once"?(old.timezone||ALERT_TIMEZONE):DEVICE_TIMEZONE;
   const linkOptions=[["","— "+(pt?"Nenhum vínculo":"No link")+" —"],...data.documents.map(x=>["document|"+x.id,(pt?"Documento: ":"Document: ")+x.title]),...data.events.map(x=>["event|"+x.id,(pt?"Evento: ":"Event: ")+x.title])];
   const linkedValue=old?.linked_type&&old?.linked_id?old.linked_type+"|"+old.linked_id:"";
-  const fields=field("title",pt?"Título do alerta":"Alert title",old?.title||"","text","full")+textareaField("message",pt?"Mensagem da notificação":"Notification message",old?.message||"","full")+field("scheduledAt",pt?"Data e horário (Nova Zelândia)":"Date and time (New Zealand)",localDateTimeValue(old?.scheduled_at),"datetime-local","full")+selectField("recurrence",pt?"Repetição":"Repeat",[["once",pt?"Não repetir":"Does not repeat"],["daily",pt?"Todos os dias":"Every day"],["weekly",pt?"A cada 7 dias":"Every 7 days"],["monthly",pt?"Todo mês":"Every month"]],old?.recurrence||"once","full")+field("recurrenceEnd",pt?"Repetir até (opcional)":"Repeat until (optional)",old?.recurrence_end||"","date","full")+selectField("linkedItem",pt?"Vincular a documento/evento":"Link to document/event",linkOptions,linkedValue,"full")+`<div class="field full"><p class="file-hint">${pt?"Os horários usam o fuso da Nova Zelândia (Auckland). Alertas vinculados acompanham o item escolhido.":"Times use New Zealand time (Auckland). Linked alerts stay associated with the selected item."}</p></div>`
+  const fields=field("title",pt?"Título do alerta":"Alert title",old?.title||"","text","full")+textareaField("message",pt?"Mensagem da notificação":"Notification message",old?.message||"","full")+field("scheduledAt",pt?"Data e horário":"Date and time",localDateTimeValue(old?.scheduled_at,editingZone),"datetime-local","full")+tripTimeZoneField("timeZone",pt?"Fuso do agendamento":"Scheduling time zone",editingZone)+selectField("recurrence",pt?"Repetição":"Repeat",[["once",pt?"Não repetir":"Does not repeat"],["daily",pt?"Todos os dias":"Every day"],["weekly",pt?"A cada 7 dias":"Every 7 days"],["monthly",pt?"Todo mês":"Every month"]],old?.recurrence||"once","full")+field("recurrenceEnd",pt?"Repetir até (opcional)":"Repeat until (optional)",old?.recurrence_end||"","date","full")+selectField("linkedItem",pt?"Vincular a documento/evento":"Link to document/event",linkOptions,linkedValue,"full")+`<div class="field full"><p class="file-hint">${pt?"Novos alertas usam o fuso do dispositivo. Recorrências existentes mantêm seu fuso até você alterá-lo.":"New alerts use your device time zone. Existing repeats keep their zone until you change it."}</p></div>`
   modal(old?(pt?"Editar alerta":"Edit alert"):(pt?"Novo alerta":"New alert"),fields,async v=>{
     const title=String(v.title||"").trim(),message=String(v.message||"").trim();
     if(!title){notify(pt?"Informe um título.":"Enter a title.");return false}
     if(!v.scheduledAt){notify(pt?"Escolha data e horário.":"Choose a date and time.");return false}
-    const scheduledIso=zonedDateTimeToIso(v.scheduledAt,ALERT_TIMEZONE);
-    if(!scheduledIso){notify(pt?"Data/horário inválido ou inexistente na Nova Zelândia. Escolha outro horário.":"Invalid or nonexistent New Zealand date/time. Please choose another time.");return false}
-    if(new Date(scheduledIso).getTime()<=Date.now()){notify(pt?"Escolha um horário futuro no fuso da Nova Zelândia.":"Choose a future time in New Zealand time.");return false}
+    if(!tripValidZone(v.timeZone)){notify(pt?"Escolha um fuso válido.":"Choose a valid time zone.");return false}
+    const unchanged=old&&v.timeZone===editingZone&&v.scheduledAt===localDateTimeValue(old.scheduled_at,editingZone);
+    const scheduledIso=unchanged?new Date(old.scheduled_at).toISOString():zonedDateTimeToIso(v.scheduledAt,v.timeZone);
+    if(!scheduledIso){notify(pt?"Data ou horário inexistente no fuso escolhido. Escolha outro horário.":"Invalid or nonexistent time in the selected time zone. Please choose another time.");return false}
+    if(new Date(scheduledIso).getTime()<=Date.now()){notify(pt?"Escolha um horário futuro no fuso selecionado.":"Choose a future time in the selected time zone.");return false}
     const linkParts=String(v.linkedItem||"").split("|");
     const linkedType=linkParts.length===2&&linkParts[0]?linkParts[0]:null;
     const linkedId=linkedType?linkParts[1]:null;
-    const payload={title,message,scheduled_at:scheduledIso,timezone:ALERT_TIMEZONE,status:"pending",recurrence:v.recurrence||"once",recurrence_end:v.recurrenceEnd||null,linked_type:linkedType,linked_id:linkedId,updated_at:new Date().toISOString()};
+    const payload={title,message,scheduled_at:scheduledIso,timezone:v.timeZone,status:"pending",recurrence:v.recurrence||"once",recurrence_end:v.recurrenceEnd||null,linked_type:linkedType,linked_id:linkedId,updated_at:new Date().toISOString()};
     const result=old?await supabaseClient.from("kiwipath_custom_alerts").update(payload).eq("id",old.id).eq("user_id",currentUser.id):await supabaseClient.from("kiwipath_custom_alerts").insert({...payload,user_id:currentUser.id});
     if(result.error)throw result.error;
     await loadCustomAlerts();return true;
@@ -1305,7 +1346,7 @@ function updateProfile(){
 
 const today = () => {
   const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Pacific/Auckland",
+    timeZone: DEVICE_TIMEZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit"
@@ -1578,7 +1619,7 @@ function daysBetween(from,to){return Math.ceil((to.getTime()-from.getTime())/864
 function dashboard(){
  const pending=data.documents.filter(x=>x.status!=="done");
  const todayDate=dateOnlyLocal(today());
- const upcoming=[...data.events].filter(x=>x.date&&dateOnlyLocal(x.date)>=todayDate).sort((a,b)=>a.date.localeCompare(b.date));
+ const upcoming=data.events.map(eventInDeviceZone).filter(x=>x.date&&dateOnlyLocal(x.date)>=todayDate).sort((a,b)=>a.date.localeCompare(b.date));
  const nextEvent=upcoming[0]||null;
  const daysToEvent=nextEvent?Math.max(0,daysBetween(todayDate,dateOnlyLocal(nextEvent.date))):null;
  const countdownPct=daysToEvent===null?0:Math.max(4,Math.min(100,100-(daysToEvent/180*100)));
@@ -1875,6 +1916,7 @@ function applyNavigationPrefs(){
  ordered.forEach(id=>{const b=buttons.get(id);if(b){b.hidden=prefs.hidden.includes(id);nav.appendChild(b)}});
 }
 function renderProfileMenus(){
+ renderDeviceClocks();
  const box=$("#profileMenusSubmenu");if(!box)return;
  const pt=data.language==="pt";
  box.innerHTML=NAV_PAGES.map(p=>'<button type="button" class="profile-menu-item profile-menu-subitem" data-profile-page="'+p.id+'"><span class="menu-item-icon">'+p.icon+'</span><span>'+(pt?p.label:p.en)+'</span></button>').join("");
@@ -1984,7 +2026,110 @@ function tripsOverview(){
  return '<section class="travel-hero"><div class="travel-hero-copy"><div class="eyebrow">KIWIPATH / VIAGENS</div><h1>Viagens</h1><p class="subtitle">Planejem cada detalhe — do primeiro bilhete até a volta para casa.</p></div><div class="trip-history-actions"><button class="btn secondary" data-action="travel-history">Histórico</button><button class="btn travel-primary" data-action="travel-new">'+tripSvg("plane")+' Nova viagem</button></div></section><section class="panel"><div class="section-head"><div><h2>Seus planos</h2><p>'+planned+' viagem(ns) em planejamento</p></div></div>'+(cards?'<div class="travel-list">'+cards+'</div>':'<div class="trip-empty"><div class="trip-card-icon" style="margin:0 auto 12px">'+tripSvg("plane")+'</div><h2>Para onde vamos?</h2><p class="subtitle">Crie uma viagem para organizar destino, reservas, roteiro, orçamento e tudo que precisa acompanhar.</p><button class="btn" data-action="travel-new">Criar primeira viagem</button></div>')+'</section>';
 }
 const tripSelectedDays=new Map();
-function tripSortedItinerary(trip){return (trip.itinerary||[]).slice().sort((a,b)=>((a.date||"9999")+"T"+(a.time||"00:00")).localeCompare((b.date||"9999")+"T"+(b.time||"00:00")))}
+const tripMapDays=new Map();
+function tripValidZone(zone){try{new Intl.DateTimeFormat('en',{timeZone:zone}).format();return !!zone}catch(error){return false}}
+function tripZone(item,trip){return item?.timeZone||trip?.timeZone||ALERT_TIMEZONE}
+function tripTimeZoneField(name,label,value=''){
+ const zones=typeof Intl.supportedValuesOf==='function'?Intl.supportedValuesOf('timeZone'):['Pacific/Auckland','America/Sao_Paulo','Europe/Madrid','Europe/Paris','Europe/Moscow','UTC'];
+ if(value&&!zones.includes(value))zones.unshift(value);
+ return '<div class="field"><label for="f-'+name+'">'+esc(label)+'</label><input id="f-'+name+'" name="'+name+'" list="zones-'+name+'" value="'+esc(value)+'" placeholder="Ex.: Europe/Madrid" autocomplete="off"><datalist id="zones-'+name+'">'+zones.map(zone=>'<option value="'+esc(zone)+'">'+esc(zone.split('/').at(-1).replace(/_/g,' '))+'</option>').join('')+'</datalist></div>';
+}
+function tripRange(item,trip){
+ const zone=tripZone(item,trip),endZone=item.endTimeZone||zone;
+ const start=item.date&&item.time&&tripValidZone(zone)?zonedDateTimeToIso(item.date+'T'+item.time,zone):null;
+ const end=item.endTime&&(item.endDate||item.date)&&tripValidZone(endZone)?zonedDateTimeToIso((item.endDate||item.date)+'T'+item.endTime,endZone):null;
+ return {start:start?Date.parse(start):null,end:end?Date.parse(end):null};
+}
+function tripScheduleError(item,trip){
+ if(!tripValidZone(tripZone(item,trip))||!tripValidZone(item.endTimeZone||tripZone(item,trip)))return 'Escolha um fuso válido da lista.';
+ const range=tripRange(item,trip);
+ if(item.date&&item.time&&range.start===null)return 'O horário de saída não existe nesse fuso. Confira a mudança de horário de verão.';
+ if(item.endTime&&(!item.date||!item.time||range.end===null))return 'Informe data, horário inicial e uma chegada válida.';
+ if(range.start!==null&&range.end!==null&&range.end<range.start)return 'A chegada acontece antes da saída. Confira a data e os fusos.';
+ return '';
+}
+function tripTimeLabel(item,trip){
+ const zone=tripZone(item,trip),endZone=item.endTimeZone||zone;
+ return (item.time||'Horário livre')+(item.time?' · '+zone:'')+(item.endTime?' → '+(item.endDate&&item.endDate!==item.date?fmtDate(item.endDate)+' · ':'')+item.endTime+' · '+endZone:'');
+}
+function tripCalendarFields(trip,item){
+ const time=item.time||'09:00',iso=zonedDateTimeToIso(item.date+'T'+time,tripZone(item,trip));
+ if(!iso)return {date:item.date,time};
+ const p=zonedParts(new Date(iso),ALERT_TIMEZONE),pad=n=>String(n).padStart(2,'0');
+ return {date:p.year+'-'+pad(p.month)+'-'+pad(p.day),time:pad(p.hour)+':'+pad(p.minute),timeZone:ALERT_TIMEZONE,startAt:iso,sourceDate:item.date,sourceTime:time,sourceTimeZone:tripZone(item,trip),endAt:tripRange(item,trip).end!==null?new Date(tripRange(item,trip).end).toISOString():null,tripItemStatus:item.status||'pending'};
+}
+function syncTripItemEvent(trip,item,create=false){
+ const event=tripItineraryEvent(trip,item);
+ if(!event&&!create)return;
+ const values={title:trip.name+' · '+item.title,...tripCalendarFields(trip,item),location:item.location,eventType:'personal',owner:trip.owner||'both',note:item.note||'',tripId:trip.id,itineraryId:item.id,reservationId:item.sourceReservationId||undefined,updatedAt:new Date().toISOString()};
+ if(event)Object.assign(event,values);else if(trip.status!=='done'&&item.date)data.events.push({id:uid(),...values});
+}
+function refreshTripOrigins(trip){
+ let previous={location:trip.destination,latitude:trip.latitude,longitude:trip.longitude};
+ for(const item of tripSortedItinerary(trip)){
+  if(item.status==='skipped')continue;
+  if(item.kind==='travel'&&item.originSource==='previous')Object.assign(item,{origin:previous.location||'',originLatitude:String(previous.latitude??''),originLongitude:String(previous.longitude??'')});
+  if(hasTripCoordinates(item))previous=item;
+ }
+}
+function setTripItemStatus(tripId,itemId,status){
+ if(!['pending','done','skipped'].includes(status))return;
+ const trip=data.trips.find(t=>t.id===tripId),item=trip?.itinerary?.find(x=>x.id===itemId);if(!item)return;
+ const legacy=tripItineraryEvent(trip,item);if(legacy)legacy.itineraryId=item.id;
+ item.status=status;item.updatedAt=new Date().toISOString();refreshTripOrigins(trip);syncTripItemEvent(trip,item);save();render();
+}
+function tripNextItem(trip,now=Date.now()){
+ return tripSortedItinerary(trip).find(item=>{
+  if(['done','skipped'].includes(item.status)||!item.date)return false;
+  const range=tripRange(item,trip);
+  if(range.end!==null)return range.end>=now;
+  const parts=zonedParts(new Date(now),tripZone(item,trip)),day=parts.year+'-'+String(parts.month).padStart(2,'0')+'-'+String(parts.day).padStart(2,'0');
+  return item.date>=day;
+ });
+}
+function tripCurrentMapDay(trip){return tripMapDays.get(trip.id)||tripSelectedDays.get(trip.id)||'all'}
+function tripMapFilter(trip){
+ const selected=tripCurrentMapDay(trip),options=[['all','Viagem inteira'],...tripDayOptions(trip).filter(([date])=>date)];
+ for(const item of trip.itinerary||[])if(!options.some(([date])=>date===(item.date||'flex')))options.push([item.date||'flex',item.date?fmtDate(item.date):'Sem data']);
+ return '<div class="trip-map-filter"><label for="tripMapDayFilter">Mostrar no mapa</label><select id="tripMapDayFilter" data-trip="'+esc(trip.id)+'">'+options.map(([value,label])=>'<option value="'+esc(value)+'" '+(selected===value?'selected':'')+'>'+esc(label)+'</option>').join('')+'</select>'+(selected!=='all'?'<button type="button" class="trip-add" data-action="travel-map-all:'+esc(trip.id)+'">Ver viagem inteira</button>':'')+'</div>';
+}
+function previewTripOrder(tripId,itemId,target){
+ const trip=data.trips.find(t=>t.id===tripId),item=trip?.itinerary?.find(x=>x.id===itemId);if(!item)return;
+ const before=tripSortedItinerary(trip).filter(x=>(x.date||'')===(item.date||'')),from=before.findIndex(x=>x.id===itemId);
+ const to=typeof target==='number'?from+target:before.findIndex(x=>x.id===target);
+ if(to<0||to>=before.length||to===from)return;
+ const fingerprint=entries=>JSON.stringify(entries.map(x=>[x.id,x.date,x.time,x.endDate,x.endTime,x.timeZone,x.endTimeZone,x.status,x.originSource,x.origin,x.location,x.latitude,x.longitude,x.sequence])),baseline=fingerprint(before);
+ const after=before.slice(),[moved]=after.splice(from,1);after.splice(to,0,moved);
+ const preview=JSON.parse(JSON.stringify(trip));after.forEach((entry,index)=>{preview.itinerary.find(x=>x.id===entry.id).sequence=index});refreshTripOrigins(preview);
+ const changes=preview.itinerary.filter(entry=>entry.kind==='travel'&&entry.originSource==='previous'&&entry.origin!==trip.itinerary.find(x=>x.id===entry.id)?.origin);
+ const list=entries=>'<ol>'+entries.map(x=>'<li>'+esc(x.title)+(x.time?' · '+esc(x.time):'')+'</li>').join('')+'</ol>';
+ modal('Reorganizar o dia','<div class="field full trip-order-preview"><h3>Nova sequência</h3>'+list(after)+'<p>Os horários serão mantidos. Revise os conflitos antes de confirmar.</p>'+changes.map(x=>'<p class="trip-item-warning">'+esc(x.title)+': '+esc(x.origin||'Origem sem localização')+' → '+esc(x.location||'Destino a definir')+'</p>').join('')+(after.some((x,i)=>i&&x.time&&after[i-1].time&&tripRange(x,trip).start<tripRange(after[i-1],trip).start)?'<p class="trip-item-warning">A nova ordem não acompanha os horários cadastrados.</p>':'')+'</div>',()=>{
+  const live=data.trips.find(t=>t.id===tripId),current=live&&tripSortedItinerary(live).filter(x=>(x.date||'')===(item.date||''));
+  if(!live||fingerprint(current)!==baseline||changes.some(x=>{const original=trip.itinerary.find(y=>y.id===x.id),latest=live.itinerary.find(y=>y.id===x.id);return latest?.originSource!==original?.originSource})){notify('O roteiro mudou enquanto você reorganizava. Confira a sequência e tente novamente.');return false}
+  after.forEach((entry,index)=>{live.itinerary.find(x=>x.id===entry.id).sequence=index});refreshTripOrigins(live);
+ });
+}
+function tripSavedPlaces(trip){
+ const places=trip.savedPlaces||[];
+ return '<section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg('pin')+'</span><div><h2>Lugares salvos</h2><small>Ideias para encaixar no roteiro quando quiser.</small></div></div><button type="button" class="trip-add" data-action="travel-place-new:'+esc(trip.id)+'">+ Lugar</button></div>'+places.map(place=>'<article class="trip-saved-place"><strong>'+esc(place.title)+'</strong><small>'+esc(place.category||'Passeio')+' · '+esc(place.location||'Local a definir')+'</small>'+(place.note?'<p>'+esc(place.note)+'</p>':'')+'<div class="trip-item-actions"><button type="button" data-action="travel-place-schedule:'+esc(trip.id)+':'+esc(place.id)+'">Adicionar ao roteiro</button><button type="button" data-action="travel-place-edit:'+esc(trip.id)+':'+esc(place.id)+'">Editar</button><button type="button" class="trip-delete" data-action="travel-place-remove:'+esc(trip.id)+':'+esc(place.id)+'">Remover</button></div></article>').join('')+(places.length?'':'<p class="trip-empty-line">Guarde restaurantes, atrações e passeios antes de escolher o dia.</p>')+'</section>';
+}
+function editTripPlace(tripId,placeId=''){
+ const trip=data.trips.find(t=>t.id===tripId),old=trip?.savedPlaces?.find(p=>p.id===placeId);if(!trip)return;
+ modal(old?'Editar lugar salvo':'Salvar lugar',field('title','Nome do lugar',old?.title||'','text','full')+selectField('category','Categoria',[['Passeio','Passeio'],['Restaurante','Restaurante'],['Atração','Atração'],['Outro','Outro']],old?.category||'Passeio','full')+tripItineraryLocationField(old||{})+tripTimeZoneField('timeZone','Fuso local',old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE)+textareaField('note','Notas',old?.note||'','full'),v=>{
+  const live=data.trips.find(t=>t.id===tripId),existing=live?.savedPlaces?.find(p=>p.id===placeId);if(!live||(placeId&&!existing)){notify('O lugar ou a viagem foi removido.');return false}
+  if(!String(v.title||'').trim()||!tripValidZone(v.timeZone)){notify('Informe um nome e um fuso válido.');return false}
+  const place={...existing,id:existing?.id||uid(),title:v.title.trim(),category:v.category,location:String(v.location||'').trim(),latitude:v.latitude||'',longitude:v.longitude||'',timeZone:v.timeZone,note:v.note||''};
+  if(!Array.isArray(live.savedPlaces))live.savedPlaces=[];
+  if(existing)live.savedPlaces=live.savedPlaces.map(p=>p.id===placeId?place:p);else live.savedPlaces.push(place);
+ });setupTripItineraryLocationSearch();
+}
+function tripSortedItinerary(trip){return (trip.itinerary||[]).slice().sort((a,b)=>{
+ const day=(a.date||'9999').localeCompare(b.date||'9999');if(day)return day;
+ const sequence=(Number.isFinite(a.sequence)?a.sequence:Infinity)-(Number.isFinite(b.sequence)?b.sequence:Infinity);if(sequence&&!Number.isNaN(sequence))return sequence;
+ const ar=tripRange(a,trip).start,br=tripRange(b,trip).start;
+ return ar!==null&&br!==null?ar-br:(a.time||'00:00').localeCompare(b.time||'00:00');
+})}
+
 function tripItineraryEvent(trip,item){
  if(!item)return null;
  const linked=tripEvents(trip).find(event=>event.itineraryId===item.id);if(linked)return linked;
@@ -1994,13 +2139,15 @@ function tripItineraryEvent(trip,item){
 }
 function tripItemWarnings(trip,item){
  const warnings=[];
- if(item.date&&((trip.startDate&&item.date<trip.startDate)||(trip.endDate&&item.date>trip.endDate)))warnings.push("Fora das datas da viagem");
- const minutes=time=>{const [h,m]=String(time||"").split(":").map(Number);return h*60+m};
- const start=minutes(item.time),end=item.endTime?minutes(item.endTime):start;
- if(item.endTime&&item.time&&end<start)warnings.push("Horário final anterior ao início");
- if(item.date&&item.time&&(trip.itinerary||[]).some(other=>other.id!==item.id&&other.date===item.date&&other.time&&Math.max(start,minutes(other.time))<=Math.min(end,other.endTime?minutes(other.endTime):minutes(other.time))))warnings.push("Horário coincide com outro item");
+ if(item.date&&((trip.startDate&&item.date<trip.startDate)||(trip.endDate&&item.date>trip.endDate)))warnings.push('Fora das datas da viagem');
+ const range=tripRange(item,trip),error=tripScheduleError(item,trip);if(error)warnings.push(error);
+ if(item.status!=='skipped'&&range.start!==null&&(trip.itinerary||[]).some(other=>{
+  if(other.id===item.id||other.status==='skipped')return false;
+  const otherRange=tripRange(other,trip);return otherRange.start!==null&&Math.max(range.start,otherRange.start)<=Math.min(range.end??range.start,otherRange.end??otherRange.start);
+ }))warnings.push('Horário coincide com outro item');
  return warnings;
 }
+
 function tripItineraryRows(trip){
  const items=tripSortedItinerary(trip),days=tripDayOptions(trip).filter(([date])=>date),dates=[...new Set([...days.map(x=>x[0]),...items.map(x=>x.date||"")])].sort((a,b)=>(a||"9999").localeCompare(b||"9999"));
  const selected=tripSelectedDays.get(trip.id)||"all";
@@ -2008,7 +2155,7 @@ function tripItineraryRows(trip){
  const groups=dates.filter(date=>selected==="all"||(date||"flex")===selected).map(date=>{
   const rows=items.filter(x=>(x.date||"")===date).map(item=>{
    const number=items.indexOf(item)+1,warnings=tripItemWarnings(trip,item),travel=item.kind==="travel"||(!item.kind&&!!item.transport),linked=!!tripItineraryEvent(trip,item);
-   return '<article class="trip-itinerary trip-timeline-item" id="trip-item-'+esc(item.id)+'" data-itinerary-id="'+esc(item.id)+'"><button type="button" class="trip-stop-number" data-action="travel-focus:'+esc(trip.id)+':'+esc(item.id)+'" aria-label="Mostrar '+esc(item.title)+' no mapa">'+number+'</button><div class="trip-item-main"><div class="trip-item-heading"><strong>'+esc(item.title)+'</strong><span class="trip-type-chip" style="--mode-color:'+transportColor(item.transport)+'">'+esc(travel?transportLabel(item.transport)||'Deslocamento':'Atividade')+'</span></div><small>'+esc(item.time||"Horário livre")+(item.endTime?' – '+esc(item.endTime):'')+(linked?' · Cronograma conectado':'')+'</small>'+(item.location?'<p class="trip-item-location">'+esc(travel?(item.origin||'Parada anterior')+' → '+item.location:item.location)+'</p>':'')+(item.note?'<p class="trip-item-note">'+esc(item.note)+'</p>':'')+'<span class="trip-route-detail" data-route-for="'+esc(item.id)+'"></span>'+warnings.map(w=>'<span class="trip-item-warning">'+esc(w)+'</span>').join('')+'<div class="trip-item-actions"><button type="button" data-action="travel-edit-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Editar</button><button type="button" data-action="travel-duplicate-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Duplicar</button><button type="button" data-action="travel-move-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Mover dia</button>'+(item.location?'<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(hasTripCoordinates(item)?item.latitude+','+item.longitude:item.location)+'" target="_blank" rel="noopener">Como chegar</a>':'')+'<button type="button" class="trip-delete" data-action="travel-remove-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Remover</button></div></div></article>';
+   return '<article class="trip-itinerary trip-timeline-item is-'+esc(item.status||'pending')+'" data-trip-id="'+esc(trip.id)+'" id="trip-item-'+esc(item.id)+'" data-itinerary-id="'+esc(item.id)+'"><button type="button" class="trip-stop-number" data-action="travel-focus:'+esc(trip.id)+':'+esc(item.id)+'" aria-label="Mostrar '+esc(item.title)+' no mapa">'+number+'</button><div class="trip-item-main"><div class="trip-item-heading"><strong>'+esc(item.title)+'</strong><span class="trip-type-chip" style="--mode-color:'+transportColor(item.transport)+'">'+esc(travel?transportLabel(item.transport)||'Deslocamento':'Atividade')+'</span></div><small>'+esc(tripTimeLabel(item,trip))+(linked?' · Cronograma conectado':'')+'</small>'+(item.location?'<p class="trip-item-location">'+esc(travel?(item.origin||'Parada anterior')+' → '+item.location:item.location)+'</p>':'')+(item.note?'<p class="trip-item-note">'+esc(item.note)+'</p>':'')+'<span class="trip-route-detail" data-route-for="'+esc(item.id)+'"></span>'+warnings.map(w=>'<span class="trip-item-warning">'+esc(w)+'</span>').join('')+'<div class="trip-item-actions">'+(item.status==='done'||item.status==='skipped'?'<span class="trip-status-label">'+(item.status==='done'?'Feito':'Pulado')+'</span><button type="button" data-action="travel-status:'+esc(trip.id)+':'+esc(item.id)+':pending">Retomar</button>':'<button type="button" data-action="travel-status:'+esc(trip.id)+':'+esc(item.id)+':done">Marcar feito</button><button type="button" data-action="travel-status:'+esc(trip.id)+':'+esc(item.id)+':skipped">Pular</button>')+'<span class="trip-drag-handle" draggable="true" data-drag-itinerary="'+esc(item.id)+'" data-drag-trip="'+esc(trip.id)+'" aria-label="Arrastar '+esc(item.title)+'" title="Arrastar para reordenar">⠿</span><button type="button" data-action="travel-order:'+esc(trip.id)+':'+esc(item.id)+':up" aria-label="Mover '+esc(item.title)+' para cima">↑</button><button type="button" data-action="travel-order:'+esc(trip.id)+':'+esc(item.id)+':down" aria-label="Mover '+esc(item.title)+' para baixo">↓</button><button type="button" data-action="travel-edit-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Editar</button><button type="button" data-action="travel-duplicate-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Duplicar</button><button type="button" data-action="travel-move-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Mover dia</button>'+(item.location?'<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(hasTripCoordinates(item)?item.latitude+','+item.longitude:item.location)+'" target="_blank" rel="noopener">Como chegar</a>':'')+'<button type="button" class="trip-delete" data-action="travel-remove-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Remover</button></div></div></article>';
   }).join('');
   return '<section class="trip-day-group"><h3>'+esc(days.find(x=>x[0]===date)?.[1]||(date?fmtDate(date):'Sem data definida'))+'</h3>'+(rows||'<p class="trip-empty-line">Dia livre. Adicione atividades ou deslocamentos.</p>')+'</section>';
  }).join('');
@@ -2016,6 +2163,7 @@ function tripItineraryRows(trip){
 }
 function focusTripItem(tripId,itemId){
  const trip=data.trips.find(x=>x.id===tripId),item=trip?.itinerary?.find(x=>x.id===itemId);if(!item)return;
+ if(tripCurrentMapDay(trip)!=='all'&&tripCurrentMapDay(trip)!==(item.date||'flex')){tripSelectedDays.set(tripId,item.date||'flex');tripMapDays.set(tripId,item.date||'flex');render();setTimeout(()=>focusTripItem(tripId,itemId),0);return}
  const row=document.getElementById('trip-item-'+itemId);
  $$('.trip-timeline-item').forEach(el=>el.classList.toggle('selected',el.dataset.itineraryId===itemId));
  if(row)row.scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -2025,13 +2173,18 @@ function focusTripItem(tripId,itemId){
 }
 function moveTripItinerary(tripId,itemId){
  const trip=data.trips.find(x=>x.id===tripId),item=trip?.itinerary?.find(x=>x.id===itemId);if(!item)return;
+ if(item.sourceReservationId)return addTripReservation(tripId,item.sourceReservationId);
  modal('Mover para outro dia',selectField('date','Dia da viagem',tripDayOptions(trip),item.date,'full'),v=>{
   const live=data.trips.find(x=>x.id===tripId),entry=live?.itinerary?.find(x=>x.id===itemId);
   if(!entry){notify('O item foi removido.');return false}
   const linked=tripItineraryEvent(live,entry);
-  entry.date=v.date||'';entry.updatedAt=new Date().toISOString();
-  if(linked){linked.date=entry.date;linked.updatedAt=entry.updatedAt;linked.itineraryId=entry.id}
-  tripSelectedDays.set(tripId,v.date||'flex');
+  const candidate={...entry,date:v.date||'',sequence:undefined,updatedAt:new Date().toISOString()};
+  if(entry.endDate&&entry.date&&v.date){const offset=Date.parse(v.date+'T12:00:00Z')-Date.parse(entry.date+'T12:00:00Z');candidate.endDate=new Date(Date.parse(entry.endDate+'T12:00:00Z')+offset).toISOString().slice(0,10)}
+  const error=tripScheduleError(candidate,live);if(error){notify(error);return false}
+  Object.assign(entry,candidate);
+  if(linked){Object.assign(linked,tripCalendarFields(live,entry));linked.updatedAt=entry.updatedAt;linked.itineraryId=entry.id}
+  refreshTripOrigins(live);
+  tripSelectedDays.set(tripId,v.date||'flex');tripMapDays.set(tripId,v.date||'flex');
  });
 }
 const tripTravelModes=new Set();
@@ -2084,9 +2237,8 @@ function tripChecklistRows(trip){
  return (trip.checklist||[]).slice().sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')).map(item=>'<div class="trip-check '+(item.done?'done':'')+'"><input type="checkbox" aria-label="Concluir '+esc(item.title)+'" data-action="travel-check-toggle:'+esc(trip.id)+':'+esc(item.id)+'" '+(item.done?'checked':'')+'><div class="trip-item-main"><strong>'+esc(item.title)+'</strong><small>'+esc(item.group||'Preparação')+' · '+esc(item.owner==='vitor'?'Vitor':item.owner==='zack'?'Zack':'Vitor & Zack')+(item.due?' · Até '+esc(fmtDate(item.due)):'')+'</small>'+(!item.done&&item.due&&item.due<today()?'<span class="trip-item-warning">Prazo vencido</span>':'')+'<div class="trip-item-actions"><button type="button" data-action="travel-edit-check:'+esc(trip.id)+':'+esc(item.id)+'">Editar</button><button type="button" class="trip-delete" data-action="travel-remove-check:'+esc(trip.id)+':'+esc(item.id)+'">Remover</button></div></div></div>').join('')||'<p class="trip-empty-line">Prepare malas, passaporte, vistos, seguro e saúde com responsáveis e prazos.</p>';
 }
 function tripNowPanel(trip){
- const items=tripSortedItinerary(trip),now=new Date(),localDay=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0'),localTime=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
- const next=items.find(x=>x.date&&(x.date>localDay||(x.date===localDay&&(!x.time||x.time>=localTime))));
- return '<section class="trip-now"><div><span class="eyebrow">'+(tripTravelModes.has(trip.id)?'EM VIAGEM':'PRÓXIMO NO ROTEIRO')+'</span><h2>'+esc(next?.title||'Seu roteiro está em dia')+'</h2><p>'+esc(next?(fmtDate(next.date)+(next.time?' · '+next.time:'')+(next.location?' · '+next.location:'')):'Adicione atividades e tenha os próximos passos à mão.')+'</p><small>Próximo item conforme o horário deste dispositivo. Confira os fusos locais.</small></div><div class="trip-now-actions">'+(next?'<button class="trip-add" data-action="travel-focus:'+esc(trip.id)+':'+esc(next.id)+'">Ver no roteiro e mapa</button>':'')+'<button class="trip-add" data-action="travel-mode:'+esc(trip.id)+'">'+(tripTravelModes.has(trip.id)?'Ver planejamento completo':'Modo em viagem')+'</button><button class="trip-add" data-action="travel-offline:'+esc(trip.id)+'">Compartilhar guia PDF</button></div></section>';
+ const next=tripNextItem(trip),items=trip.itinerary||[],completed=items.filter(x=>x.status==='done').length,skipped=items.filter(x=>x.status==='skipped').length;
+ return '<section class="trip-now"><div><span class="eyebrow">'+(tripTravelModes.has(trip.id)?'EM VIAGEM':'PRÓXIMO NO ROTEIRO')+'</span><h2>'+esc(next?.title||'Seu roteiro está em dia')+'</h2><p>'+esc(next?(fmtDate(next.date)+(next.time?' · '+tripTimeLabel(next,trip):'')+(next.location?' · '+next.location:'')):'Adicione atividades e tenha os próximos passos à mão.')+'</p><small>'+completed+' de '+items.length+' feitos · '+skipped+' pulados. Horários no fuso de cada local.</small></div><div class="trip-now-actions">'+(next?'<button class="trip-add" data-action="travel-focus:'+esc(trip.id)+':'+esc(next.id)+'">Ver no roteiro e mapa</button>':'')+'<button class="trip-add" data-action="travel-mode:'+esc(trip.id)+'">'+(tripTravelModes.has(trip.id)?'Ver planejamento completo':'Modo em viagem')+'</button><button class="trip-add" data-action="travel-offline:'+esc(trip.id)+'">Compartilhar guia PDF</button></div></section>';
 }
 function canShareTripPdf(file){
  try{return typeof navigator.share==='function'&&typeof navigator.canShare==='function'&&navigator.canShare({files:[file]})}catch(error){return false}
@@ -2133,7 +2285,7 @@ function tripDashboard(trip){
  const itineraryRows=tripItineraryRows(trip);
  const checkRows=tripChecklistRows(trip);
  const docRows=docs.length?docs.map(x=>'<button class="trip-linked-button" data-action="preview-document:'+esc(x.id)+'"><strong>'+esc(x.title)+'</strong><span>'+esc(x.owner==="both"?"Vitor & Zack":x.owner||"")+'</span></button>').join(""):'<div class="trip-empty-line">Nenhum documento vinculado a esta viagem.</div>';
- return '<section class="trip-dashboard '+(tripTravelModes.has(trip.id)?'trip-travel-mode':'')+'"><button class="trip-back" data-action="travel-back">← Todas as viagens</button><div class="trip-dashboard-head"><div><div class="eyebrow">VIAGEM / PLANEJAMENTO</div><div class="trip-title-line">'+tripFlag(trip,"trip-card-flag")+'<h1>'+esc(trip.name)+'</h1></div><p class="trip-date">'+esc(trip.destination||"Destino a definir")+' · '+esc(tripDates(trip))+'</p></div><div class="trip-dashboard-actions"><button class="btn secondary" data-action="travel-edit:'+esc(trip.id)+'">Editar viagem</button><button class="trip-delete-trip" data-action="travel-delete:'+esc(trip.id)+'">Excluir viagem</button></div></div>'+tripNowPanel(trip)+'<div class="trip-kpis"><div class="trip-kpi"><span>Orçamento</span><strong>'+tripMoney(budget,trip.currency)+'</strong></div><div class="trip-kpi"><span>Despesas</span><strong>'+tripMoney(spent,trip.currency)+'</strong></div><div class="trip-kpi"><span>Reservas</span><strong>'+reservations.length+'</strong></div><div class="trip-kpi"><span>Checklist</span><strong>'+checked+'/'+checklist.length+'</strong></div></div><div class="trip-layout"><div><section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("plane")+'</span><div><h2>Reservas e passagens</h2><small>Vinculadas ao calendário e às finanças.</small></div></div><button class="trip-add" data-action="travel-add-reservation:'+esc(trip.id)+'">+ Adicionar</button></div>'+reserveRows+'</section><section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("route")+'</span><div><h2>Roteiro</h2><small>'+events.length+' evento(s) vinculado(s) ao Cronograma</small></div></div><div class="trip-heading-actions"><button class="trip-add" data-action="travel-add-itinerary:'+esc(trip.id)+'">+ Atividade</button><button class="trip-add" data-action="travel-add-transfer:'+esc(trip.id)+'">+ Deslocamento</button></div></div>'+itineraryRows+'</section><section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("bag")+'</span><div><h2>Preparação e malas</h2><small>Documentos, saúde e tudo para embarcar.</small></div></div><button class="trip-add" data-action="travel-add-check:'+esc(trip.id)+'">+ Item</button></div>'+checkRows+'</section></div><aside><section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("wallet")+'</span><div><h2>Orçamento</h2><small>'+esc(trip.currency)+' · previsto e realizado</small></div></div></div><div class="trip-budget-bar '+(budget&&spent>budget?"over":"")+'"><i style="width:'+pct+'%"></i></div><p class="trip-empty-line">'+(budget?tripMoney(spent,trip.currency)+" de "+tripMoney(budget,trip.currency):"Defina um orçamento para acompanhar os gastos.")+'</p>'+tripBudgetPanel(trip)+'<div class="trip-mini-actions"><button data-action="travel-open-linked:finances">Abrir Finanças</button></div></section><section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("file")+'</span><div><h2>Documentos</h2><small>Passaportes, seguros, vistos e vouchers.</small></div></div><button class="trip-add" data-action="travel-add-document:'+esc(trip.id)+'">+ Documento</button></div><div class="trip-link-row">'+docRows+'</div><div class="trip-mini-actions"><button data-action="travel-open-linked:documents">Ver documentos</button></div></section><section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("pin")+'</span><div><h2>Central de viagem</h2><small>Todos os vínculos permanecem sincronizados.</small></div></div></div><div class="trip-link-row"><button class="trip-linked-button" data-action="travel-open-linked:timeline"><strong>Cronograma</strong><span>'+events.length+' item(ns)</span></button><button class="trip-linked-button" data-action="travel-open-linked:finances"><strong>Finanças</strong><span>'+tx.length+' lançamento(s)</span></button></div>'+(trip.note?'<div class="trip-note">'+esc(trip.note)+'</div>':'')+'</section></aside></div><section class="trip-section trip-map-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("route")+'</span><div><h2>Mapa de deslocamentos</h2><small>Caminhos por transporte, do início da viagem às paradas do roteiro.</small></div></div></div><div id="tripMovementMap" class="trip-map" data-trip-id="'+esc(trip.id)+'"></div>'+'<div class="trip-map-legend" aria-label="Cores dos transportes">'+mapLegend+'</div><p id="tripMapStatus" class="trip-map-status" role="status"></p>'+'</section></section>';
+ return '<section class="trip-dashboard '+(tripTravelModes.has(trip.id)?'trip-travel-mode':'')+'"><button class="trip-back" data-action="travel-back">← Todas as viagens</button><div class="trip-dashboard-head"><div><div class="eyebrow">VIAGEM / PLANEJAMENTO</div><div class="trip-title-line">'+tripFlag(trip,"trip-card-flag")+'<h1>'+esc(trip.name)+'</h1></div><p class="trip-date">'+esc(trip.destination||"Destino a definir")+' · '+esc(tripDates(trip))+'</p></div><div class="trip-dashboard-actions"><button class="btn secondary" data-action="travel-edit:'+esc(trip.id)+'">Editar viagem</button><button class="trip-delete-trip" data-action="travel-delete:'+esc(trip.id)+'">Excluir viagem</button></div></div>'+tripNowPanel(trip)+'<div class="trip-kpis"><div class="trip-kpi"><span>Orçamento</span><strong>'+tripMoney(budget,trip.currency)+'</strong></div><div class="trip-kpi"><span>Despesas</span><strong>'+tripMoney(spent,trip.currency)+'</strong></div><div class="trip-kpi"><span>Reservas</span><strong>'+reservations.length+'</strong></div><div class="trip-kpi"><span>Checklist</span><strong>'+checked+'/'+checklist.length+'</strong></div></div><div class="trip-layout"><div><section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("plane")+'</span><div><h2>Reservas e passagens</h2><small>Vinculadas ao calendário e às finanças.</small></div></div><button class="trip-add" data-action="travel-add-reservation:'+esc(trip.id)+'">+ Adicionar</button></div>'+reserveRows+'</section><section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("route")+'</span><div><h2>Roteiro</h2><small>'+events.length+' evento(s) vinculado(s) ao Cronograma</small></div></div><div class="trip-heading-actions"><button class="trip-add" data-action="travel-add-itinerary:'+esc(trip.id)+'">+ Atividade</button><button class="trip-add" data-action="travel-add-transfer:'+esc(trip.id)+'">+ Deslocamento</button></div></div>'+itineraryRows+'</section>'+tripSavedPlaces(trip)+'<section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("bag")+'</span><div><h2>Preparação e malas</h2><small>Documentos, saúde e tudo para embarcar.</small></div></div><button class="trip-add" data-action="travel-add-check:'+esc(trip.id)+'">+ Item</button></div>'+checkRows+'</section></div><aside><section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("wallet")+'</span><div><h2>Orçamento</h2><small>'+esc(trip.currency)+' · previsto e realizado</small></div></div></div><div class="trip-budget-bar '+(budget&&spent>budget?"over":"")+'"><i style="width:'+pct+'%"></i></div><p class="trip-empty-line">'+(budget?tripMoney(spent,trip.currency)+" de "+tripMoney(budget,trip.currency):"Defina um orçamento para acompanhar os gastos.")+'</p>'+tripBudgetPanel(trip)+'<div class="trip-mini-actions"><button data-action="travel-open-linked:finances">Abrir Finanças</button></div></section><section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("file")+'</span><div><h2>Documentos</h2><small>Passaportes, seguros, vistos e vouchers.</small></div></div><button class="trip-add" data-action="travel-add-document:'+esc(trip.id)+'">+ Documento</button></div><div class="trip-link-row">'+docRows+'</div><div class="trip-mini-actions"><button data-action="travel-open-linked:documents">Ver documentos</button></div></section><section class="trip-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("pin")+'</span><div><h2>Central de viagem</h2><small>Todos os vínculos permanecem sincronizados.</small></div></div></div><div class="trip-link-row"><button class="trip-linked-button" data-action="travel-open-linked:timeline"><strong>Cronograma</strong><span>'+events.length+' item(ns)</span></button><button class="trip-linked-button" data-action="travel-open-linked:finances"><strong>Finanças</strong><span>'+tx.length+' lançamento(s)</span></button></div>'+(trip.note?'<div class="trip-note">'+esc(trip.note)+'</div>':'')+'</section></aside></div><section class="trip-section trip-map-section"><div class="trip-section-head"><div class="trip-icon-heading"><span class="trip-section-icon">'+tripSvg("route")+'</span><div><h2>Mapa de deslocamentos</h2><small>Caminhos por transporte, do início da viagem às paradas do roteiro.</small></div></div></div>'+tripMapFilter(trip)+'<div id="tripMovementMap" class="trip-map" data-trip-id="'+esc(trip.id)+'"></div>'+'<div class="trip-map-legend" aria-label="Cores dos transportes">'+mapLegend+'</div><p id="tripMapStatus" class="trip-map-status" role="status"></p>'+'</section></section>';
 }
 function travelTripField(selected=""){
  const options=[["","Sem vínculo com viagem"],...(data.trips||[]).map(x=>[x.id,(x.name||"Viagem")+" · "+(x.destination||"Destino")])];
@@ -2142,11 +2294,13 @@ function travelTripField(selected=""){
 function editTrip(id){
  ensureTrips();const old=id?data.trips.find(x=>x.id===id):null;
  const accentOptions=[["#47785c","Verde Kiwi"],["#527c97","Azul oceano"],["#a56b57","Terracota"],["#916eab","Lavanda"],["#c59b54","Dourado"]];
- modal(old?"Editar viagem":"Nova viagem",field("name","Nome da viagem",old?.name||"","text","full")+travelDestinationField(old||{})+'<div class="field full trip-date-fields"><label class="trip-date-control" for="f-startDate">Data de ida<input id="f-startDate" name="startDate" type="date" value="'+(old?.startDate||"")+'"></label><label class="trip-date-control" for="f-endDate">Data de volta<input id="f-endDate" name="endDate" type="date" value="'+(old?.endDate||"")+'"></label></div>'+selectField("status","Como deseja cadastrar?",[["planning","Planejar uma viagem futura"],["done","Viagem já realizada · somente histórico"]],old?.status||"planning","full")+selectField("owner","Quem viaja?",[["both","Vitor & Zack"],["vitor","Vitor"],["zack","Zack"]],old?.owner||"both")+selectField("currency","Moeda do orçamento",tripCurrencies.map(currency=>[currency,currency]),old?.currency||"NZD")+field("budget","Orçamento total",old?.budget??"","number")+selectField("accent","Identidade visual",accentOptions,old?.accent||"#47785c")+textareaField("note","Notas da viagem",old?.note||"","full"),v=>{
+ modal(old?"Editar viagem":"Nova viagem",field("name","Nome da viagem",old?.name||"","text","full")+travelDestinationField(old||{})+'<div class="field full trip-date-fields"><label class="trip-date-control" for="f-startDate">Data de ida<input id="f-startDate" name="startDate" type="date" value="'+(old?.startDate||"")+'"></label><label class="trip-date-control" for="f-endDate">Data de volta<input id="f-endDate" name="endDate" type="date" value="'+(old?.endDate||"")+'"></label></div>'+selectField("status","Como deseja cadastrar?",[["planning","Planejar uma viagem futura"],["done","Viagem já realizada · somente histórico"]],old?.status||"planning","full")+tripTimeZoneField("timeZone","Fuso principal da viagem",old?tripZone(old):DEVICE_TIMEZONE)+selectField("owner","Quem viaja?",[["both","Vitor & Zack"],["vitor","Vitor"],["zack","Zack"]],old?.owner||"both")+selectField("currency","Moeda do orçamento",tripCurrencies.map(currency=>[currency,currency]),old?.currency||"NZD")+field("budget","Orçamento total",old?.budget??"","number")+selectField("accent","Identidade visual",accentOptions,old?.accent||"#47785c")+textareaField("note","Notas da viagem",old?.note||"","full"),v=>{
   const name=String(v.name||"").trim();if(!name){notify("Dê um nome para a viagem.");return false}
   if(v.startDate&&v.endDate&&v.endDate<v.startDate){notify("A volta deve ser depois da ida.");return false}
+  if(!tripValidZone(v.timeZone)){notify("Escolha um fuso válido para a viagem.");return false}
   const live=old?data.trips.find(x=>x.id===id):null;if(old&&!live){notify("Esta viagem foi removida.");return false}
-  const item={...live,id:old?.id||uid(),name,destination:String(v.destination||"").trim(),country:String(v.country||"").trim(),countryCode:String(v.countryCode||"").toLowerCase(),latitude:String(v.latitude||""),longitude:String(v.longitude||""),startDate:v.startDate||"",endDate:v.endDate||"",owner:v.owner,currency:v.currency,budget:Math.max(0,parseAmount(v.budget)||0),accent:v.accent,note:String(v.note||"").trim(),status:v.status||"planning",reservations:live?.reservations||[],itinerary:live?.itinerary||[],checklist:live?.checklist||[],documentIds:live?.documentIds||[]};
+  const item={...live,id:old?.id||uid(),name,destination:String(v.destination||"").trim(),country:String(v.country||"").trim(),countryCode:String(v.countryCode||"").toLowerCase(),latitude:String(v.latitude||""),longitude:String(v.longitude||""),startDate:v.startDate||"",endDate:v.endDate||"",owner:v.owner,timeZone:v.timeZone,currency:v.currency,budget:Math.max(0,parseAmount(v.budget)||0),accent:v.accent,note:String(v.note||"").trim(),status:v.status||"planning",reservations:live?.reservations||[],itinerary:live?.itinerary||[],checklist:live?.checklist||[],documentIds:live?.documentIds||[]};
+  if(live){item.itinerary=item.itinerary.map(entry=>entry.timeZone?entry:{...entry,timeZone:live.timeZone||ALERT_TIMEZONE,endTimeZone:entry.endTimeZone||live.timeZone||ALERT_TIMEZONE});item.reservations=item.reservations.map(entry=>entry.timeZone?entry:{...entry,timeZone:live.timeZone||ALERT_TIMEZONE,endTimeZone:entry.endTimeZone||live.timeZone||ALERT_TIMEZONE})}
   if(live&&live.currency!==item.currency){item.exchangeRates={};item.reservations=item.reservations.map(r=>({...r,currency:r.currency||live.currency,exchangeRate:(r.currency||live.currency)===item.currency?1:null}))}
   if(old)data.trips=data.trips.map(x=>x.id===id?item:x);else {data.trips.push(item);activeTripId=item.status==="done"?"":item.id;if(item.status==="done")tripsView="history"}
  });
@@ -2157,38 +2311,67 @@ function deleteTrip(id){
  const trip=(data.trips||[]).find(x=>x.id===id);if(!trip)return;
  confirmDialog({title:"Excluir viagem?",message:"A viagem será removida. Reservas, eventos, documentos e lançamentos já criados serão preservados nos menus originais.",confirmText:"Excluir viagem",cancelText:"Manter viagem",danger:true}).then(ok=>{if(!ok)return;data.trips=data.trips.filter(x=>x.id!==id);activeTripId="";save();render();notify("Viagem excluída.")});
 }
+function syncTripReservationItinerary(trip,reservation){
+ if(!Array.isArray(trip.itinerary))trip.itinerary=[];
+ const linked=trip.itinerary.filter(item=>item.sourceReservationId===reservation.id),excluded=reservation.excludedItineraryParts||[];
+ let desired=[];
+ if(!reservation.toItinerary){const standalone=data.events.find(event=>event.tripId===trip.id&&event.reservationId===reservation.id);if(standalone)delete standalone.itineraryId}
+ if(reservation.toItinerary){
+  const base={date:reservation.startDate||'',time:reservation.time||'',timeZone:reservation.timeZone||tripZone(null,trip),location:reservation.location||'',latitude:reservation.latitude||'',longitude:reservation.longitude||'',note:reservation.note||''};
+  if(reservation.type==='stay'){
+   desired.push({...base,reservationPart:'checkin',title:'Check-in · '+reservation.title,kind:'activity'});
+   if(reservation.endDate)desired.push({...base,reservationPart:'checkout',title:'Check-out · '+reservation.title,date:reservation.endDate,time:reservation.endTime||'',timeZone:reservation.endTimeZone||base.timeZone,kind:'activity'});
+  }else if(['flight','transport'].includes(reservation.type))desired.push({...base,reservationPart:'transfer',title:reservation.title,kind:'travel',transport:reservation.type==='flight'?'flight':reservation.transport||'car',endDate:reservation.endDate||reservation.startDate||'',endTime:reservation.endTime||'',endTimeZone:reservation.endTimeZone||base.timeZone,origin:reservation.origin||'',originLatitude:reservation.originLatitude||'',originLongitude:reservation.originLongitude||'',originSource:reservation.origin?'custom':'previous'});
+  else desired.push({...base,reservationPart:'activity',title:reservation.title,kind:'activity',endDate:reservation.endDate||reservation.startDate||'',endTime:reservation.endTime||'',endTimeZone:reservation.endTimeZone||base.timeZone});
+ }
+ desired=desired.filter(item=>!excluded.includes(item.reservationPart));
+ const kept=new Set();
+ desired.forEach((values,index)=>{
+  const old=linked.find(item=>item.reservationPart===values.reservationPart),item={...old,...values,id:old?.id||uid(),sourceReservationId:reservation.id,status:old?.status||'pending',updatedAt:new Date().toISOString()};
+  if(old)trip.itinerary=trip.itinerary.map(entry=>entry.id===old.id?item:entry);else trip.itinerary.push(item);kept.add(item.id);
+  if(index===0){const standalone=data.events.find(event=>event.tripId===trip.id&&event.reservationId===reservation.id&&!event.itineraryId);if(standalone)standalone.itineraryId=item.id}
+  syncTripItemEvent(trip,item,true);
+ });
+ for(const removed of linked.filter(item=>!kept.has(item.id))){
+  trip.itinerary=trip.itinerary.filter(item=>item.id!==removed.id);
+  data.events=data.events.filter(event=>event.tripId!==trip.id||event.itineraryId!==removed.id);
+ }
+ refreshTripOrigins(trip);
+}
 function addTripReservation(tripId,reservationId=''){
  const trip=data.trips.find(x=>x.id===tripId),old=trip?.reservations?.find(r=>r.id===reservationId),accounts=accessibleAccounts();if(!trip||(reservationId&&!old))return;
  const linkedTransaction=tripTransactions(trip).find(t=>t.reservationId===reservationId&&reservationId);
  const accountOptions=[['','Não lançar agora'],...accounts.map(a=>[a.id,a.name+' · '+a.currency])];
- modal(old?'Editar reserva':'Adicionar reserva',field('title','Nome da reserva',old?.title||'','text','full')+selectField('type','Tipo',[['flight','Passagem'],['stay','Hospedagem'],['transport','Transporte'],['activity','Atividade'],['food','Restaurante'],['other','Outro']],old?.type||'flight')+field('provider','Companhia / fornecedor',old?.provider||'','text')+field('reference','Código de reserva',old?.reference||'','text','full')+field('startDate','Data / check-in',old?.startDate||'','date')+field('time','Horário / check-in',old?.time||'','time')+field('endDate','Data final / check-out',old?.endDate||'','date')+field('endTime','Horário final / check-out',old?.endTime||'','time')+field('location','Local / endereço',old?.location||'','text','full')+selectField('currency','Moeda da reserva',tripCurrencies.map(c=>[c,c]),old?.currency||trip.currency)+field('cost','Valor total',old?.cost??'','number')+field('paidAmount','Valor já pago',old?.paidAmount??'','number')+field('exchangeRate','Cotação: 1 unidade da moeda em '+trip.currency,old?.exchangeRate||'','number')+selectField('accountId','Lançar valor pago em qual caixinha?',accountOptions,linkedTransaction?.accountId||'','full')+'<p class="field full file-hint">Para lançar o pagamento, escolha uma caixinha na mesma moeda da reserva. A cotação é manual e converte o orçamento para '+esc(trip.currency)+'.</p>'+selectField('documentId','Voucher em PDF',[['','Sem voucher'],...tripDocuments(trip).filter(d=>d.filePath).map(d=>[d.id,d.title])],old?.documentId||'','full')+textareaField('note','Notas',old?.note||'','full'),v=>{
+ modal(old?'Editar reserva':'Adicionar reserva',field('title','Nome da reserva',old?.title||'','text','full')+selectField('type','Tipo',[['flight','Passagem'],['stay','Hospedagem'],['transport','Transporte'],['activity','Atividade'],['food','Restaurante'],['other','Outro']],old?.type||'flight')+field('provider','Companhia / fornecedor',old?.provider||'','text')+field('reference','Código de reserva',old?.reference||'','text','full')+field('startDate','Data / check-in',old?.startDate||'','date')+field('time','Horário / check-in',old?.time||'','time')+field('endDate','Data final / check-out',old?.endDate||'','date')+field('endTime','Horário final / check-out',old?.endTime||'','time')+'<div class="field full" id="tripReservationOrigin">'+tripItineraryLocationField({location:old?.origin||'',latitude:old?.originLatitude||'',longitude:old?.originLongitude||''},'origin')+'</div>'+tripItineraryLocationField(old||{})+tripTimeZoneField('timeZone','Fuso da saída / check-in',old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE)+tripTimeZoneField('endTimeZone','Fuso da chegada / check-out',old?.endTimeZone||(old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE))+'<div id="tripReservationTransport" class="field full">'+selectField('transport','Transporte terrestre',[['car','Carro'],['bus','Ônibus'],['train','Trem'],['taxi','Táxi']],old?.transport||'car','full')+'</div>'+selectField('toItinerary','Conectar ao roteiro',[['yes','Sim, criar e manter os itens conectados'],['no','Não conectar']],old?(old.toItinerary?'yes':'no'):'yes','full')+selectField('currency','Moeda da reserva',tripCurrencies.map(c=>[c,c]),old?.currency||trip.currency)+field('cost','Valor total',old?.cost??'','number')+field('paidAmount','Valor já pago',old?.paidAmount??'','number')+field('exchangeRate','Cotação: 1 unidade da moeda em '+trip.currency,old?.exchangeRate||'','number')+selectField('accountId','Lançar valor pago em qual caixinha?',accountOptions,linkedTransaction?.accountId||'','full')+'<p class="field full file-hint">Para lançar o pagamento, escolha uma caixinha na mesma moeda da reserva. A cotação é manual e converte o orçamento para '+esc(trip.currency)+'.</p>'+selectField('documentId','Voucher em PDF',[['','Sem voucher'],...tripDocuments(trip).filter(d=>d.filePath).map(d=>[d.id,d.title])],old?.documentId||'','full')+textareaField('note','Notas',old?.note||'','full'),v=>{
   const live=data.trips.find(t=>t.id===tripId),existing=live?.reservations?.find(r=>r.id===reservationId),title=String(v.title||'').trim();
   if(!live||(reservationId&&!existing)){notify('A viagem ou reserva foi removida.');return false}
   if(!title){notify('Informe a reserva.');return false}
   const cost=parseAmount(v.cost||0),paidAmount=parseAmount(v.paidAmount||0),exchangeRate=v.currency===live.currency?1:parseAmount(v.exchangeRate);
   if(!Number.isFinite(cost)||cost<0||!Number.isFinite(paidAmount)||paidAmount<0||paidAmount>cost){notify('Confira o valor total e o valor pago.');return false}
   if(v.currency!==live.currency&&(!Number.isFinite(exchangeRate)||exchangeRate<=0)){notify('Informe uma cotação válida para o orçamento.');return false}
-  if(v.endDate&&v.startDate&&v.endDate<v.startDate){notify('O check-out deve ser igual ou posterior ao check-in.');return false}
-  if(v.endDate&&v.endDate===v.startDate&&v.endTime&&v.time&&v.endTime<v.time){notify('Confira os horários de entrada e saída.');return false}
+  const scheduleError=tripScheduleError({date:v.startDate,time:v.time,endDate:v.endDate||v.startDate,endTime:v.endTime,timeZone:v.timeZone,endTimeZone:v.endTimeZone},live);if(scheduleError){notify(scheduleError);return false}
   const account=accessibleAccounts().find(a=>a.id===v.accountId);
   if(v.accountId&&!account){notify('A caixinha foi removida. Selecione outra.');return false}
   const currentPayment=data.transactions.find(t=>t.tripId===tripId&&t.reservationId===reservationId&&reservationId);
   if(currentPayment&&(!account||paidAmount<=0)){notify('Esta reserva possui um pagamento nas Finanças. Mantenha uma caixinha e um valor pago, ou ajuste o lançamento em Finanças.');return false}
   if(account&&account.currency!==v.currency){notify('Escolha uma caixinha na mesma moeda da reserva ou não lance agora.');return false}
-  const reservation={...existing,id:existing?.id||uid(),title,type:v.type,provider:String(v.provider||'').trim(),reference:String(v.reference||'').trim(),startDate:v.startDate||'',time:v.time||'',endDate:v.endDate||'',endTime:v.endTime||'',location:String(v.location||'').trim(),cost,paidAmount,currency:v.currency,exchangeRate,documentId:v.documentId||'',note:String(v.note||'').trim()};
+  const reservation={...existing,id:existing?.id||uid(),title,type:v.type,provider:String(v.provider||'').trim(),reference:String(v.reference||'').trim(),startDate:v.startDate||'',time:v.time||'',endDate:v.endDate||'',endTime:v.endTime||'',timeZone:v.timeZone,endTimeZone:v.endTimeZone,origin:v.origin||'',originLatitude:v.originLatitude||'',originLongitude:v.originLongitude||'',location:String(v.location||'').trim(),latitude:v.latitude||'',longitude:v.longitude||'',transport:v.transport,toItinerary:v.toItinerary==='yes',cost,paidAmount,currency:v.currency,exchangeRate,documentId:v.documentId||'',note:String(v.note||'').trim()};
   if(!Array.isArray(live.reservations))live.reservations=[];
   if(existing)live.reservations=live.reservations.map(r=>r.id===reservationId?reservation:r);else live.reservations.push(reservation);
   const event=data.events.find(e=>e.tripId===tripId&&e.reservationId===reservation.id);
-  if(live.status!=='done'&&reservation.startDate){
-   const values={title:live.name+' · '+title,date:reservation.startDate,time:reservation.time||'09:00',location:reservation.location,eventType:'personal',owner:live.owner||'both',note:'Reserva de viagem'+(reservation.reference?' · '+reservation.reference:''),tripId:tripId,reservationId:reservation.id,updatedAt:new Date().toISOString()};
+  if(live.status!=='done'&&reservation.startDate&&!reservation.toItinerary){
+   const values={title:live.name+' · '+title,...tripCalendarFields(live,{...reservation,date:reservation.startDate}),location:reservation.location,eventType:'personal',owner:live.owner||'both',note:'Reserva de viagem'+(reservation.reference?' · '+reservation.reference:''),tripId:tripId,reservationId:reservation.id,updatedAt:new Date().toISOString()};
    if(event)Object.assign(event,values);else data.events.push({id:uid(),...values});
   }
+  syncTripReservationItinerary(live,reservation);
   const transaction=data.transactions.find(t=>t.tripId===tripId&&t.reservationId===reservation.id);
   if(live.status!=='done'&&paidAmount&&account){
    const values={title:live.name+' · '+title,type:'expense',amount:paidAmount,currency:v.currency,category:'Lazer',date:reservation.startDate||today(),createdBy:currentMemberKey(),note:'Reserva de viagem'+(reservation.reference?' · '+reservation.reference:''),accountId:account.id,paymentMethod:'transfer',tripId:tripId,reservationId:reservation.id};
    if(transaction)Object.assign(transaction,values);else data.transactions.push({id:uid(),createdAt:new Date().toISOString(),...values});
   }
  });
+ setupTripItineraryLocationSearch();setupTripItineraryLocationSearch('origin');
+ const updateReservationFields=()=>{$('#tripReservationOrigin').hidden=!['flight','transport'].includes($('#f-type').value);$('#tripReservationTransport').hidden=$('#f-type').value!=='transport'};$('#f-type').addEventListener('change',updateReservationFields);updateReservationFields();
  bindCurrencyInput('f-cost',old?.cost??'');bindCurrencyInput('f-paidAmount',old?.paidAmount??'');
 }
 
@@ -2220,16 +2403,24 @@ function hasTripCoordinates(point){
  const lat=Number(point.latitude),lon=Number(point.longitude);
  return Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=90&&Math.abs(lon)<=180;
 }
-function tripMovementPoints(trip){
+function tripMovementPoints(trip,day="all"){
  const points=[];
  if(hasTripCoordinates(trip))points.push({title:'Início da viagem',location:trip.destination||trip.name,latitude:trip.latitude,longitude:trip.longitude,transport:'',number:'I',connect:false});
  tripSortedItinerary(trip||{}).forEach((item,index)=>{
   if(!hasTripCoordinates(item))return;
   const explicit=item.kind==='travel';
-  if(explicit&&hasTripCoordinates({latitude:item.originLatitude,longitude:item.originLongitude}))points.push({title:'Partida · '+item.title,location:item.origin,latitude:item.originLatitude,longitude:item.originLongitude,transport:item.transport,number:'P',connect:false});
+  if(explicit&&hasTripCoordinates({latitude:item.originLatitude,longitude:item.originLongitude}))points.push({title:'Partida · '+item.title,location:item.origin,latitude:item.originLatitude,longitude:item.originLongitude,transport:item.transport,number:'P',date:item.date,connect:false});
   points.push({...item,number:index+1,itineraryId:item.id,connect:explicit?hasTripCoordinates({latitude:item.originLatitude,longitude:item.originLongitude}):!item.kind});
  });
- return points;
+ if(day==='all')return points;
+ const selected=[];
+ points.forEach((point,index)=>{
+  if(!point.itineraryId||((point.date||'flex')!==day&&!(day!=='flex'&&point.date&&point.endDate&&point.date<=day&&point.endDate>=day)))return;
+  const previous=points[index-1];
+  if(point.connect&&previous&&selected[selected.length-1]!==previous)selected.push({...previous,connect:false,number:'P',itineraryId:undefined});
+  selected.push(point);
+ });
+ return selected;
 }
 function tripPathDistance(path){
  let distance=0;const rad=Math.PI/180;
@@ -2247,12 +2438,13 @@ function tripRouteDetail(itemId,text,warning=''){
  });
 }
 function tripTravelTimeWarning(trip,itemId,duration){
- const item=trip.itinerary?.find(x=>x.id===itemId);if(!item?.date||!item.time||!duration)return '';
- const seconds=time=>{const [h,m]=time.split(':').map(Number);return h*3600+m*60};
- const next=tripSortedItinerary(trip).find(x=>x.id!==itemId&&x.date===item.date&&x.time&&x.time>item.time);
- const available=item.endTime||next?.time;
- return available&&seconds(available)-seconds(item.time)<duration?'O tempo reservado pode ser menor que a duração estimada do deslocamento.':'';
+ const items=tripSortedItinerary(trip),item=items.find(x=>x.id===itemId);if(!item||!duration)return '';
+ const range=tripRange(item,trip);if(range.start===null)return '';
+ const following=items.slice(items.indexOf(item)+1).find(x=>x.status!=='skipped'&&tripRange(x,trip).start!==null);
+ const end=range.end??(following?tripRange(following,trip).start:null);
+ return end!==null&&end-range.start<duration*1000?'O tempo reservado pode ser menor que a duração estimada do deslocamento.':'';
 }
+
 function tripRouteSummary(route){
  const km=route.distance/1000,totalMinutes=Math.round((route.duration||0)/60),hours=Math.floor(totalMinutes/60),minutes=totalMinutes%60;
  return km.toLocaleString(data.language==='pt'?'pt-BR':'en-NZ',{maximumFractionDigits:1})+' km'+(route.duration>0?' · '+(hours?hours+' h ':'')+(minutes?minutes+' min':'')+' estimados':' · duração indisponível');
@@ -2331,8 +2523,8 @@ function renderTripMapMarkers(session,trip,points){
 }
 function renderTripMovementMap(){
  const container=$("#tripMovementMap");if(!container)return;
- const trip=data.trips.find(x=>x.id===container.dataset.tripId),points=tripMovementPoints(trip);
- if(!points.length){container.className="trip-map trip-map-empty";container.textContent="Adicione localizações ao roteiro para visualizar os deslocamentos no mapa.";return}
+ const trip=data.trips.find(x=>x.id===container.dataset.tripId),points=tripMovementPoints(trip,tripCurrentMapDay(trip));
+ if(!points.length){container.className="trip-map trip-map-empty";container.textContent=tripCurrentMapDay(trip)==="all"?"Adicione localizações ao roteiro para visualizar os deslocamentos no mapa.":"Nenhuma localização cadastrada neste dia. Escolha outro dia ou a viagem inteira.";return}
  if(!window.L){container.className="trip-map trip-map-empty";container.textContent="O mapa será carregado quando houver conexão.";return}
  disposeTripMovementMap();container.className="trip-map";container.innerHTML="";
  const map=window.L.map(container,{scrollWheelZoom:false,attributionControl:true}),latLngs=points.map(p=>[Number(p.latitude),Number(p.longitude)]);
@@ -2372,8 +2564,9 @@ function renderTripMovementMap(){
  })();
 }
 
-function addTripItinerary(tripId,itemId="",duplicate=false,initialKind="activity"){
- const trip=data.trips.find(x=>x.id===tripId),old=trip?.itinerary?.find(x=>x.id===itemId);if(!trip||(itemId&&!old))return;
+function addTripItinerary(tripId,itemId="",duplicate=false,initialKind="activity",seed=null){
+ const trip=data.trips.find(x=>x.id===tripId),old=trip?.itinerary?.find(x=>x.id===itemId)||seed;if(!trip||(itemId&&!old))return;
+ if(old?.sourceReservationId&&!duplicate){notify('Este item acompanha a reserva. Edite os horários e locais na reserva.');return addTripReservation(tripId,old.sourceReservationId)}
  const kind=old?.kind|| (old?.transport?'travel':initialKind),days=tripDayOptions(trip),selectedDay=tripSelectedDays.get(tripId);
  if(old?.date&&!days.some(([date])=>date===old.date))days.unshift([old.date,'Data atual · '+fmtDate(old.date)]);
  const linked=old&&!duplicate?tripItineraryEvent(trip,old):null;
@@ -2383,17 +2576,18 @@ function addTripItinerary(tripId,itemId="",duplicate=false,initialKind="activity
  const fields=selectField('kind','Tipo de item',[['activity','Atividade'],['travel','Deslocamento']],kind,'full')+
  field('title','Atividade ou compromisso',old?.title||'','text','full')+
  selectField('date','Dia da viagem',days,old?.date||(selectedDay&&selectedDay!=='all'&&selectedDay!=='flex'?selectedDay:days[0]?.[0])||'','full')+
- field('time','Horário de início',old?.time||'','time')+field('endTime','Horário de término (opcional)',old?.endTime||'','time')+
+ field('time','Horário de saída / início',old?.time||'','time')+tripTimeZoneField('timeZone','Fuso da saída / início',old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE)+field('endDate','Data final (se diferente)',old?.endDate||'','date')+field('endTime','Horário de chegada / término',old?.endTime||'','time')+tripTimeZoneField('endTimeZone','Fuso da chegada / término',old?.endTimeZone||(old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE))+
  '<div id="tripOriginWrap" class="field full"'+(kind==='travel'?'':' hidden')+'>'+selectField('originSource','Origem',origins,selectedOrigin,'full')+'<div id="tripCustomOrigin"'+(selectedOrigin==='custom'?'':' hidden')+'>'+tripItineraryLocationField(originPoint,'origin')+'</div>'+selectField('transport','Transporte',[['walk','Caminhando'],['car','Carro'],['bus','Ônibus'],['train','Trem'],['flight','Avião'],['taxi','Táxi']],old?.transport||'walk','full')+'</div>'+
  tripItineraryLocationField(old||{})+selectField('toTimeline','Criar também no Cronograma',trip.status!=='done'?[['yes','Sim, manter conectado'],['no','Não agora']]:[['no','Viagem histórica — não criar no Cronograma']],old&&!duplicate?(linked?'yes':'no'):(trip.status!=='done'?'yes':'no'),'full')+
- textareaField('note','Notas',old?.note||'','full')+'<p class="field full file-hint">Selecione um resultado da busca para posicionar o item no mapa. Horários de término referem-se ao mesmo dia; confira os fusos ao planejar viagens internacionais.</p>';
+ textareaField('note','Notas',old?.note||'','full')+'<p class="field full file-hint">Selecione um resultado da busca para posicionar o item no mapa. Informe a data da chegada quando for em outro dia. Os eventos conectados são convertidos para o horário do Cronograma.</p>';
  modal(duplicate?'Duplicar item':old?'Editar roteiro':initialKind==='travel'?'Adicionar deslocamento':'Adicionar atividade',fields,v=>{
   const title=String(v.title||'').trim();if(!title){notify('Informe o item do roteiro.');return false}
   const live=data.trips.find(x=>x.id===tripId),existing=live?.itinerary?.find(x=>x.id===itemId);
   if(!live){notify('Esta viagem foi removida. Feche o formulário e confira suas viagens.');return false}
   if(itemId&&!duplicate&&!existing){notify('Este item foi removido enquanto você editava.');return false}
-  if(v.endTime&&(!v.time||v.endTime<v.time)){notify('Informe um horário final igual ou posterior ao início.');return false}
-  const item={...(duplicate?old:existing),id:!duplicate&&existing?existing.id:uid(),title,kind:v.kind,date:v.date||'',time:v.time||'',endTime:v.endTime||'',location:String(v.location||'').trim(),latitude:String(v.latitude||''),longitude:String(v.longitude||''),transport:v.kind==='travel'?v.transport:'',note:String(v.note||'').trim(),updatedAt:new Date().toISOString()};
+  const item={...(duplicate?old:existing),id:!duplicate&&existing?existing.id:uid(),title,kind:v.kind,date:v.date||'',time:v.time||'',endTime:v.endTime||'',endDate:v.endDate||v.date||'',timeZone:v.timeZone||tripZone(existing,live),endTimeZone:v.endTimeZone||v.timeZone||tripZone(existing,live),status:duplicate?'pending':existing?.status||'pending',sourceSavedPlaceId:existing?.sourceSavedPlaceId||seed?.sourceSavedPlaceId||'',location:String(v.location||'').trim(),latitude:String(v.latitude||''),longitude:String(v.longitude||''),transport:v.kind==='travel'?v.transport:'',note:String(v.note||'').trim(),updatedAt:new Date().toISOString()};
+  if(duplicate){delete item.sourceReservationId;delete item.reservationPart;delete item.sequence}
+  const scheduleError=tripScheduleError(item,live);if(scheduleError){notify(scheduleError);return false}
   if(item.kind==='travel'){
    let origin;
    if(v.originSource==='custom')origin={location:String(v.origin||'').trim(),latitude:v.originLatitude||'',longitude:v.originLongitude||''};
@@ -2411,14 +2605,18 @@ function addTripItinerary(tripId,itemId="",duplicate=false,initialKind="activity
   // Each itinerary event has a stable linkage; editing updates it instead of duplicating it.
   const event=linkedEvent;
   if(live.status!=='done'&&v.toTimeline==='yes'&&item.date){
-   const values={title:live.name+' · '+item.title,date:item.date,time:item.time||'09:00',location:item.location,eventType:'personal',owner:live.owner||'both',note:item.note,tripId:tripId,itineraryId:item.id,updatedAt:item.updatedAt};
+   const values={title:live.name+' · '+item.title,...tripCalendarFields(live,item),location:item.location,eventType:'personal',owner:live.owner||'both',note:item.note,tripId:tripId,itineraryId:item.id,updatedAt:item.updatedAt};
    if(event)Object.assign(event,values);else data.events.push({id:uid(),...values});
   }else if(event)data.events=data.events.filter(e=>e.id!==event.id);
-  tripSelectedDays.set(tripId,item.date||'flex');
+  refreshTripOrigins(live);tripSelectedDays.set(tripId,item.date||'flex');tripMapDays.set(tripId,item.date||'flex');
  });
  setupTripItineraryLocationSearch();setupTripItineraryLocationSearch('origin');
  const update=()=>{$('#tripOriginWrap').hidden=$('#f-kind').value!=='travel';$('#tripCustomOrigin').hidden=$('#f-originSource').value!=='custom'};
  $('#f-kind').addEventListener('change',update);$('#f-originSource').addEventListener('change',update);
+ let previousDate=$('#f-date').value,arrivalEdited=false;
+ $('#f-endDate').addEventListener('input',()=>{arrivalEdited=true});
+ $('#f-date').addEventListener('change',()=>{const date=$('#f-date').value,end=$('#f-endDate');if(!arrivalEdited&&end.value&&previousDate&&date){const offset=Date.parse(date+'T12:00:00Z')-Date.parse(previousDate+'T12:00:00Z');end.value=new Date(Date.parse(end.value+'T12:00:00Z')+offset).toISOString().slice(0,10)}previousDate=date});
+
 }
 function addTripChecklist(tripId,itemId=''){
  const trip=data.trips.find(x=>x.id===tripId),old=trip?.checklist?.find(x=>x.id===itemId);if(!trip||(itemId&&!old))return;
@@ -2437,7 +2635,9 @@ function removeTripPart(tripId,part,itemId){
  const item=trip[part]?.find(x=>x.id===itemId),linked=part==='itinerary'?tripItineraryEvent(trip,item):null;
  const remove=()=>{
   const live=data.trips.find(x=>x.id===tripId);if(!live)return;
-  live[part]=(live[part]||[]).filter(x=>x.id!==itemId);
+  if(part==='itinerary'&&item?.sourceReservationId){const reservation=live.reservations?.find(r=>r.id===item.sourceReservationId);if(reservation)reservation.excludedItineraryParts=[...new Set([...(reservation.excludedItineraryParts||[]),item.reservationPart])]}
+  if(part==='reservations'){(live.itinerary||[]).forEach(entry=>{if(entry.sourceReservationId===itemId){delete entry.sourceReservationId;delete entry.reservationPart}});[...data.events,...data.transactions].forEach(entry=>{if(entry.tripId===tripId&&entry.reservationId===itemId)delete entry.reservationId})}
+  live[part]=(live[part]||[]).filter(x=>x.id!==itemId);refreshTripOrigins(live);
   if(linked)data.events=data.events.filter(event=>event.id!==linked.id);
   save();render();
  };
@@ -2469,7 +2669,7 @@ function textareaField(name,label,value="",extra=""){return `<div class="field $
 function editDoc(id,seedTripId=""){const old=data.documents.find(x=>x.id===id);const hasExpiry=old?.hasExpiry??!!old?.expiryDate;const pt=data.language==="pt";const uploadField=`<div class="field full"><label for="f-pdfFile">${pt?"Anexar documento em PDF":"Attach PDF document"}</label><input id="f-pdfFile" name="pdfFile" type="file" accept="application/pdf,.pdf"><div class="file-hint">${old?.fileName?(pt?"Arquivo atual: ":"Current file: ")+esc(old.fileName):pt?"Escolha um PDF. Ele ficará disponível para vocês dois e poderá ser visualizado sem baixar.":"Choose a PDF. It will be available to both of you and can be previewed without downloading."}</div></div>`;modal(old?t("editItem"):t("addTask"),field("title",t("documentTitle"),old?.title||"","text","full")+selectField("owner",t("owner"),[["vitor",t("vitor")],["zack",t("zack")],["both",t("both")]],old?.owner||"both")+travelTripField(old?.tripId||seedTripId)+selectField("status",t("status"),[["todo",t("todo")],["done",t("done")]],old?.status||"todo")+`<div class="field full"><label for="f-hasExpiry">${t("hasExpiry")}</label><select id="f-hasExpiry" name="hasExpiry"><option value="no" ${hasExpiry?"":"selected"}>${pt?"Não":"No"}</option><option value="yes" ${hasExpiry?"selected":""}>${pt?"Sim":"Yes"}</option></select></div>`+field("expiryDate",t("expiryDate"),old?.expiryDate||((hasExpiry)?old?.due:""),"date","full")+uploadField+textareaField("note",t("notes"),old?.note||"","full"),async v=>{const item={...old,id:old?.id||uid(),title:v.title.trim(),owner:v.owner,status:v.status,hasExpiry:v.hasExpiry==="yes",expiryDate:v.hasExpiry==="yes"?v.expiryDate:"",due:v.hasExpiry==="yes"?v.expiryDate:"",note:v.note.trim(),tripId:String(v.tripId||"")};if(!item.title){notify(t("title"));return false}if(item.hasExpiry&&!item.expiryDate){notify(pt?"Selecione a data de validade.":"Select the expiry date.");return false}const file=$("#f-pdfFile")?.files?.[0];if(file){if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){notify(pt?"Envie um arquivo PDF.":"Please upload a PDF file.");return false}if(file.size>20*1024*1024){notify(pt?"O PDF deve ter no máximo 20 MB.":"PDF must be 20 MB or smaller.");return false}if(!currentUser){notify(pt?"Entre na conta para enviar arquivos.":"Sign in to upload files.");return false}const path=`shared/${item.id}.pdf`;const {error:uploadError}=await supabaseClient.storage.from("kiwipath-documents").upload(path,file,{upsert:true,contentType:"application/pdf"});if(uploadError){console.error(uploadError);notify(pt?"Não foi possível enviar o PDF. Confira a configuração do Storage no Supabase.":"PDF upload failed. Check Supabase Storage setup.");return false}item.filePath=path;item.fileName=file.name;item.fileSize=file.size;item.fileUpdatedAt=new Date().toISOString()}if(old)data.documents=data.documents.map(x=>x.id===id?item:x);else data.documents.push(item)})}
 async function documentFileAction(id,download=false){const x=data.documents.find(d=>d.id===id);if(!x?.filePath)return notify(data.language==="pt"?"Este documento não tem PDF anexado.":"No PDF is attached to this document.");try{const {data:result,error}=await supabaseClient.storage.from("kiwipath-documents").createSignedUrl(x.filePath,300,{download:download?(x.fileName||true):undefined});if(error)throw error;if(download){const a=document.createElement("a");a.href=result.signedUrl;a.download=x.fileName||"documento.pdf";a.target="_blank";a.rel="noopener";a.click()}else{const html=`<div class="pdf-modal-backdrop" id="pdfPreviewBackdrop"><section class="pdf-modal-panel"><div class="pdf-modal-head"><strong>${esc(x.title)} · ${esc(x.fileName||"PDF")}</strong><div class="pdf-preview-actions"><button type="button" id="pdfDownloadBtn">${data.language==="pt"?"Baixar PDF":"Download PDF"}</button><button type="button" id="pdfCloseBtn">${data.language==="pt"?"Fechar":"Close"}</button></div></div><iframe class="pdf-preview-frame" title="PDF preview" src="${esc(result.signedUrl)}#toolbar=1&navpanes=0"></iframe></section></div>`;document.body.insertAdjacentHTML("beforeend",html);const close=()=>$("#pdfPreviewBackdrop")?.remove();$("#pdfCloseBtn").onclick=close;$("#pdfPreviewBackdrop").addEventListener("click",e=>{if(e.target.id==="pdfPreviewBackdrop")close()});$("#pdfDownloadBtn").onclick=()=>documentFileAction(id,true)}}catch(e){console.error(e);notify(data.language==="pt"?"Não foi possível abrir o PDF. Confira as permissões do Supabase Storage.":"Could not open PDF. Check Supabase Storage permissions.")}}
 let calendarCursor=new Date(),calendarSelectedDate=today(),calendarFilter="upcoming";
-function eventStartIso(x){return x?.date&&x?.time?zonedDateTimeToIso(x.date+"T"+x.time,ALERT_TIMEZONE):null}
+function eventStartIso(x){if(x?.startAt&&Number.isFinite(Date.parse(x.startAt)))return new Date(x.startAt).toISOString();return x?.date&&x?.time?zonedDateTimeToIso(x.date+"T"+x.time,x.timeZone||ALERT_TIMEZONE):null}
 async function syncEventReminderAlerts(event){
  if(!currentUser)return;
  const startIso=eventStartIso(event);if(!startIso)throw new Error("Invalid event date/time");
@@ -2479,35 +2679,39 @@ async function syncEventReminderAlerts(event){
   const {data:found,error:findError}=await supabaseClient.from("kiwipath_custom_alerts").select("id,status").eq("user_id",currentUser.id).eq("source_key",sourceKey).maybeSingle();
   if(findError)throw findError;
   if(at.getTime()<=now){if(found?.status==="pending"){const {error}=await supabaseClient.from("kiwipath_custom_alerts").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("id",found.id).eq("user_id",currentUser.id);if(error)throw error}continue}
-  const payload={user_id:currentUser.id,title:r.title,message:event.title+(event.time?" · "+event.time:"")+(event.location?" · "+event.location:""),scheduled_at:at.toISOString(),timezone:ALERT_TIMEZONE,status:"pending",recurrence:"once",linked_type:"event",linked_id:String(event.id),source_key:sourceKey,updated_at:new Date().toISOString()};
+  const payload={user_id:currentUser.id,title:r.title,message:event.title+(event.time?" · "+event.time:"")+(event.location?" · "+event.location:""),scheduled_at:at.toISOString(),timezone:event.timeZone||ALERT_TIMEZONE,status:"pending",recurrence:"once",linked_type:"event",linked_id:String(event.id),source_key:sourceKey,updated_at:new Date().toISOString()};
   const result=found?await supabaseClient.from("kiwipath_custom_alerts").update(payload).eq("id",found.id).eq("user_id",currentUser.id):await supabaseClient.from("kiwipath_custom_alerts").insert(payload);
   if(result.error)throw result.error;
  }
  await loadCustomAlerts();
 }
 function editEvent(id){
- const old=data.events.find(x=>x.id===id),pt=data.language==="pt";
+ const old=data.events.find(x=>x.id===id),pt=data.language==="pt",formTimeZone=DEVICE_TIMEZONE,display=old?eventInDeviceZone(old):null;
+ if(old?.itineraryId&&old.tripId){const trip=data.trips.find(t=>t.id===old.tripId);if(trip?.itinerary?.some(item=>item.id===old.itineraryId))return addTripItinerary(old.tripId,old.itineraryId)}
+ if(old?.reservationId&&old.tripId){const trip=data.trips.find(t=>t.id===old.tripId);if(trip?.reservations?.some(item=>item.id===old.reservationId))return addTripReservation(old.tripId,old.reservationId)}
  const fields=field("title",pt?"Nome do evento":"Event title",old?.title||"","text","full")+
  selectField("eventType",pt?"Tipo de evento":"Event type",[["meeting",pt?"Reunião":"Meeting"],["medical",pt?"Consulta médica":"Medical appointment"],["assignment","Assignment"],["personal",pt?"Pessoal":"Personal"],["other",t("other")]],old?.eventType||"meeting","full")+
- field("date",pt?"Data (Nova Zelândia)":"Date (New Zealand)",old?.date||calendarSelectedDate||today(),"date")+
- field("time",pt?"Horário (Nova Zelândia)":"Time (New Zealand)",old?.time||"09:00","time")+
+ field("date",pt?"Data local":"Local date",display?.date||calendarSelectedDate||today(),"date")+
+ field("time",pt?"Horário local":"Local time",display?.time||"09:00","time")+
  field("location",pt?"Localização / endereço (opcional)":"Location / address (optional)",old?.location||"","text","full")+
  selectField("owner",pt?"Quem participa?":"Who is attending?",[["both","Vitor & Zack"],["vitor","Vitor"],["zack","Zack"]],old?.owner||"both","full")+
  travelTripField(old?.tripId||"")+
  textareaField("note",pt?"Notas / preparação":"Notes / preparation",old?.note||"","full")+
- `<div class="field full"><p class="file-hint">${pt?"Lembretes automáticos: 24 horas e 3 horas antes. Horários no fuso de Auckland.":"Automatic reminders: 24 hours and 3 hours before. Times use Auckland time."}</p></div>`;
+ `<div class="field full"><p class="file-hint">${pt?"Lembretes automáticos: 24 horas e 3 horas antes. Horários no fuso do dispositivo.":"Automatic reminders: 24 hours and 3 hours before. Times use your device time zone."} ${esc(formTimeZone)}</p></div>`;
  modal(old?(pt?"Editar evento":"Edit event"):(pt?"Adicionar à agenda":"Add to calendar"),fields,async v=>{
   const title=String(v.title||"").trim(),date=String(v.date||""),time=String(v.time||"");
   if(!title||!date||!time){notify(pt?"Nome, data e horário são obrigatórios.":"Title, date and time are required.");return false}
-  const iso=zonedDateTimeToIso(date+"T"+time,ALERT_TIMEZONE);if(!iso||new Date(iso)<=new Date()){notify(pt?"Escolha data e horário futuros válidos em Auckland.":"Choose a valid future date and time in Auckland.");return false}
-  const item={...old,id:old?.id||uid(),title,date,time,location:String(v.location||"").trim(),eventType:v.eventType,owner:v.owner,tripId:String(v.tripId||""),note:String(v.note||"").trim(),updatedAt:new Date().toISOString()};
+  const unchanged=old&&eventStartIso(old)&&date===display.date&&time===display.time;
+  const iso=unchanged?eventStartIso(old):zonedDateTimeToIso(date+"T"+time,formTimeZone);if(!iso||new Date(iso)<=new Date()){notify(pt?"Escolha uma data e um horário futuros válidos no seu fuso.":"Choose a valid future date and time in your time zone.");return false}
+  const item={...old,id:old?.id||uid(),title,date,time,timeZone:formTimeZone,startAt:iso,location:String(v.location||"").trim(),eventType:v.eventType,owner:v.owner,tripId:String(v.tripId||""),note:String(v.note||"").trim(),updatedAt:new Date().toISOString()};
+  if(old?.endAt){const start=eventStartIso(old),duration=start?Date.parse(old.endAt)-Date.parse(start):0;item.endAt=duration>0?new Date(Date.parse(iso)+duration).toISOString():null}
   if(old)data.events=data.events.map(x=>x.id===id?item:x);else data.events.push(item);
   try{await syncEventReminderAlerts(item)}catch(e){console.error("Event reminders:",e);notify(pt?"Evento salvo, mas não foi possível agendar os lembretes.":"Event saved, but reminders could not be scheduled.")}
  });
 }
 function downloadEventIcs(id){
  const x=data.events.find(e=>e.id===id),start=eventStartIso(x);if(!x||!start)return notify(data.language==="pt"?"Evento sem horário válido.":"Event has no valid time.");
- const end=new Date(new Date(start).getTime()+3600000),utc=d=>d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z"),escIcs=v=>String(v||"").replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;");
+ const savedEnd=x.endAt?new Date(x.endAt):null,end=savedEnd&&Number.isFinite(savedEnd.getTime())&&savedEnd>new Date(start)?savedEnd:new Date(new Date(start).getTime()+3600000),utc=d=>d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}Z$/,"Z"),escIcs=v=>String(v||"").replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;");
  const lines=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//KiwiPath//Shared Calendar//EN","CALSCALE:GREGORIAN","BEGIN:VEVENT","UID:"+escIcs(x.id)+"@kiwipath","DTSTAMP:"+utc(new Date()),"DTSTART:"+utc(new Date(start)),"DTEND:"+utc(end),"SUMMARY:"+escIcs(x.title),"DESCRIPTION:"+escIcs(x.note||""),...(x.location?["LOCATION:"+escIcs(x.location)]:[]),"END:VEVENT","END:VCALENDAR"];
  const url=URL.createObjectURL(new Blob([lines.join("\r\n")],{type:"text/calendar;charset=utf-8"})),a=document.createElement("a");a.href=url;a.download=(x.title||"kiwipath-event").replace(/[^a-z0-9-_]+/gi,"-")+".ics";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
@@ -2523,7 +2727,7 @@ function nzHolidays(year){
 function calendarItems(){
  const out=[];
  const eventIds=new Set();
- for(const e of data.events||[])if(e.date){out.push({date:e.date,time:e.time||"",title:e.title,type:"event",id:e.id,record:e});eventIds.add(String(e.id))}
+ for(const stored of data.events||[])if(stored.date){const e=eventInDeviceZone(stored);out.push({date:e.date,time:e.time||"",title:e.title,type:"event",id:e.id,record:e});eventIds.add(String(e.id))}
  // Alguns lembretes (como aniversários) podem existir na central de notificações sem
  // um evento correspondente em data.events. Reconstituímos a data do evento a partir
  // dos lembretes automáticos de 24 h / 3 h, sem duplicar eventos já presentes.
@@ -2538,13 +2742,15 @@ function calendarItems(){
   if(/amanh|tomorrow/.test(alertTitle))target=new Date(target.getTime()+24*60*60*1000);
   else if(/3 horas|3 hours/.test(alertTitle))target=new Date(target.getTime()+3*60*60*1000);
   if(!Number.isFinite(target.getTime()))continue;
-  const date=new Intl.DateTimeFormat("en-CA",{timeZone:ALERT_TIMEZONE,year:"numeric",month:"2-digit",day:"2-digit"}).format(target);
-  const time=new Intl.DateTimeFormat("en-GB",{timeZone:ALERT_TIMEZONE,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(target);
+  const clock=msg.match(/(?:·|•)\s*(\d{1,2}:\d{2})/),sourceZone=a.timezone||ALERT_TIMEZONE;
+  if(clock&&tripValidZone(sourceZone)){const source=deviceDateTime(target.toISOString(),sourceZone),iso=source.time===clock[1]?target.toISOString():zonedDateTimeToIso(source.date+'T'+clock[1],sourceZone);if(iso)target=new Date(iso)}
+  const date=new Intl.DateTimeFormat("en-CA",{timeZone:DEVICE_TIMEZONE,year:"numeric",month:"2-digit",day:"2-digit"}).format(target);
+  const time=new Intl.DateTimeFormat("en-GB",{timeZone:DEVICE_TIMEZONE,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(target);
   const key=eventTitle.toLowerCase()+"|"+date+"|"+time;
   if(addedBirthdayKeys.has(key))continue;
   // Prefer the event's actual time when the notification text includes it.
   const match=msg.match(/(?:·|•)\s*(\d{1,2}:\d{2})/);
-  const finalTime=match?match[1]:time;
+  const finalTime=time;
   const finalKey=eventTitle.toLowerCase()+"|"+date;
   if(addedBirthdayKeys.has(finalKey))continue;
   // Se o aniversário já foi cadastrado como evento real nesse dia, não crie
@@ -2695,12 +2901,12 @@ function timelinePage(){
  const upcoming=events.filter(x=>x.date&&x.date>=today()).sort((a,b)=>(a.date+(a.time||"23:59")).localeCompare(b.date+(b.time||"23:59"))),past=events.filter(x=>x.date&&x.date<today()).sort((a,b)=>b.date.localeCompare(a.date)),todayEvents=events.filter(x=>x.date===today()),selected=all.filter(x=>x.date===calendarSelectedDate);
  const weekdays=pt?["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"]:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
  const cells=Array.from({length:Math.ceil((offset+last.getDate())/7)*7},(_,i)=>{const d=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth(),i-offset+1),key=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"),inside=d.getMonth()===calendarCursor.getMonth(),items=all.filter(x=>x.date===key),holiday=items.some(x=>x.type==="holiday");return `<button type="button" class="calendar-day ${inside?"":"outside"} ${key===today()?"today":""} ${key===calendarSelectedDate?"selected":""} ${holiday?"calendar-day-holiday":""}" data-calendar-date="${key}"><span class="calendar-day-number">${d.getDate()}</span>${items.slice(0,2).map(x=>`<span class="calendar-event-chip" style="${x.type==="holiday"?"color:#956b1f":x.type==="document"?"color:#756cb0":""}">${esc(x.time?x.time+" ":"")}${esc(x.title)}</span>`).join("")}${items.length>2?`<span class="calendar-event-chip">+${items.length-2}</span>`:""}</button>`}).join("");
- const card=x=>{if(x.type==="holiday")return `<div class="event-card"><div class="event-timebox">NZ<small>${esc(fmtDate(x.date))}</small></div><div class="event-card-main"><strong>${esc(x.title)}</strong><p>${pt?"Feriado nacional":"National holiday"}</p></div></div>`;if(x.type==="document")return `<div class="event-card"><div class="event-timebox">⌁<small>${esc(fmtDate(x.date))}</small></div><div class="event-card-main"><strong>${esc(x.title)}</strong><p>${pt?"Vencimento de documento":"Document expiry"}</p><div class="event-actions">${button(pt?"Ver documentos":"View documents","go-documents","btn-soft btn-small")}</div></div></div>`;const e=x.record||x;return `<div class="event-card"><div class="event-timebox">${esc(e.time||"—")}<small>${esc(fmtDate(e.date))}</small></div><div class="event-card-main"><strong>${esc(e.title)}</strong><p>${esc(({meeting:pt?"Reunião":"Meeting",medical:pt?"Consulta médica":"Medical appointment",assignment:"Assignment",personal:pt?"Pessoal":"Personal",other:t("other")})[e.eventType]||"")}${e.owner?" · "+esc(e.owner==="both"?"Vitor & Zack":e.owner==="zack"?"Zack":"Vitor"):""}</p>${e.location?`<p>⌖ ${esc(e.location)}</p>`:""}${e.note?`<p>${esc(e.note)}</p>`:""}<div class="event-actions">${button(pt?"Adicionar ao iPhone":"Add to iPhone","export-event:"+e.id,"btn-soft btn-small")}${button(pt?"Editar":"Edit","edit-event:"+e.id,"btn-small")}${button(pt?"Excluir":"Delete","delete-event:"+e.id,"btn-small btn-danger")}</div></div></div>`};
+ const card=x=>{if(x.type==="holiday")return `<div class="event-card"><div class="event-timebox">NZ<small>${esc(fmtDate(x.date))}</small></div><div class="event-card-main"><strong>${esc(x.title)}</strong><p>${pt?"Feriado nacional":"National holiday"}</p></div></div>`;if(x.type==="document")return `<div class="event-card"><div class="event-timebox">⌁<small>${esc(fmtDate(x.date))}</small></div><div class="event-card-main"><strong>${esc(x.title)}</strong><p>${pt?"Vencimento de documento":"Document expiry"}</p><div class="event-actions">${button(pt?"Ver documentos":"View documents","go-documents","btn-soft btn-small")}</div></div></div>`;const e=x.record||x;return `<div class="event-card"><div class="event-timebox">${esc(e.time||"—")}<small>${esc(fmtDate(e.date))}</small></div><div class="event-card-main"><strong>${esc(e.title)}</strong><p>${esc(({meeting:pt?"Reunião":"Meeting",medical:pt?"Consulta médica":"Medical appointment",assignment:"Assignment",personal:pt?"Pessoal":"Personal",other:t("other")})[e.eventType]||"")}${e.owner?" · "+esc(e.owner==="both"?"Vitor & Zack":e.owner==="zack"?"Zack":"Vitor"):""}</p>${e.sourceTimeZone?`<p>${esc(e.sourceDate)} · ${esc(e.sourceTime)} · ${esc(e.sourceTimeZone)}${e.tripItemStatus==="done"?" · Feito":e.tripItemStatus==="skipped"?" · Pulado":""}</p>`:""}${e.location?`<p>⌖ ${esc(e.location)}</p>`:""}${e.note?`<p>${esc(e.note)}</p>`:""}<div class="event-actions">${button(pt?"Adicionar ao iPhone":"Add to iPhone","export-event:"+e.id,"btn-soft btn-small")}${button(pt?"Editar":"Edit","edit-event:"+e.id,"btn-small")}${button(pt?"Excluir":"Delete","delete-event:"+e.id,"btn-small btn-danger")}</div></div></div>`};
  const items=calendarFilter==="today"?todayEvents:calendarFilter==="past"?past:calendarFilter==="holidays"?all.filter(x=>x.type==="holiday"&&x.date>=today()):calendarFilter==="selected"?selected:upcoming;
  const heading=calendarFilter==="today"?(pt?"Eventos de hoje":"Today's events"):calendarFilter==="past"?(pt?"Eventos passados":"Past events"):calendarFilter==="holidays"?(pt?"Feriados nacionais":"National holidays"):calendarFilter==="selected"?(pt?"Eventos do dia selecionado":"Selected day's events"):(pt?"Próximos eventos":"Upcoming events");
  return `<div class="section-head"><div><div class="eyebrow">KIWIPATH / ${pt?"AGENDA COMPARTILHADA":"SHARED CALENDAR"}</div><h1>${pt?"Agenda compartilhada":"Shared calendar"}</h1><p>${pt?"Reuniões, consultas, assignments e tudo que vocês precisam organizar juntos.":"Meetings, appointments, assignments and everything you need to organise together."}</p></div><button class="btn" data-action="add-event">＋ ${pt?"Novo evento":"New event"}</button></div>
  <div class="calendar-stats"><button class="calendar-stat ${calendarFilter==="today"?"active":""}" data-action="calendar-filter:today"><strong>${todayEvents.length}</strong><span>${pt?"Hoje":"Today"}</span></button><button class="calendar-stat ${calendarFilter==="upcoming"?"active":""}" data-action="calendar-filter:upcoming"><strong>${upcoming.length}</strong><span>${pt?"Próximos":"Upcoming"}</span></button><button class="calendar-stat ${calendarFilter==="past"?"active":""}" data-action="calendar-filter:past"><strong>${past.length}</strong><span>${pt?"Passados":"Past"}</span></button></div>
- <div class="calendar-layout"><section class="panel"><div class="calendar-toolbar"><button class="btn btn-soft btn-small" data-action="calendar-prev">‹</button><strong class="calendar-month">${esc(label)}</strong><div style="display:flex;gap:6px"><button class="btn btn-soft btn-small" data-action="calendar-today">${pt?"Hoje":"Today"}</button><button class="btn btn-soft btn-small" data-action="calendar-next">›</button></div></div><div class="calendar-weekdays">${weekdays.map(d=>`<span>${d}</span>`).join("")}</div><div class="calendar-grid">${cells}</div><div class="calendar-legend"><span><i class="legend-dot"></i>${pt?"Eventos":"Events"}</span><span><i class="legend-dot holiday"></i>${pt?"Feriados NZ":"NZ holidays"}</span><span><i class="legend-dot document"></i>${pt?"Validade de documentos":"Document expiry"}</span></div><p class="file-hint" style="margin-top:12px">${pt?"Selecione um dia para ver eventos, feriados e vencimentos. Fuso: Auckland, Nova Zelândia.":"Select a day to view events, holidays and document expiries. Timezone: Auckland, New Zealand."}</p></section><section class="panel"><div class="panel-head"><div><h2>${heading}</h2><p>${calendarFilter==="selected"?esc(fmtDate(calendarSelectedDate)):(pt?"Agenda compartilhada":"Shared calendar")}</p></div>${button(pt?"Feriados":"Holidays","calendar-filter:holidays","btn-soft btn-small")}</div>${items.length?items.slice(0,12).map(card).join(""):empty(calendarFilter==="today"?(pt?"Nenhum evento para hoje.":"No events today."):calendarFilter==="past"?(pt?"Nenhum evento passado.":"No past events."):(pt?"Nenhum item nesta lista.":"No items in this list."))}</section></div><div class="note">${pt?"Feriados nacionais e vencimentos de documentos aparecem automaticamente. Os lembretes dos eventos são agendados para 24 horas e 3 horas antes.":"National holidays and document expiries appear automatically. Event reminders are scheduled 24 hours and 3 hours beforehand."}</div>`;
+ <div class="calendar-layout"><section class="panel"><div class="calendar-toolbar"><button class="btn btn-soft btn-small" data-action="calendar-prev">‹</button><strong class="calendar-month">${esc(label)}</strong><div style="display:flex;gap:6px"><button class="btn btn-soft btn-small" data-action="calendar-today">${pt?"Hoje":"Today"}</button><button class="btn btn-soft btn-small" data-action="calendar-next">›</button></div></div><div class="calendar-weekdays">${weekdays.map(d=>`<span>${d}</span>`).join("")}</div><div class="calendar-grid">${cells}</div><div class="calendar-legend"><span><i class="legend-dot"></i>${pt?"Eventos":"Events"}</span><span><i class="legend-dot holiday"></i>${pt?"Feriados NZ":"NZ holidays"}</span><span><i class="legend-dot document"></i>${pt?"Validade de documentos":"Document expiry"}</span></div><p class="file-hint" style="margin-top:12px">${pt?"Selecione um dia para ver eventos, feriados e vencimentos. Fuso do dispositivo.":"Select a day to view events, holidays and document expiries. Device time zone."} ${esc(DEVICE_TIMEZONE)}</p></section><section class="panel"><div class="panel-head"><div><h2>${heading}</h2><p>${calendarFilter==="selected"?esc(fmtDate(calendarSelectedDate)):(pt?"Agenda compartilhada":"Shared calendar")}</p></div>${button(pt?"Feriados":"Holidays","calendar-filter:holidays","btn-soft btn-small")}</div>${items.length?items.slice(0,12).map(card).join(""):empty(calendarFilter==="today"?(pt?"Nenhum evento para hoje.":"No events today."):calendarFilter==="past"?(pt?"Nenhum evento passado.":"No past events."):(pt?"Nenhum item nesta lista.":"No items in this list."))}</section></div><div class="note">${pt?"Feriados nacionais e vencimentos de documentos aparecem automaticamente. Os lembretes dos eventos são agendados para 24 horas e 3 horas antes.":"National holidays and document expiries appear automatically. Event reminders are scheduled 24 hours and 3 hours beforehand."}</div>`;
 }
 function editTransaction(){modal(t("addTransaction"),field("title",t("transactionTitle"),"","text","full")+selectField("type",t("type"),[["expense",t("expense")],["income",t("income")]],"expense")+field("amount",t("amount"),"","number")+field("date",t("date"),today(),"date")+selectField("createdBy",data.language==='pt'?'Lançado por':'Entered by',[['vitor','Vitor'],['zack','Zack']],currentMemberKey()),v=>{const amount=parseAmount(v.amount);if(!v.title.trim()||!Number.isFinite(amount)||amount<=0)return notify(t("amount"));data.transactions.push({id:uid(),title:v.title.trim(),type:v.type,amount,date:v.date,createdBy:v.createdBy})})}
 function editProjectCost(id){const old=(data.projectCosts||[]).find(x=>x.id===id);modal(old?(data.language==='pt'?'Editar custo do projeto':'Edit project cost'):(data.language==='pt'?'Adicionar custo do projeto':'Add project cost'),field('title',t('title'),old?.title||'','text','full')+selectField('category',t('category'),[['Visa','Visto'],['Exames','Exames médicos'],['Tuition','Tuition / mensalidade'],['Viagem','Viagem'],['Documentos','Documentos e traduções'],['Seguro','Seguro'],['Moradia','Moradia'],['Outro','Outro']],old?.category||'Outro')+selectField('status',data.language==='pt'?'Situação':'Status',[['paid',data.language==='pt'?'Já pago':'Paid'],['planned',data.language==='pt'?'Ainda previsto':'Planned']],old?.status||'paid')+field('amount',t('amount'),old?.amount??'','number')+selectField('currency',t('currency'),[['NZD','NZD'],['BRL','BRL (R$)']],old?.currency||'NZD')+field('rate',data.language==='pt'?'Cotação: quantos R$ valem 1 NZD':'Exchange rate: BRL for 1 NZD',old?.rate??'','number')+field('date',t('date'),old?.date||today(),'date')+selectField('createdBy',data.language==='pt'?'Lançado por':'Entered by',[['vitor','Vitor'],['zack','Zack']],old?.createdBy||currentMemberKey())+textareaField('note',t('notes'),old?.note||'','full'),v=>{const amount=parseAmount(v.amount),rate=parseAmount(v.rate||0);if(!v.title.trim()){notify(data.language==='pt'?'Informe o nome do gasto.':'Enter an expense name.');return false}if(!Number.isFinite(amount)||amount<=0){notify(data.language==='pt'?'Informe um valor válido.':'Enter a valid amount.');return false}if(v.currency==='BRL'&&(!Number.isFinite(rate)||rate<=0)){notify(data.language==='pt'?'Informe uma cotação válida, como 2,94.':'Enter a valid exchange rate, e.g. 2.94.');return false}const nzd=v.currency==='BRL'?amount/rate:amount;const item={id:old?.id||uid(),title:v.title.trim(),category:v.category,status:v.status,amount,currency:v.currency,rate:v.currency==='BRL'?rate:null,nzdAmount:nzd,date:v.date,createdBy:v.createdBy,note:v.note};if(old)data.projectCosts=data.projectCosts.map(x=>x.id===id?item:x);else data.projectCosts.push(item)})}
@@ -2882,7 +3088,14 @@ if(a.startsWith("travel-offline:")){downloadTripGuide(a.slice("travel-offline:".
 
 if(a.startsWith("travel-add-itinerary:"))return addTripItinerary(a.slice("travel-add-itinerary:".length));
 if(a.startsWith("travel-add-transfer:"))return addTripItinerary(a.slice("travel-add-transfer:".length),"",false,"travel");
-if(a.startsWith("travel-day:")){const p=a.split(":");tripSelectedDays.set(p[1],p[2]);render();return}
+if(a.startsWith("travel-status:")){const p=a.split(":");return setTripItemStatus(p[1],p[2],p[3])}
+if(a.startsWith("travel-order:")){const p=a.split(":");return previewTripOrder(p[1],p[2],p[3]==='up'?-1:1)}
+if(a.startsWith("travel-place-new:"))return editTripPlace(a.slice('travel-place-new:'.length));
+if(a.startsWith("travel-place-edit:")){const p=a.split(":");return editTripPlace(p[1],p[2])}
+if(a.startsWith("travel-place-schedule:")){const p=a.split(":");const trip=data.trips.find(t=>t.id===p[1]),place=trip?.savedPlaces?.find(x=>x.id===p[2]);if(place)return addTripItinerary(p[1],'',false,'activity',{...place,id:undefined,sourceSavedPlaceId:place.id});return}
+if(a.startsWith("travel-place-remove:")){const p=a.split(":");confirmDialog({title:'Remover lugar salvo?',message:'Os itens já adicionados ao roteiro serão preservados.',confirmText:'Remover lugar',cancelText:'Manter lugar'}).then(ok=>{if(!ok)return;const trip=data.trips.find(t=>t.id===p[1]);if(trip){trip.savedPlaces=(trip.savedPlaces||[]).filter(x=>x.id!==p[2]);save();render()}});return}
+if(a.startsWith("travel-map-all:")){tripMapDays.set(a.slice('travel-map-all:'.length),'all');render();return}
+if(a.startsWith("travel-day:")){const p=a.split(":");tripSelectedDays.set(p[1],p[2]);tripMapDays.set(p[1],p[2]);render();return}
 if(a.startsWith("travel-edit-itinerary:")){const p=a.split(":");return addTripItinerary(p[1],p[2])}
 if(a.startsWith("travel-duplicate-itinerary:")){const p=a.split(":");return addTripItinerary(p[1],p[2],true)}
 if(a.startsWith("travel-move-itinerary:")){const p=a.split(":");return moveTripItinerary(p[1],p[2])}
@@ -2906,6 +3119,29 @@ document.addEventListener("beforeinput",e=>{const el=e.target;if(!el.matches('#i
 document.addEventListener("paste",e=>{const el=e.target;if(!el.matches('#itemForm input[name="unitPrice"],#itemForm input[name^="p_"],#itemForm input[name^="price_"]'))return;e.preventDefault();const text=e.clipboardData?.getData("text")||"";const digits=[...text].filter(c=>c>="0"&&c<="9").join("");el.dataset.priceDigits=digits;el.value=digits?(Number(digits)/100).toFixed(2):""});
 document.addEventListener("input",e=>{if(e.target.id!=="f-productSearch")return;const q=e.target.value.trim().toLocaleLowerCase(),box=$("#shoppingProductResults");if(!box)return;if(!q){box.innerHTML="";box.classList.add("hidden");return}const matches=data.shoppingProducts.filter(p=>p.name.toLocaleLowerCase().includes(q)).slice(0,12);box.innerHTML=matches.length?matches.map(p=>'<button type="button" class="shopping-search-option" role="option" data-action="shopping-pick-product:'+esc(p.id)+'"><span>'+esc(p.name)+'</span><small>'+esc(p.brand||p.category||"")+'</small></button>').join(""):'<div class="shopping-search-empty">'+(data.language==="pt"?"Nenhum produto encontrado":"No products found")+'</div>';box.classList.remove("hidden")});
 $("#pageContent").addEventListener("change",e=>{if(["historyProduct","historyCategory","historySupplier"].includes(e.target.name)){if(e.target.name==="historyProduct")shoppingHistoryProduct=e.target.value;if(e.target.name==="historyCategory")shoppingHistoryCategory=e.target.value;if(e.target.name==="historySupplier")shoppingHistorySupplier=e.target.value;render();return}const c=e.target.closest("[data-shopping-check]");if(c){const l=data.shoppingLists.find(x=>x.id===activeShoppingListId),i=l?.items?.find(x=>x.id===c.dataset.shoppingCheck);if(i){i.checked=c.checked;save();render()}return}if(e.target.id==="financeCategoryFilter"){financeCategory=e.target.value;selectedPieCategory="";financeFiltersOpen=false;render();return}if(e.target.id==="financeUserFilter"){financeUserFilter=e.target.value;selectedPieCategory="";financeFiltersOpen=false;render();return}if(e.target.id==="financeFrom"){financeFrom=e.target.value;financeFiltersOpen=false;render();return}if(e.target.id==="financeTo"){financeTo=e.target.value;financeFiltersOpen=false;render();return}if(e.target.id==="financeBoxesOwner"){financeBoxesOwner=e.target.value;financeBoxesAccount="all";financeBoxesFiltersOpen=false;render();return}if(e.target.id==="financeBoxesAccount"){financeBoxesAccount=e.target.value;financeBoxesFiltersOpen=false;render();return}if(e.target.id==="financeBoxesFrom"){financeBoxesFrom=e.target.value;financeBoxesFiltersOpen=false;render();return}if(e.target.id==="financeBoxesTo"){financeBoxesTo=e.target.value;financeBoxesFiltersOpen=false;render();return}const cb=e.target.closest("[data-toggle-doc]");if(!cb)return;const x=data.documents.find(x=>x.id===cb.dataset.toggleDoc);if(x)x.status=cb.checked?"done":"todo";save();render()});
+let tripPointerDrag=null;
+function clearTripDrag(){tripPointerDrag=null;$$('.drag-target,.trip-is-dragging').forEach(row=>row.classList.remove('drag-target','trip-is-dragging'))}
+$('#pageContent').addEventListener('pointerdown',event=>{
+ const handle=event.target.closest('[data-drag-itinerary]');if(!handle||event.button!==0||window.innerWidth<=600)return;
+ event.preventDefault();tripPointerDrag={handle,tripId:handle.dataset.dragTrip,itemId:handle.dataset.dragItinerary,startX:event.clientX,startY:event.clientY,moved:false};handle.setPointerCapture(event.pointerId);
+});
+$('#pageContent').addEventListener('pointermove',event=>{
+ const drag=tripPointerDrag;if(!drag)return;
+ if(!drag.moved&&Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY)<5)return;
+ drag.moved=true;drag.handle.closest('[data-itinerary-id]').classList.add('trip-is-dragging');
+ const row=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-itinerary-id]');
+ $$('.drag-target').forEach(el=>el.classList.remove('drag-target'));
+ if(row&&row.dataset.tripId===drag.tripId&&row.dataset.itineraryId!==drag.itemId)row.classList.add('drag-target');
+ if(event.clientY<60)window.scrollBy(0,-20);else if(event.clientY>innerHeight-60)window.scrollBy(0,20);
+});
+$('#pageContent').addEventListener('pointerup',event=>{
+ const drag=tripPointerDrag;if(!drag)return;
+ const row=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-itinerary-id]');
+ if(drag.handle.hasPointerCapture(event.pointerId))drag.handle.releasePointerCapture(event.pointerId);clearTripDrag();
+ if(drag.moved&&row&&row.dataset.tripId===drag.tripId)previewTripOrder(drag.tripId,drag.itemId,row.dataset.itineraryId);
+});
+$('#pageContent').addEventListener('pointercancel',clearTripDrag);
+$('#pageContent').addEventListener('change',event=>{if(event.target.id==='tripMapDayFilter'){tripMapDays.set(event.target.dataset.trip,event.target.value);render()}});
 $("#pageContent").addEventListener("input",e=>{if(e.target.id==="docSearch")applyDocumentFilters()});
 function applyDocumentFilters(){const q=( $("#docSearch")?.value||"").toLowerCase();const owner=$("#docOwnerFilter")?.value||"all";$$('#docList [data-searchable]').forEach(row=>{const ownerMatch=owner==="all"||row.dataset.owner===owner;const textMatch=row.dataset.searchable.includes(q);row.classList.toggle("hidden",!(ownerMatch&&textMatch))})}
 $("#pageContent").addEventListener("change",e=>{if(e.target.id==="docOwnerFilter")applyDocumentFilters()});
@@ -3065,6 +3301,10 @@ $("#logoutBtn").addEventListener("click",async()=>{
   if(realtimeChannel){await supabaseClient.removeChannel(realtimeChannel);realtimeChannel=null;}
   showAuth();
 });
+deviceClockDay=today();renderDeviceClocks();
+setInterval(()=>{if(!document.hidden){if(!$('#profileMenu').hidden)renderDeviceClocks();if(detectDeviceTimeZone()!==DEVICE_TIMEZONE||today()!==deviceClockDay)refreshDeviceTimeContext()}},1000);
+window.addEventListener('focus',refreshDeviceTimeContext);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDeviceTimeContext()});
 supabaseClient.auth.getSession().then(({data:sessionData,error})=>{
   if(error){showAuth("Erro ao verificar a sessão.");return;}
   startApp(sessionData.session);

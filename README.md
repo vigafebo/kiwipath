@@ -38,9 +38,13 @@ Reservations and linked payments are counted once in the budget. Finance expense
 in other currencies require manual conversion rates; missing conversions are
 reported and excluded rather than summed as if they were in the budget currency.
 Checklist items support owners and deadlines. Schedule conflicts and dates outside
-the trip are warnings; an item's end time must be on the same day as its start.
-Existing calendar times retain the application's calendar convention; check time
-zones for international travel. The next-item card follows the device's local clock.
+the trip are warnings. Items and reservations have departure/arrival IANA time
+zones and a separate arrival date, supporting overnight and international travel.
+Nonexistent DST times and arrivals before departure are rejected. Linked calendar
+events are converted to Pacific/Auckland, preserving the calendar's existing
+convention and showing the original local time as context. Legacy items without a
+zone keep the previous Auckland default. Mark items done or skipped (and resume
+them); the next-item card excludes completed/skipped items using each item's zone.
 
 “Compartilhar guia PDF” generates a styled PDF locally with the daily itinerary,
 reservations, checklist, and original PDF vouchers appended as pages. The font and
@@ -57,3 +61,47 @@ Map stop numbers are anchored inside Leaflet div icons. Nearby stops cluster at
 54 screen pixels and regroup on zoom/pan; cluster popups list individual stops
 and can zoom to the area. Permanent tooltips are not used for numbering.
 Every itinerary removal requires confirmation, including unlinked items.
+
+Daily order can be changed with desktop drag handles or up/down buttons, including
+on mobile. A preview shows the new sequence, timing conflicts and changed automatic
+origins before committing; fixed times and custom origins are preserved. Changes
+to the schedule while a preview is open require a fresh preview. The order is
+persisted per day and used in the itinerary, map and exported PDF.
+
+New reservations can create connected itinerary items: a transfer for a flight or
+transport booking, and check-in/out for a stay. Editing the reservation updates
+those items and their calendar events using stable IDs. Edit connected items via
+the reservation; duplicating one makes an independent activity. Deliberately
+removed generated parts are not recreated on the next reservation edit. Removing
+a reservation preserves its activities and finance history as independent records.
+
+Saved places are kept separately from scheduled activities. Adding a saved place
+to the itinerary copies its details without deleting the library entry. Day tabs
+also filter the map; the map's own selector can show another day or the whole trip.
+Filtered maps retain a departure context point when needed for a selected day's
+route, and preserve global stop numbering. PDF guides include status, local time
+zones, manual order and saved places.
+
+## Device time zones
+
+The app detects the device's IANA time zone with Intl and refreshes on focus,
+visibility, zone changes and local day changes. Account and preferences shows a
+live local clock and, outside Pacific/Auckland, the NZ reference clock. No location
+permission or shared account-wide time-zone setting is required.
+
+Calendar/dashboard events are projected into the viewer's zone without rewriting
+stored dates/times. Existing events with no zone keep their original Auckland
+meaning; date-only values (document expiry, holidays, finance dates) are not shifted
+as if they were timestamps. New manual events record their zone explicitly. New
+trip defaults use the device zone; location-specific trip/arrival zones remain
+editable. Trip-derived calendar records retain their explicit canonical NZ zone,
+and are then projected for each viewer. ICS exports retain UTC instants/duration.
+
+New alerts default to the device zone and send scheduled_at as a UTC ISO instant
+plus the selected timezone. Existing repeating alerts retain their origin zone
+unless edited explicitly. Event reminders use absolute 24-hour/3-hour offsets;
+document reminders use 09:00 in the device zone. These are client payload changes.
+No SQL migrations, Edge Function sources or Supabase administrative connector are
+available in this repository/session; server recurrence/cron implementations have
+not been modified or verified live. Automated tests mock Supabase and assert the
+UTC payloads, local projections and preservation of existing schedules.

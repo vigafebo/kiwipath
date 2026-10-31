@@ -67,7 +67,7 @@
   y-=heroHeight+30;
   paragraph('Seu roteiro, reservas e documentos em um só lugar.',{size:12});
   paragraph('Preparado em '+new Date().toLocaleDateString('pt-BR')+'. Cópia para consulta offline; mapas e alterações posteriores precisam de conexão.',{size:8,color:colors.muted,gap:12});
-  const itinerary=(trip.itinerary||[]).slice().sort((a,b)=>((a.date||'9999')+(a.time||'')).localeCompare((b.date||'9999')+(b.time||'')));
+  const itinerary=(trip.itinerary||[]).slice().sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')||((Number.isFinite(a.sequence)?a.sequence:Infinity)-(Number.isFinite(b.sequence)?b.sequence:Infinity))||(a.time||'').localeCompare(b.time||''));
   section('Roteiro dia a dia');
   if(!itinerary.length)paragraph('Roteiro ainda não definido.',{color:colors.muted});
   let lastDay;
@@ -76,7 +76,7 @@
    space(55);page.drawCircle({x:margin+10,y:y-1,size:10,color:colors.forest});
    const number=String(index+1);page.drawText(number,{x:margin+10-font.widthOfTextAtSize(number,8)/2,y:y-4,size:8,font,color:colors.white});
    paragraph(item.title||'Atividade',{size:12,indent:29});
-   paragraph((item.time||'Horário livre')+(item.endTime?' – '+item.endTime:'')+(item.transport?' · '+transportLabel(item.transport):''),{size:9,color:colors.muted,indent:29});
+   paragraph((item.time||'Horário livre')+(item.timeZone?' · '+item.timeZone:'')+(item.endTime?' → '+(item.endDate&&item.endDate!==item.date?date(item.endDate)+' · ':'')+item.endTime+(item.endTimeZone?' · '+item.endTimeZone:''):'')+(item.transport?' · '+transportLabel(item.transport):'')+(item.status==='done'?' · Feito':item.status==='skipped'?' · Pulado':''),{size:9,color:colors.muted,indent:29});
    if(item.origin||item.location)paragraph((item.origin?item.origin+' → ':'')+(item.location||''),{size:10,indent:29});
    if(item.note)paragraph(item.note,{size:9,color:colors.muted,indent:29});separator();
   });
@@ -84,12 +84,13 @@
   if(!(trip.reservations||[]).length)paragraph('Nenhuma reserva cadastrada.',{color:colors.muted});
   for(const reservation of trip.reservations||[]){
    space(65);paragraph(reservation.title,{size:12});
-   paragraph(date(reservation.startDate)+(reservation.time?' · '+reservation.time:'')+(reservation.endDate?' → '+date(reservation.endDate)+(reservation.endTime?' · '+reservation.endTime:''):''),{size:9,color:colors.muted});
+   paragraph(date(reservation.startDate)+(reservation.time?' · '+reservation.time+(reservation.timeZone?' · '+reservation.timeZone:''):'')+(reservation.endDate?' → '+date(reservation.endDate)+(reservation.endTime?' · '+reservation.endTime+(reservation.endTimeZone?' · '+reservation.endTimeZone:''):''):''),{size:9,color:colors.muted});
    if(reservation.provider||reservation.reference)paragraph([reservation.provider,reservation.reference?'Confirmação: '+reservation.reference:''].filter(Boolean).join(' · '));
    if(reservation.location)paragraph(reservation.location);
    paragraph('Total: '+formatMoney(reservation.cost||0,reservation.currency||trip.currency)+'  ·  Pago: '+formatMoney(reservation.paidAmount||0,reservation.currency||trip.currency)+'  ·  Pendente: '+formatMoney(Math.max(0,(reservation.cost||0)-(reservation.paidAmount||0)),reservation.currency||trip.currency),{size:9});
    if(reservation.note)paragraph(reservation.note,{size:9,color:colors.muted});separator();
   }
+  if((trip.savedPlaces||[]).length){section('Lugares salvos');for(const place of trip.savedPlaces){paragraph(place.title,{size:11});if(place.location)paragraph(place.location,{size:9,color:colors.muted});if(place.note)paragraph(place.note,{size:9,color:colors.muted})}}
   section('Checklist de preparação');
   if(!(trip.checklist||[]).length)paragraph('Nenhum item de preparação cadastrado.',{color:colors.muted});
   for(const item of trip.checklist||[]){

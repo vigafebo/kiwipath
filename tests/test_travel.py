@@ -31,7 +31,7 @@ class TravelTests(unittest.TestCase):
         cls.playwright.stop()
 
     def setUp(self):
-        self.context = self.browser.new_context(service_workers="block")
+        self.context = self.browser.new_context(service_workers="block",timezone_id=getattr(self,"timezone_id","UTC"))
         self.page = self.context.new_page()
         self.errors = []
         self.route_requests = []
@@ -44,7 +44,10 @@ class TravelTests(unittest.TestCase):
             activeTripId=trip.id; document.querySelector('#authScreen').style.display='none';
             document.querySelector('#kiwiApp').style.visibility='visible'; render(); },
           state:()=>data, open:()=>addTripItinerary(data.trips[0].id),
-          points:tripMovementPoints, flight:tripFlightPath, budget:tripBudgetSummary, warnings:tripItemWarnings, markerGroups:tripMapMarkerGroups
+          points:tripMovementPoints, flight:tripFlightPath, budget:tripBudgetSummary, warnings:tripItemWarnings, markerGroups:tripMapMarkerGroups, range:tripRange, sorted:tripSortedItinerary, exportEvent:downloadEventIcs, zone:()=>DEVICE_TIMEZONE, today:today,
+          project:eventInDeviceZone, refreshZone:refreshDeviceTimeContext, eventIso:eventStartIso,
+          event:editEvent, alert:editAlert, alerts:rows=>{customAlerts=rows}, alertDate:displayAlertDate,
+          api:fn=>{supabaseClient.from=fn;currentUser={id:'test-user',email:'test@example.com'}}
         };'''
         source = source.replace("supabaseClient.auth.getSession().then", hooks + "\nsupabaseClient.auth.getSession().then")
         sdk = """window.supabase={createClient:()=>({auth:{
@@ -388,6 +391,327 @@ class TravelTests(unittest.TestCase):
         self.assertIn("São Paulo e Москва", text)
         self.assertIn("histórico número 17", text)
         self.assertIn("Checklist de preparação", text)
+
+    def test_activity_status_advances_next_pending_and_persists(self):
+        self.page.clock.set_fixed_time("2026-10-15T07:00:00Z")
+        trip = {**TRIP,"timeZone":"Europe/Madrid","itinerary":[
+            dict(id=str(i),title="Activity "+str(i),kind="activity",date="2026-10-15",time=str(10+i)+":00",timeZone="Europe/Madrid") for i in range(3)]}
+        self.page.evaluate("trip=>__travel.reset(trip)",trip)
+        self.assertIn("Activity 0",self.page.locator(".trip-now h2").inner_text())
+        self.page.locator('[data-action="travel-status:test-trip:0:done"]').click()
+        self.assertIn("Activity 1",self.page.locator(".trip-now h2").inner_text())
+        self.page.locator('[data-action="travel-status:test-trip:1:skipped"]').click()
+        self.assertIn("Activity 2",self.page.locator(".trip-now h2").inner_text())
+        self.page.locator('[data-action="travel-status:test-trip:0:pending"]').click()
+        self.assertIn("Activity 0",self.page.locator(".trip-now h2").inner_text())
+        self.page.reload()
+        self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary[1].status"),"skipped")
+
+    def test_overnight_timezones_convert_calendar_and_detect_overlap(self):
+        self.page.evaluate("__travel.open()")
+        self.page.locator("#f-title").fill("Overnight flight")
+        self.page.locator("#f-time").fill("23:30")
+        self.page.locator("#f-timeZone").fill("Europe/Madrid")
+        self.page.locator("#f-endDate").fill("2026-10-16")
+        self.page.locator("#f-endTime").fill("05:00")
+        self.page.locator("#f-endTimeZone").fill("America/Sao_Paulo")
+        self.page.locator("#itemForm button[type=submit]").click()
+        state=self.page.evaluate("__travel.state()")
+        self.assertEqual(state["events"][0]["date"],"2026-10-16")
+        self.assertEqual(state["events"][0]["time"],"10:30")
+        self.assertEqual(state["events"][0]["sourceTimeZone"],"Europe/Madrid")
+        duration=self.page.evaluate("(()=>{const t=__travel.state().trips[0],r=__travel.range(t.itinerary[0],t);return (r.end-r.start)/3600000})()")
+        self.assertEqual(duration,10.5)
+        self.assertEqual(state['events'][0]['endAt'],'2026-10-16T08:00:00.000Z')
+        with self.page.expect_download() as download:
+            self.page.evaluate('__travel.exportEvent(__travel.state().events[0].id)')
+        ics=Path(download.value.path()).read_text()
+        self.assertIn('DTSTART:20261015T213000Z',ics)
+        self.assertIn('DTEND:20261016T080000Z',ics)
+
+        warning=self.page.evaluate("""() => {
+          const t=__travel.state().trips[0];t.itinerary.push({id:'other',date:'2026-10-16',time:'09:00',timeZone:'Europe/Paris'});
+          return __travel.warnings(t,t.itinerary[0]);
+        }""")
+        self.assertIn("Horário coincide com outro item",warning)
+
+    def test_invalid_zone_and_nonexistent_dst_time_do_not_save(self):
+        self.page.evaluate("trip=>__travel.reset({...trip,startDate:'2026-03-29',endDate:'2026-03-30'})",TRIP)
+        self.page.evaluate("__travel.open()")
+        self.page.locator("#f-title").fill("DST gap")
+        self.page.locator("#f-time").fill("02:30")
+        self.page.locator("#f-timeZone").fill("Invalid/Zone")
+        self.page.locator("#itemForm button[type=submit]").click()
+        self.assertIn("fuso válido",self.page.locator("#toast").inner_text())
+        self.page.locator("#f-timeZone").fill("Europe/Madrid")
+        self.page.locator("#f-endTimeZone").fill("Europe/Madrid")
+        self.page.locator("#itemForm button[type=submit]").click()
+        self.assertIn("não existe",self.page.locator("#toast").inner_text())
+        self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary.length"),0)
+
+    def test_reservation_generates_and_updates_connected_stay_items(self):
+        self.page.locator('[data-action="travel-add-reservation:test-trip"]').click()
+        self.page.locator("#f-title").fill("Madrid hotel")
+        self.page.locator("#f-type").select_option("stay")
+        self.page.locator("#f-startDate").fill("2026-10-15")
+        self.page.locator("#f-time").fill("15:00")
+        self.page.locator("#f-endDate").fill("2026-10-16")
+        self.page.locator("#f-endTime").fill("11:00")
+        self.page.locator("#f-timeZone").fill("Europe/Madrid")
+        self.page.locator("#f-endTimeZone").fill("Europe/Madrid")
+        self.page.locator("#itemForm button[type=submit]").click()
+        state=self.page.evaluate("__travel.state()")
+        self.assertEqual(len(state["trips"][0]["itinerary"]),2)
+        self.assertEqual(len(state["events"]),2)
+        ids=[item["id"] for item in state["trips"][0]["itinerary"]]
+        self.page.locator('[data-action^="travel-edit-reservation:"]').click()
+        self.page.locator("#f-time").fill("16:00")
+        self.page.locator("#itemForm button[type=submit]").click()
+        state=self.page.evaluate("__travel.state()")
+        self.assertEqual([item["id"] for item in state["trips"][0]["itinerary"]],ids)
+        self.assertEqual(state["trips"][0]["itinerary"][0]["time"],"16:00")
+        self.assertEqual(len(state["events"]),2)
+        self.assertEqual(state["transactions"],[])
+        self.page.locator('[data-action^="travel-edit-itinerary:"]').first.click()
+        self.assertEqual(self.page.locator("#modalTitle").inner_text(),"Editar reserva")
+
+    def test_reorder_previews_route_changes_and_drag_order_persists(self):
+        trip={**TRIP,"itinerary":[
+            dict(id='a',title='Barcelona',kind='activity',date='2026-10-15',time='08:00',location='Barcelona',latitude='41.38',longitude='2.16'),
+            dict(id='b',title='Paris',kind='travel',date='2026-10-15',time='10:00',location='Paris',latitude='48.85',longitude='2.35',transport='train',originSource='previous',origin='Barcelona',originLatitude='41.38',originLongitude='2.16'),
+            dict(id='c',title='Lyon',kind='activity',date='2026-10-15',time='12:00',location='Lyon',latitude='45.76',longitude='4.83')]}
+        self.page.evaluate("trip=>__travel.reset(trip)",trip)
+        self.page.get_by_role('button',name='Mover Lyon para cima',exact=True).click()
+        self.assertIn('Lyon → Paris',self.page.locator('.trip-order-preview').inner_text())
+        self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary[1].origin"),'Barcelona')
+        self.page.locator('#cancelModal').click()
+        self.page.get_by_role('button',name='Mover Lyon para cima',exact=True).click()
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual(self.page.evaluate("__travel.sorted(__travel.state().trips[0]).map(x=>x.id)"),['a','c','b'])
+        self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary[1].origin"),'Lyon')
+        self.page.locator('[data-drag-itinerary="b"]').drag_to(self.page.locator('#trip-item-a'))
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual(self.page.evaluate("__travel.sorted(__travel.state().trips[0]).map(x=>x.id)"),['b','a','c'])
+        self.page.reload()
+        self.assertEqual(self.page.evaluate("__travel.sorted(__travel.state().trips[0]).map(x=>x.id)"),['b','a','c'])
+
+    def test_saved_place_can_be_scheduled_without_losing_the_library_entry(self):
+        self.page.locator('[data-action="travel-place-new:test-trip"]').click()
+        self.page.locator('#f-title').fill('Restaurant idea')
+        self.page.locator('#f-category').select_option('Restaurante')
+        self.page.locator('#f-itineraryLocationSearch').fill('Barcelona')
+        self.page.locator('[data-itinerary-location="0"]').click()
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual(self.page.evaluate('__travel.state().trips[0].itinerary.length'),0)
+        self.page.get_by_role('button',name='Adicionar ao roteiro',exact=True).click()
+        self.assertEqual(self.page.locator('#f-title').input_value(),'Restaurant idea')
+        self.page.locator('#f-date').select_option('2026-10-16')
+        self.page.locator('#itemForm button[type=submit]').click()
+        state=self.page.evaluate('__travel.state()')
+        self.assertEqual(len(state['trips'][0]['savedPlaces']),1)
+        self.assertEqual(state['trips'][0]['itinerary'][0]['date'],'2026-10-16')
+        self.assertEqual(state['trips'][0]['itinerary'][0]['latitude'],'41.3874')
+        self.page.set_viewport_size({'width':390,'height':844})
+        self.assertEqual(self.page.evaluate('document.documentElement.scrollWidth'),390)
+
+    def test_map_day_filter_keeps_departure_context_and_can_show_all(self):
+        trip={**TRIP,"itinerary":[
+            dict(id='a',title='First day',date='2026-10-15',latitude='40.41',longitude='-3.7'),
+            dict(id='b',title='Second day',date='2026-10-16',latitude='41.38',longitude='2.16',transport='train')]}
+        self.page.evaluate("trip=>__travel.reset(trip)",trip)
+        self.page.locator('[data-action="travel-day:test-trip:2026-10-16"]').click()
+        self.page.wait_for_function("document.querySelector('#tripMapDayFilter').value==='2026-10-16'")
+        points=self.page.evaluate("__travel.points(__travel.state().trips[0],'2026-10-16')")
+        self.assertEqual(len(points),2)
+        self.assertEqual(points[0]['latitude'],'40.41')
+        self.assertFalse(points[0]['connect'])
+        self.assertEqual(points[1]['itineraryId'],'b')
+        self.page.get_by_role('button',name='Ver viagem inteira',exact=True).click()
+        self.assertEqual(self.page.locator('#tripMapDayFilter').input_value(),'all')
+        self.assertEqual(len(self.page.evaluate('__travel.points(__travel.state().trips[0])')),3)
+
+    def test_flight_reservation_stays_linked_and_removed_parts_stay_removed(self):
+        self.page.locator('[data-action="travel-add-reservation:test-trip"]').click()
+        self.page.locator('#f-title').fill('Madrid to Paris')
+        self.page.locator('#f-startDate').fill('2026-10-15')
+        self.page.locator('#f-time').fill('10:00')
+        self.page.locator('#f-timeZone').fill('Europe/Madrid')
+        self.page.locator('#f-endDate').fill('2026-10-15')
+        self.page.locator('#f-endTime').fill('12:00')
+        self.page.locator('#f-endTimeZone').fill('Europe/Paris')
+        self.page.locator('#itemForm button[type=submit]').click()
+        state=self.page.evaluate('__travel.state()')
+        item=state['trips'][0]['itinerary'][0]
+        self.assertEqual(item['kind'],'travel')
+        self.assertEqual(item['transport'],'flight')
+        self.assertEqual(len(state['events']),1)
+        self.page.locator('[data-action^="travel-remove-itinerary:"]').click()
+        self.page.get_by_role('button',name='Remover item',exact=True).click()
+        self.page.locator('[data-action^="travel-edit-reservation:"]').click()
+        self.page.locator('#f-title').fill('Updated flight')
+        self.page.locator('#itemForm button[type=submit]').click()
+        state=self.page.evaluate('__travel.state()')
+        self.assertEqual(state['trips'][0]['itinerary'],[])
+        self.assertEqual(state['events'],[])
+
+    def test_stale_order_preview_rejects_concurrent_time_change(self):
+        trip={**TRIP,'itinerary':[
+            dict(id='a',title='A',date='2026-10-15',time='10:00'),
+            dict(id='b',title='B',date='2026-10-15',time='11:00')]}
+        self.page.evaluate('trip=>__travel.reset(trip)',trip)
+        self.page.get_by_role('button',name='Mover B para cima',exact=True).click()
+        self.page.evaluate("__travel.state().trips[0].itinerary[0].time='09:00'")
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertIn('roteiro mudou',self.page.locator('#toast').inner_text())
+        self.assertEqual(self.page.locator('#modalBackdrop').count(),1)
+        self.assertEqual(self.page.evaluate('__travel.sorted(__travel.state().trips[0]).map(x=>x.id)'),['a','b'])
+
+    def test_pdf_preserves_manual_order_status_zones_and_saved_places(self):
+        trip={**TRIP,'itinerary':[
+            dict(id='a',title='Morning museum',date='2026-10-15',time='10:00',timeZone='Europe/Madrid',sequence=1),
+            dict(id='b',title='Evening walk',date='2026-10-15',time='19:00',timeZone='Europe/Madrid',sequence=0,status='done')],
+            'savedPlaces':[dict(id='idea',title='Saved restaurant',location='Madrid')]}
+        self.page.evaluate('trip=>__travel.reset(trip)',trip)
+        self.page.get_by_role('button',name='Compartilhar guia PDF').click()
+        with self.page.expect_download() as download:self.page.get_by_role('button',name='Baixar PDF',exact=True).click()
+        text='\n'.join(page.extract_text() for page in PdfReader(download.value.path()).pages)
+        self.assertLess(text.index('Evening walk'),text.index('Morning museum'))
+        self.assertIn('Europe/Madrid',text)
+        self.assertIn('Feito',text)
+        self.assertIn('Saved restaurant',text)
+
+    def test_moving_to_dst_gap_keeps_original_item_unchanged(self):
+        trip={**TRIP,'startDate':'2026-03-28','endDate':'2026-03-30','itinerary':[
+            dict(id='dst',title='Early activity',date='2026-03-28',time='02:30',timeZone='Europe/Madrid')]}
+        self.page.evaluate('trip=>__travel.reset(trip)',trip)
+        self.page.get_by_role('button',name='Mover dia',exact=True).click()
+        self.page.locator('#f-date').select_option('2026-03-29')
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertIn('não existe',self.page.locator('#toast').inner_text())
+        self.assertEqual(self.page.evaluate('__travel.state().trips[0].itinerary[0].date'),'2026-03-28')
+
+    def in_time_zone(self,zone):
+        self.context.close();self.timezone_id=zone;self.setUp()
+
+    def mock_database(self):
+        self.page.evaluate("""() => {
+          window.__writes=[];
+          const query=table=>new Proxy({}, {get(target,key){
+            if(key==='then')return resolve=>Promise.resolve({data:[],error:null}).then(resolve);
+            if(key==='maybeSingle'||key==='single')return ()=>Promise.resolve({data:null,error:null});
+            return (...args)=>{if(key==='insert'||key==='update'||key==='upsert')__writes.push({table,action:key,payload:args[0]});return query(table)};
+          }});
+          __travel.api(query);
+        }""")
+
+    def test_device_zone_clocks_and_local_day_differ_from_nz(self):
+        self.in_time_zone('America/Sao_Paulo')
+        self.page.clock.set_fixed_time('2030-01-01T01:00:00Z')
+        self.page.locator('#profileMenuToggle').click()
+        self.page.evaluate('__travel.refreshZone()')
+        self.assertEqual(self.page.evaluate('__travel.zone()'),'America/Sao_Paulo')
+        self.assertEqual(self.page.evaluate('__travel.today()'),'2029-12-31')
+        self.assertIn('22:00:00',self.page.locator('#deviceLocalClock').inner_text())
+        self.assertIn('14:00:00',self.page.locator('#deviceNzClock').inner_text())
+        self.assertTrue(self.page.locator('#deviceNzClockRow').is_visible())
+        self.assertEqual(self.page.locator('#deviceClockZone').inner_text(),'America/Sao_Paulo')
+        self.assertLessEqual(self.page.locator('#profileMenu').bounding_box()['height'],760)
+
+    def test_nz_device_hides_duplicate_clock(self):
+        self.in_time_zone('Pacific/Auckland')
+        self.page.locator('#profileMenuToggle').click()
+        self.assertFalse(self.page.locator('#deviceNzClockRow').is_visible())
+        self.assertEqual(self.page.evaluate('__travel.zone()'),'Pacific/Auckland')
+
+    def test_legacy_event_is_projected_without_changing_instant_or_date_only_items(self):
+        self.in_time_zone('America/Sao_Paulo')
+        raw=dict(id='legacy',title='NZ morning',date='2030-01-02',time='09:00')
+        projected=self.page.evaluate('event=>__travel.project(event)',raw)
+        self.assertEqual(projected['date'],'2030-01-01')
+        self.assertEqual(projected['time'],'17:00')
+        self.assertEqual(self.page.evaluate('event=>__travel.eventIso(event)',raw),'2030-01-01T20:00:00.000Z')
+        date_only=dict(id='date',title='Anniversary',date='2030-01-02')
+        self.assertEqual(self.page.evaluate('event=>__travel.project(event)',date_only)['date'],'2030-01-02')
+        self.page.evaluate('event=>{__travel.state().events=[event];__travel.event(event.id)}',raw)
+        self.assertEqual(self.page.locator('#f-date').input_value(),'2030-01-01')
+        self.assertEqual(self.page.locator('#f-time').input_value(),'17:00')
+        self.assertEqual(self.page.evaluate('__travel.state().events[0].date'),'2030-01-02')
+        self.page.locator('#cancelModal').click()
+        self.page.locator('#navigation [data-page="timeline"]').click()
+        self.assertIn('17:00',self.page.locator('.event-timebox').first.inner_text())
+        self.assertEqual(self.page.evaluate('__travel.state().events[0].date'),'2030-01-02')
+
+
+    def test_device_zone_changes_refresh_view_without_rewriting_event(self):
+        self.in_time_zone('America/Sao_Paulo')
+        self.page.evaluate("__travel.state().events=[{id:'legacy',date:'2030-01-02',time:'09:00'}]")
+        original=self.page.evaluate('JSON.stringify(__travel.state().events)')
+        self.page.evaluate("""() => {
+          const native=Intl.DateTimeFormat.prototype.resolvedOptions;
+          Intl.DateTimeFormat.prototype.resolvedOptions=function(){return {...native.call(this),timeZone:'Europe/Paris'}};
+          __travel.refreshZone();
+        }""")
+        self.assertEqual(self.page.evaluate('__travel.zone()'),'Europe/Paris')
+        self.assertEqual(self.page.evaluate('JSON.stringify(__travel.state().events)'),original)
+        self.assertEqual(self.page.evaluate('__travel.project(__travel.state().events[0]).time'),'21:00')
+
+    def test_new_event_sends_utc_reminders_for_device_zone(self):
+        self.in_time_zone('America/Sao_Paulo')
+        self.page.clock.set_fixed_time('2030-01-01T00:00:00Z');self.mock_database()
+        self.page.evaluate('__travel.event()')
+        self.page.locator('#f-title').fill('Local appointment')
+        self.page.locator('#f-date').fill('2030-01-03')
+        self.page.locator('#f-time').fill('09:00')
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.page.wait_for_function('!document.querySelector("#modalBackdrop")')
+        state=self.page.evaluate('__travel.state()')
+        self.assertEqual(state['events'][-1]['timeZone'],'America/Sao_Paulo')
+        reminders=self.page.evaluate("__writes.filter(x=>x.table==='kiwipath_custom_alerts'&&x.action==='insert').map(x=>x.payload)")
+        self.assertEqual(len(reminders),2)
+        self.assertEqual(reminders[0]['scheduled_at'],'2030-01-02T12:00:00.000Z')
+        self.assertEqual(reminders[1]['scheduled_at'],'2030-01-03T09:00:00.000Z')
+        self.assertTrue(all(row['timezone']=='America/Sao_Paulo' for row in reminders))
+        self.assertEqual(self.page.evaluate('__travel.eventIso(__travel.state().events.at(-1))'),'2030-01-03T12:00:00.000Z')
+
+
+    def test_custom_alert_uses_device_zone_and_preserves_existing_repeat_zone(self):
+        self.in_time_zone('America/Sao_Paulo');self.mock_database()
+        self.page.clock.set_fixed_time('2030-01-01T00:00:00Z')
+        self.page.evaluate('__travel.alert()')
+        self.assertEqual(self.page.locator('#f-timeZone').input_value(),'America/Sao_Paulo')
+        self.page.locator('#f-title').fill('Local alert')
+        self.page.locator('#f-scheduledAt').fill('2030-01-03T09:00')
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.page.wait_for_function('!document.querySelector("#modalBackdrop")')
+        payload=self.page.evaluate("__writes.find(x=>x.table==='kiwipath_custom_alerts'&&x.action==='insert').payload")
+        self.assertEqual(payload['scheduled_at'],'2030-01-03T12:00:00.000Z')
+        self.assertEqual(payload['timezone'],'America/Sao_Paulo')
+        self.page.evaluate("""() => {
+          __travel.alerts([{id:'repeat',title:'Existing repeat',recurrence:'daily',timezone:'Pacific/Auckland',scheduled_at:'2030-01-03T20:00:00Z',status:'pending'}]);
+          __travel.alert('repeat');
+        }""")
+        self.assertEqual(self.page.locator('#f-timeZone').input_value(),'Pacific/Auckland')
+        self.assertEqual(self.page.locator('#f-scheduledAt').input_value(),'2030-01-04T09:00')
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.page.wait_for_function('!document.querySelector("#modalBackdrop")')
+        repeat=self.page.evaluate("__writes.filter(x=>x.table==='kiwipath_custom_alerts'&&x.action==='update').at(-1).payload")
+        self.assertEqual(repeat['scheduled_at'],'2030-01-03T20:00:00.000Z')
+        self.assertEqual(repeat['timezone'],'Pacific/Auckland')
+
+
+    def test_editing_alert_during_repeated_dst_hour_preserves_utc_instant(self):
+        self.in_time_zone('Europe/Paris');self.mock_database()
+        self.page.clock.set_fixed_time('2026-10-24T00:00:00Z')
+        self.page.evaluate("""() => {
+          __travel.alerts([{id:'repeat-hour',title:'First 02:30',recurrence:'once',timezone:'Europe/Paris',scheduled_at:'2026-10-25T00:30:00Z',status:'pending'}]);
+          __travel.alert('repeat-hour');
+        }""")
+        self.assertEqual(self.page.locator('#f-scheduledAt').input_value(),'2026-10-25T02:30')
+        self.page.locator('#f-title').fill('Title only changed')
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.page.wait_for_function('!document.querySelector("#modalBackdrop")')
+        payload=self.page.evaluate("__writes.filter(x=>x.table==='kiwipath_custom_alerts'&&x.action==='update').at(-1).payload")
+        self.assertEqual(payload['scheduled_at'],'2026-10-25T00:30:00.000Z')
 
     def test_deleted_trip_does_not_report_a_successful_save(self):
         self.page.evaluate("__travel.open()")
