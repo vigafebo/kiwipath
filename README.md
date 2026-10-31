@@ -42,8 +42,18 @@ the trip are warnings; an item's end time must be on the same day as its start.
 Existing calendar times retain the application's calendar convention; check time
 zones for international travel. The next-item card follows the device's local clock.
 
-“Baixar guia offline” downloads a standalone HTML snapshot of the itinerary,
-reservations, checklist and available PDFs. It can be opened without a connection;
-it does not update itself and does not include offline maps. If a PDF cannot be
-fetched, the guide and the app explicitly report that it was omitted. No change to
-the authenticated app's offline startup or synchronization behavior is implied.
+“Compartilhar guia PDF” generates a styled PDF locally with the daily itinerary,
+reservations, checklist, and original PDF vouchers appended as pages. The font and
+PDF libraries are served from this repository, with no third-party PDF conversion.
+Unsupported or unavailable vouchers are reported instead of silently omitted.
+The Web Share API opens the native file share sheet when supported and user
+activation is still available. Otherwise a PDF preview provides a fresh Share
+button (where supported) and a download fallback. Canceling the share sheet does
+not trigger an unwanted download. The exported PDF can be read offline; maps and
+subsequent edits are not included. Tests use real PDF generation and parsing,
+with mocked remote services and native sharing. Python tests also require pypdf.
+
+Map stop numbers are anchored inside Leaflet div icons. Nearby stops cluster at
+54 screen pixels and regroup on zoom/pan; cluster popups list individual stops
+and can zoom to the area. Permanent tooltips are not used for numbering.
+Every itinerary removal requires confirmation, including unlinked items.

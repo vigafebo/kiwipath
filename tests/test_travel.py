@@ -1,6 +1,6 @@
 """Travel regressions. Run: python3 -m unittest discover -s tests -v
 
-Requires Python Playwright and Chromium. All remote services are stubbed;
+Requires Python Playwright, pypdf and Chromium. All remote services are stubbed;
 these tests never authenticate or change shared Supabase data.
 """
 import json
@@ -9,6 +9,7 @@ import unittest
 from urllib.parse import parse_qs, urlparse
 
 from playwright.sync_api import sync_playwright
+from pypdf import PdfReader
 
 ROOT = Path(__file__).resolve().parents[1]
 TRIP = dict(id="test-trip", name="Spain", destination="Madrid, España",
@@ -35,6 +36,7 @@ class TravelTests(unittest.TestCase):
         self.errors = []
         self.route_requests = []
         self.routing_failure = False
+        self.pdf_failure = False
         self.page.on("pageerror", lambda error: self.errors.append(str(error)))
         source = (ROOT / "index.html").read_text()
         hooks = '''window.__travel = {
@@ -42,17 +44,21 @@ class TravelTests(unittest.TestCase):
             activeTripId=trip.id; document.querySelector('#authScreen').style.display='none';
             document.querySelector('#kiwiApp').style.visibility='visible'; render(); },
           state:()=>data, open:()=>addTripItinerary(data.trips[0].id),
-          points:tripMovementPoints, flight:tripFlightPath, budget:tripBudgetSummary, warnings:tripItemWarnings
+          points:tripMovementPoints, flight:tripFlightPath, budget:tripBudgetSummary, warnings:tripItemWarnings, markerGroups:tripMapMarkerGroups
         };'''
         source = source.replace("supabaseClient.auth.getSession().then", hooks + "\nsupabaseClient.auth.getSession().then")
         sdk = """window.supabase={createClient:()=>({auth:{
             getSession:()=>Promise.resolve({data:{session:null}}),onAuthStateChange:()=>{}},
             storage:{from:()=>({createSignedUrl:async path=>({data:{signedUrl:'https://files.test/'+path}})})}
         })};"""
-        leaflet = '''window.__map={markers:[],lines:[]};
-        window.L={map:()=>({setView(){},fitBounds(){},invalidateSize(){},remove(){}}),
-          tileLayer:()=>({addTo(){}}),latLngBounds:x=>x,
-          circleMarker:(ll)=>{__map.markers.push(ll);return {addTo(){return this},bindPopup(){return this},bindTooltip(){return this},on(){return this},openPopup(){return this}}},
+        leaflet = '''window.__map={markers:[],lines:[],icons:[]};
+        window.L={map:()=>({setView(){},fitBounds(){},invalidateSize(){},remove(){},on(){},
+            latLngToLayerPoint:([lat,lon])=>({x:lon*1000,y:lat*1000}),
+            layerPointToLatLng:({x,y})=>[y/1000,x/1000]}),
+          tileLayer:()=>({addTo(){}}),latLngBounds:x=>x,divIcon:options=>options,
+          marker:(ll,options)=>{__map.markers.push(ll);__map.icons.push(options.icon);
+            return {addTo(){return this},bindPopup(){return this},on(){return this},openPopup(){return this},
+              remove(){const index=__map.markers.indexOf(ll);if(index>=0)__map.markers.splice(index,1)}}},
           polyline:(ll,options)=>{const record={ll,options};__map.lines.push(record);
             return {addTo(){return this},setLatLngs(path){record.ll=path;return this},
               setStyle(style){Object.assign(record.options,style);return this}}}};'''
@@ -65,8 +71,11 @@ class TravelTests(unittest.TestCase):
                 request.fulfill(body=sdk, content_type="application/javascript")
             elif url.endswith("leaflet.js"):
                 request.fulfill(body=leaflet, content_type="application/javascript")
+            elif urlparse(url).path.startswith("/kiwipath/vendor/") or urlparse(url).path == "/kiwipath/trip-guide.js":
+                local = ROOT / urlparse(url).path.removeprefix("/kiwipath/")
+                request.fulfill(body=local.read_bytes(), content_type="font/ttf" if local.suffix==".ttf" else "application/javascript")
             elif "files.test/" in url:
-                request.fulfill(body="%PDF-1.4 test voucher", content_type="application/pdf")
+                request.fulfill(body=b"invalid PDF" if self.pdf_failure else (ROOT / "tests/fixtures/voucher.pdf").read_bytes(), content_type="application/pdf")
             elif "brouter.de/brouter?" in url:
                 params = parse_qs(urlparse(url).query)
                 self.route_requests.append(params)
@@ -267,12 +276,15 @@ class TravelTests(unittest.TestCase):
         self.page.locator("#itemForm button[type=submit]").click()
         self.assertIn("Zack", self.page.locator(".trip-check").inner_text())
         self.assertIn("Prazo vencido", self.page.locator(".trip-check").inner_text())
+        self.page.get_by_role("button", name="Compartilhar guia PDF").click()
         with self.page.expect_download() as download:
-            self.page.get_by_role("button", name="Baixar guia offline").click()
-        contents = Path(download.value.path()).read_text()
+            self.page.get_by_role("button", name="Baixar PDF", exact=True).click()
+        reader = PdfReader(download.value.path())
+        contents = "\n".join(page.extract_text() for page in reader.pages)
         self.assertIn("Travel insurance", contents)
         self.assertIn("Madrid", contents)
-        self.assertNotIn("<script", contents)
+        self.assertTrue(download.value.suggested_filename.endswith(".pdf"))
+        self.page.get_by_role("button", name="Fechar", exact=True).click()
         self.page.get_by_role("button", name="Modo em viagem", exact=True).click()
         self.assertIn("trip-travel-mode", self.page.locator(".trip-dashboard").get_attribute("class"))
 
@@ -280,11 +292,13 @@ class TravelTests(unittest.TestCase):
         self.page.set_viewport_size({"width":390,"height":844})
         self.page.evaluate("__travel.state().documents=[{id:'voucher',tripId:'test-trip',title:'Train ticket',filePath:'shared/test.pdf',fileName:'ticket.pdf'}]")
         self.assertEqual(self.page.evaluate("document.documentElement.scrollWidth"), 390)
+        self.page.get_by_role("button", name="Compartilhar guia PDF").click()
         with self.page.expect_download() as download:
-            self.page.get_by_role("button", name="Baixar guia offline").click()
-        contents = Path(download.value.path()).read_text()
-        self.assertIn("data:application/pdf;base64,", contents)
-        self.assertIn("ticket.pdf", contents)
+            self.page.get_by_role("button", name="Baixar PDF", exact=True).click()
+        reader = PdfReader(download.value.path())
+        self.assertEqual(len(reader.pages), 3)
+        self.assertIn("TEST VOUCHER - TRAIN MADRID", reader.pages[-1].extract_text())
+        self.page.get_by_role("button", name="Fechar", exact=True).click()
         self.page.locator('[data-action="travel-add-document:test-trip"]').click()
         self.assertEqual(self.page.locator("#f-tripId").input_value(), "test-trip")
         self.assertEqual(self.page.locator("#f-pdfFile").count(), 1)
@@ -298,6 +312,82 @@ class TravelTests(unittest.TestCase):
         warnings = self.page.evaluate("__travel.warnings(__travel.state().trips[0],{id:'outside',date:'2026-11-01'})")
         self.assertIn("Fora das datas da viagem", warnings)
         self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary.length"), 1)
+
+    def test_unlinked_itinerary_removal_requires_confirmation_and_can_cancel(self):
+        trip = {**TRIP, "itinerary":[dict(id="walk",kind="activity",title="Walk",date="2026-10-15")]}
+        self.page.evaluate("trip=>__travel.reset(trip)", trip)
+        self.page.get_by_role("button", name="Remover", exact=True).click()
+        self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary.length"), 1)
+        self.page.get_by_role("button", name="Manter item", exact=True).click()
+        self.assertEqual(self.page.locator(".trip-itinerary").count(), 1)
+        self.page.get_by_role("button", name="Remover", exact=True).click()
+        self.page.get_by_role("button", name="Remover item", exact=True).click()
+        self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary.length"), 0)
+
+    def test_nearby_map_numbers_are_grouped_and_icons_have_fixed_anchors(self):
+        trip = {**TRIP, "itinerary":[
+            dict(id="one",title="First",date="2026-10-15",latitude="40.4168",longitude="-3.7038"),
+            dict(id="two",title="Second",date="2026-10-15",latitude="40.42",longitude="-3.70")]}
+        self.page.evaluate("trip=>{__map.icons=[];__travel.reset(trip)}", trip)
+        self.page.wait_for_function("__map.icons.some(icon=>icon.html.includes('2 locais'))")
+        cluster = self.page.evaluate("__map.icons.find(icon=>icon.html.includes('2 locais'))")
+        self.assertEqual(cluster["iconAnchor"], [33,16])
+        self.assertEqual(cluster["iconSize"], [66,32])
+        # Zooming in separates the stops; colocated points remain selectable together.
+        counts = self.page.evaluate("""() => {
+            const points=__travel.points(__travel.state().trips[0]);
+            return [1000,100000].map(scale=>__travel.markerGroups(points,{
+                latLngToLayerPoint:([lat,lon])=>({x:lon*scale,y:lat*scale})}).length);
+        }""")
+        self.assertEqual(counts, [1,2])
+
+    def test_native_pdf_share_receives_real_pdf_file(self):
+        self.page.evaluate("""() => {
+          Object.defineProperty(navigator,'canShare',{configurable:true,value:({files})=>files[0].type==='application/pdf'});
+          Object.defineProperty(navigator,'share',{configurable:true,value:async ({files})=>{
+            window.__shared={name:files[0].name,type:files[0].type,header:await files[0].slice(0,5).text(),active:navigator.userActivation.isActive};
+          }});
+        }""")
+        self.page.get_by_role("button", name="Compartilhar guia PDF").click()
+        self.page.wait_for_function("window.__shared || document.querySelector('[data-pdf-share]')")
+        if not self.page.evaluate("!!window.__shared"):
+            self.page.get_by_role("button", name="Compartilhar PDF", exact=True).click()
+        self.page.wait_for_function("window.__shared")
+        shared = self.page.evaluate("window.__shared")
+        self.assertEqual(shared["header"], "%PDF-")
+        self.assertEqual(shared["type"], "application/pdf")
+        self.assertTrue(shared["active"])
+
+    def test_invalid_pdf_is_reported_and_share_cancellation_can_retry(self):
+        self.pdf_failure = True
+        self.page.evaluate("__travel.state().documents=[{id:'bad',tripId:'test-trip',title:'Unavailable voucher',filePath:'shared/bad.pdf'}]")
+        self.page.evaluate("""() => {
+          window.__shareCalls=0;
+          Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});
+          Object.defineProperty(navigator,'share',{configurable:true,value:async()=>{window.__shareCalls++;throw new DOMException('Canceled','AbortError')}});
+        }""")
+        self.page.get_by_role("button", name="Compartilhar guia PDF").click()
+        self.page.get_by_role("dialog", name="Seu guia está pronto").wait_for()
+        self.assertIn("Unavailable voucher", self.page.locator("#tripGuideBackdrop .trip-item-warning").inner_text())
+        self.assertEqual(self.page.evaluate("__shareCalls"), 0)
+        self.page.get_by_role("button", name="Compartilhar PDF", exact=True).click()
+        self.assertEqual(self.page.evaluate("__shareCalls"), 1)
+        self.assertEqual(self.page.get_by_role("button", name="Baixar PDF", exact=True).count(), 1)
+
+    def test_pdf_paginates_long_unicode_itinerary(self):
+        trip = {**TRIP, "name":"São Paulo e Москва", "itinerary":[
+            dict(id=str(i),title="Passeio histórico número "+str(i),date="2026-10-15",location="Madrid, España",note="Informação de viagem e café. "*25)
+            for i in range(18)]}
+        self.page.evaluate("trip=>__travel.reset(trip)", trip)
+        self.page.get_by_role("button", name="Compartilhar guia PDF").click()
+        with self.page.expect_download() as download:
+            self.page.get_by_role("button", name="Baixar PDF", exact=True).click()
+        reader = PdfReader(download.value.path())
+        text = "\n".join(page.extract_text() for page in reader.pages)
+        self.assertGreater(len(reader.pages), 3)
+        self.assertIn("São Paulo e Москва", text)
+        self.assertIn("histórico número 17", text)
+        self.assertIn("Checklist de preparação", text)
 
     def test_deleted_trip_does_not_report_a_successful_save(self):
         self.page.evaluate("__travel.open()")
