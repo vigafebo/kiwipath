@@ -44,7 +44,7 @@ class TravelTests(unittest.TestCase):
             activeTripId=trip.id; document.querySelector('#authScreen').style.display='none';
             document.querySelector('#kiwiApp').style.visibility='visible'; render(); },
           state:()=>data, open:()=>addTripItinerary(data.trips[0].id),
-          points:tripMovementPoints, flight:tripFlightPath, budget:tripBudgetSummary, warnings:tripItemWarnings, markerGroups:tripMapMarkerGroups, range:tripRange, sorted:tripSortedItinerary, exportEvent:downloadEventIcs, zone:()=>DEVICE_TIMEZONE, today:today,
+          points:tripMovementPoints, flight:tripFlightPath, countries:tripVisitedCountries, historyCountries:tripHistoryCountries, budget:tripBudgetSummary, warnings:tripItemWarnings, markerGroups:tripMapMarkerGroups, range:tripRange, sorted:tripSortedItinerary, exportEvent:downloadEventIcs, zone:()=>DEVICE_TIMEZONE, today:today,
           project:eventInDeviceZone, refreshZone:refreshDeviceTimeContext, eventIso:eventStartIso,
           event:editEvent, alert:editAlert, alerts:rows=>{customAlerts=rows}, alertDate:displayAlertDate,
           api:fn=>{supabaseClient.from=fn;currentUser={id:'test-user',email:'test@example.com'}}
@@ -89,7 +89,9 @@ class TravelTests(unittest.TestCase):
                     coords = [ends[0], [(ends[0][0]+ends[1][0])/2, (ends[0][1]+ends[1][1])/2+0.1], ends[1]]
                     request.fulfill(body=json.dumps({"features":[{"properties":{"total-time":7200},"geometry":{"type":"LineString","coordinates":coords}}]}), content_type="application/json")
             elif "nominatim.openstreetmap.org" in url:
-                request.fulfill(body=json.dumps([dict(name="Barcelona", lat="41.3874", lon="2.1686", address={"country":"España"})]), content_type="application/json")
+                query=parse_qs(urlparse(url).query).get('q',[''])[0]
+                result=dict(name="Paris",lat="48.8566",lon="2.3522",address={"country":"France","country_code":"fr"}) if query=='Paris' else dict(name="Zürich",lat="47.3769",lon="8.5417",address={"country":"Schweiz","country_code":"ch"}) if query=='Zürich' else dict(name="Barcelona",lat="41.3874",lon="2.1686",address={"country":"España","country_code":"es"})
+                request.fulfill(body=json.dumps([result]),content_type="application/json")
             else:
                 request.fulfill(body="", content_type="text/css")
         self.page.route("**/*", route)
@@ -712,6 +714,80 @@ class TravelTests(unittest.TestCase):
         self.page.wait_for_function('!document.querySelector("#modalBackdrop")')
         payload=self.page.evaluate("__writes.filter(x=>x.table==='kiwipath_custom_alerts'&&x.action==='update').at(-1).payload")
         self.assertEqual(payload['scheduled_at'],'2026-10-25T00:30:00.000Z')
+
+    def test_history_collects_all_trip_countries_once_and_excludes_saved_or_skipped(self):
+        trip={**TRIP,'status':'done','country':'Espanha','countryCode':'ES','itinerary':[
+            dict(id='fr',title='Paris',location='Paris, France',countryCode='fr'),
+            dict(id='fr2',title='Lyon',location='Lyon, France',countryCode='FR'),
+            dict(id='it',title='Rome',location='Roma, Italia',origin='Paris, France',transport='train'),
+            dict(id='skipped',title='Berlin',location='Berlin, Germany',countryCode='de',status='skipped')],
+            'savedPlaces':[dict(id='idea',title='Lisbon',countryCode='pt',location='Lisboa, Portugal')]}
+        self.page.evaluate('trip=>__travel.reset(trip)',trip)
+        codes=self.page.evaluate('__travel.countries(__travel.state().trips[0]).map(x=>x.code)')
+        self.assertEqual(set(codes),{'es','fr','it'})
+        self.page.locator('[data-action="travel-back"]').click()
+        self.page.locator('[data-action="travel-history"]').click()
+        self.assertEqual(self.page.locator('.trip-history-country').count(),3)
+        self.assertEqual(self.page.locator('.trip-history-country-list .trip-chip').count(),3)
+        self.assertIn('França',self.page.locator('.trip-history-country-list').inner_text())
+        self.assertNotIn('Alemanha',self.page.locator('.trip-history-country-list').inner_text())
+        counts=self.page.evaluate("__travel.historyCountries([__travel.state().trips[0],{countryCode:'fr',itinerary:[]}])")
+        self.assertEqual(next(row['count'] for row in counts if row['code']=='fr'),2)
+        self.assertEqual(next(row['count'] for row in counts if row['code']=='it'),1)
+
+    def test_legacy_country_labels_and_reservation_origins_are_recognized(self):
+        trip={**TRIP,'countryCode':'es','itinerary':[
+            dict(id='pt',location='Lisboa, Portugal'),dict(id='fr',location='Paris, France'),
+            dict(id='uk',location='London, United Kingdom'),dict(id='unknown',location='Paris')],
+            'reservations':[dict(id='train',location='Roma, Itália',origin='Zürich, Schweiz') ]}
+        countries=self.page.evaluate('trip=>__travel.countries(trip)',trip)
+        self.assertEqual({country['code'] for country in countries},{'es','pt','fr','gb','it','ch'})
+        self.assertEqual(self.page.evaluate("__travel.countries({destination:'Paris',itinerary:[]})"),[])
+
+    def test_country_metadata_survives_search_saved_place_schedule_and_edit(self):
+        self.page.locator('[data-action="travel-place-new:test-trip"]').click()
+        self.page.locator('#f-title').fill('Barcelona visit')
+        self.page.locator('#f-itineraryLocationSearch').fill('Barcelona')
+        self.page.locator('[data-itinerary-location="0"]').click()
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual(self.page.evaluate('__travel.state().trips[0].savedPlaces[0].countryCode'),'es')
+        self.page.get_by_role('button',name='Adicionar ao roteiro',exact=True).click()
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual(self.page.evaluate('__travel.state().trips[0].itinerary[0].countryCode'),'es')
+        self.page.locator('[data-action^="travel-edit-itinerary:"]').click()
+        self.page.locator('#f-title').fill('Updated visit')
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual(self.page.evaluate('__travel.state().trips[0].itinerary[0].countryCode'),'es')
+
+    def test_history_can_add_transit_country_without_itinerary_stop(self):
+        trip={**TRIP,'status':'done','countryCode':'es','itinerary':[dict(id='fr',location='Paris, France')]}
+        self.page.evaluate('trip=>__travel.reset(trip)',trip)
+        self.page.locator('[data-action="travel-back"]').click()
+        self.page.locator('[data-action="travel-history"]').click()
+        self.page.get_by_role('button',name='Países visitados',exact=True).click()
+        self.page.locator('#tripCountrySearch').fill('Suíça')
+        self.page.locator('input[name="country_ch"]').check()
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual(self.page.locator('.trip-history-country').count(),3)
+        self.assertIn('Suíça',self.page.locator('.trip-history-country-list').inner_text())
+        self.assertEqual(self.page.evaluate('__travel.state().trips[0].visitedCountries'),['ch'])
+        self.page.reload()
+        self.assertEqual(self.page.evaluate('__travel.state().trips[0].visitedCountries'),['ch'])
+
+    def test_reservation_country_metadata_reaches_connected_transfer(self):
+        self.page.locator('[data-action="travel-add-reservation:test-trip"]').click()
+        self.page.locator('#f-title').fill('Zürich to Paris')
+        self.page.locator('#f-originLocationSearch').fill('Zürich')
+        self.page.locator('#tripOriginLocationResults [data-itinerary-location="0"]').click()
+        self.page.locator('#f-itineraryLocationSearch').fill('Paris')
+        self.page.locator('#tripItineraryLocationResults [data-itinerary-location="0"]').click()
+        self.page.locator('#itemForm button[type=submit]').click()
+        state=self.page.evaluate('__travel.state()')
+        reservation=state['trips'][0]['reservations'][0]
+        item=state['trips'][0]['itinerary'][0]
+        self.assertEqual((reservation['originCountryCode'],reservation['countryCode']),('ch','fr'))
+        self.assertEqual((item['originCountryCode'],item['countryCode']),('ch','fr'))
+        self.assertEqual({row['code'] for row in self.page.evaluate('__travel.countries(__travel.state().trips[0])')},{'es','ch','fr'})
 
     def test_deleted_trip_does_not_report_a_successful_save(self):
         self.page.evaluate("__travel.open()")

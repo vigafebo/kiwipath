@@ -105,3 +105,19 @@ No SQL migrations, Edge Function sources or Supabase administrative connector ar
 available in this repository/session; server recurrence/cron implementations have
 not been modified or verified live. Automated tests mock Supabase and assert the
 UTC payloads, local projections and preservation of existing schedules.
+
+## Countries in travel history
+
+Completed-trip history aggregates countries from the trip's starting destination,
+itinerary stops, both transfer endpoints and reservations. Each country is counted
+once per trip; a country row reports the number of trips that visited it. Skipped
+stops and unscheduled saved places are excluded. Search selections persist country
+name/code on both endpoints and retain them through saved-place scheduling,
+reservation-generated transfers and automatic-origin updates.
+
+Legacy location labels are matched against localized country names (for example,
+“Paris, France” or “Roma, Itália”). A city name alone is not enough to infer its
+country. “Países visitados” on each history card allows explicit additions for
+countries visited in transit or older locations without country metadata. These
+additions supplement the automatically identified countries; countries crossed by
+a route are not guessed from a straight line or flight path.
