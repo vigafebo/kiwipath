@@ -47,6 +47,12 @@ class TravelTests(unittest.TestCase):
             tripMapDays.set(data.trips[0].id,'all'); render(); },
           voucherStorage(fn) { supabaseClient.storage.from=fn;currentUser={id:'test-user'};
             isApplyingCloudData=true; },
+          memories(trips,visits=[]) { data={...initial(),trips,memoryVisits:visits,events:[]};page='trips';
+            activeTripId='';tripsView='history';tripMemoryYear='all';tripMemoryView='map';
+            document.querySelector('#authScreen').style.display='none';
+            document.querySelector('#kiwiApp').style.visibility='visible';render(); },
+          memoryCities:tripMemoryCities, memoryEntries:tripMemoryTrips,
+          worldCountries:()=>[...TRIP_WORLD_COUNTRIES], memoryMap:()=>tripMemoryMap,
           mapSession:()=>tripMapSession, state:()=>data, open:()=>addTripItinerary(data.trips[0].id),
           points:tripMovementPoints, flight:tripFlightPath, countries:tripVisitedCountries, historyCountries:tripHistoryCountries, budget:tripBudgetSummary, warnings:tripItemWarnings, markerGroups:tripMapMarkerGroups, range:tripRange, sorted:tripSortedItinerary, exportEvent:downloadEventIcs, zone:()=>DEVICE_TIMEZONE, today:today,
           project:eventInDeviceZone, refreshZone:refreshDeviceTimeContext, eventIso:eventStartIso,
@@ -915,6 +921,112 @@ class TravelTests(unittest.TestCase):
         self.page.wait_for_function('!document.querySelector("#modalBackdrop")')
         payload=self.page.evaluate("__writes.filter(x=>x.table==='kiwipath_custom_alerts'&&x.action==='update').at(-1).payload")
         self.assertEqual(payload['scheduled_at'],'2026-10-25T00:30:00.000Z')
+
+    def test_memories_year_filter_passport_and_global_world_percentage(self):
+        trips=[{**TRIP,'id':'winter','name':'Winter','status':'done','countryCode':'es',
+                'destination':'Madrid, España','startDate':'2024-12-30','endDate':'2025-01-02'},
+               {**TRIP,'id':'paris','name':'Paris trip','status':'done','countryCode':'fr',
+                'destination':'Paris, France','startDate':'2025-06-01','endDate':'2025-06-02',
+                'latitude':'48.8566','longitude':'2.3522','visitedCountries':['hk']},
+               {**TRIP,'id':'future','name':'Future','countryCode':'us','endDate':'2099-01-01'}]
+        self.page.evaluate('trips=>__travel.memories(trips)',trips)
+        self.assertEqual(self.page.locator('#memoryTripCount').inner_text(),'2')
+        self.assertEqual(self.page.locator('#memoryCityCount').inner_text(),'2')
+        self.assertEqual(self.page.locator('#memoryCountryCount').inner_text(),'3')
+        self.assertEqual(self.page.evaluate('__travel.worldCountries().length'),195)
+        self.assertEqual(self.page.locator('progress').get_attribute('value'),'2')
+        percentage=self.page.locator('#memoryWorldPercent').inner_text()
+        self.page.locator('#memoryYear').select_option('2024')
+        self.assertEqual(self.page.locator('#memoryTripCount').inner_text(),'1')
+        self.assertEqual(self.page.locator('#memoryCityCount').inner_text(),'1')
+        self.assertEqual(self.page.locator('#memoryWorldPercent').inner_text(),percentage)
+        self.page.get_by_role('button',name='Passaporte',exact=True).click()
+        self.assertEqual(self.page.locator('.memory-stamp.is-visited').count(),1)
+        self.page.locator('#memoryOnlyVisited').uncheck()
+        self.page.locator('#memoryCountrySearch').fill('Japão')
+        self.assertEqual(self.page.locator('.memory-stamp:visible').count(),1)
+        self.assertIn('Ainda por conhecer',self.page.locator('.memory-stamp:visible').inner_text())
+        self.page.locator('#memoryYear').select_option('2025')
+        self.page.locator('[data-action="memory-country:fr"]').first.click()
+        self.assertIn('Paris trip',self.page.locator('#itemForm').inner_text())
+        self.page.locator('[data-memory-trip="paris"]').click()
+        self.assertIn('Paris trip',self.page.locator('#pageContent').inner_text())
+        self.assertEqual(self.page.locator('#memoryYear').count(),0)
+
+    def test_memories_cities_deduplicate_and_do_not_count_attractions(self):
+        trip={**TRIP,'status':'done','countryCode':'es','destination':'Madrid, España',
+              'itinerary':[dict(id='museum',title='Museum',location='Museo del Prado, España',countryCode='es'),
+                           dict(id='skip',city='Berlin',countryCode='de',status='skipped')],
+              'visitedCities':[dict(id='one',name='MADRID',countryCode='es'),
+                               dict(id='two',name='Barcelona',countryCode='es',latitude='',longitude='')]}
+        visit=dict(id='quick',name='Madrid',location='Madrid, España',countryCode='es',
+                   latitude='40.4168',longitude='-3.7038',date='2025-01-01')
+        self.page.evaluate('args=>__travel.memories(...args)',[ [trip], [visit] ])
+        cities=self.page.evaluate('__travel.memoryCities(__travel.memoryEntries())')
+        self.assertEqual(len(cities),2)
+        madrid=next(c for c in cities if c['name'].lower()=='madrid')
+        self.assertEqual(len(madrid['trips']),2)
+        self.assertEqual(madrid['firstVisit'],'2025-01-01')
+        self.assertEqual(madrid['latitude'],40.4168)
+        self.page.locator('#memoryCitySearch').fill('BARCELONA')
+        self.assertEqual(self.page.locator('.memory-city:visible').count(),1)
+        self.assertIn('Sem pin',self.page.locator('.memory-city:visible').inner_text())
+        self.page.locator('#memoryCitySearch').fill('no match')
+        self.assertTrue(self.page.locator('#memoryCityEmpty').is_visible())
+
+    def test_quick_memory_visit_create_edit_delete_and_persist_without_trip(self):
+        self.page.evaluate('__travel.memories([])')
+        self.page.locator('[data-action="memory-quick-new"]').first.click()
+        self.page.locator('#f-itineraryLocationSearch').fill('Barcelona')
+        self.page.locator('[data-itinerary-location="0"]').click()
+        self.page.locator('#f-visitDate').fill('2025-05-01')
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual(self.page.evaluate('__travel.state().trips.length'),0)
+        self.assertEqual(self.page.locator('#memoryVisitCount').inner_text(),'1')
+        self.assertEqual(self.page.locator('#memoryTripCount').inner_text(),'0')
+        self.assertEqual(self.page.locator('#memoryCityCount').inner_text(),'1')
+        self.assertEqual(self.page.locator('#memoryCountryCount').inner_text(),'1')
+        self.assertEqual(self.page.evaluate('__travel.state().events.length'),0)
+        self.assertEqual(self.page.evaluate('__travel.state().reservations?.length||0'),0)
+        self.page.get_by_role('button',name='Editar visita',exact=True).click()
+        self.page.locator('#f-visitDate').fill('2024-06-02')
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual(self.page.evaluate('__travel.state().memoryVisits[0].date'),'2024-06-02')
+        self.page.reload()
+        self.assertEqual(self.page.evaluate('__travel.state().memoryVisits[0].date'),'2024-06-02')
+        self.page.evaluate('()=>__travel.memories([],__travel.state().memoryVisits)')
+        self.page.locator('[data-action^="memory-quick-remove:"]').click()
+        self.page.get_by_role('button',name='Manter visita',exact=True).click()
+        self.assertEqual(self.page.locator('#memoryVisitCount').inner_text(),'1')
+        self.page.locator('[data-action^="memory-quick-remove:"]').click()
+        self.page.get_by_role('button',name='Remover visita',exact=True).click()
+        self.assertEqual(self.page.locator('#memoryVisitCount').inner_text(),'0')
+        self.assertEqual(self.page.locator('progress').get_attribute('value'),'0')
+
+    def test_memories_add_city_to_trip_and_real_map_pins(self):
+        self.page.add_script_tag(path=str(ROOT / 'tests/fixtures/leaflet/leaflet.js'))
+        self.page.add_style_tag(path=str(ROOT / 'tests/fixtures/leaflet/leaflet.css'))
+        self.page.evaluate('trip=>__travel.memories([trip])',{**TRIP,'status':'done','countryCode':'es'})
+        self.page.get_by_role('button',name='Cidades visitadas',exact=True).click()
+        self.page.locator('#f-itineraryLocationSearch').fill('Paris')
+        self.page.locator('[data-itinerary-location="0"]').click()
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual(self.page.locator('#memoryCityCount').inner_text(),'2')
+        self.assertEqual(self.page.locator('#memoryCountryCount').inner_text(),'2')
+        self.page.wait_for_function('__travel.memoryMap()?.markers.size===2')
+        self.page.locator('#tripMemoryMap').scroll_into_view_if_needed()
+        self.page.locator('.leaflet-marker-icon[title="Paris"]').click()
+        self.page.wait_for_function('[...__travel.memoryMap().markers.values()].some(m=>m.isPopupOpen())')
+        self.page.wait_for_function('!__travel.memoryMap().map._panAnim?._inProgress')
+        self.assertTrue(self.page.locator('.leaflet-popup').is_visible())
+        self.page.get_by_role('button',name='Ver mundo',exact=True).click()
+        self.page.wait_for_function('!__travel.memoryMap().map._animatingZoom && !__travel.memoryMap().map._panAnim?._inProgress')
+        self.assertEqual(self.page.evaluate('__travel.memoryMap().map.getZoom()'),2)
+        self.page.set_viewport_size({'width':375,'height':850})
+        self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+        self.page.get_by_role('button',name='Passaporte',exact=True).click()
+        self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+        self.assertIsNone(self.page.evaluate('__travel.memoryMap()'))
 
     def test_history_collects_all_trip_countries_once_and_excludes_saved_or_skipped(self):
         trip={**TRIP,'status':'done','country':'Espanha','countryCode':'ES','itinerary':[
