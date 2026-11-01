@@ -84,7 +84,7 @@ class TravelTests(unittest.TestCase):
                 request.fulfill(body=sdk, content_type="application/javascript")
             elif url.endswith("leaflet.js"):
                 request.fulfill(body=leaflet, content_type="application/javascript")
-            elif urlparse(url).path.startswith("/kiwipath/vendor/") or urlparse(url).path == "/kiwipath/trip-guide.js":
+            elif urlparse(url).path.startswith("/kiwipath/vendor/") or urlparse(url).path in ("/kiwipath/trip-guide.js","/kiwipath/memory-globe.js"):
                 local = ROOT / urlparse(url).path.removeprefix("/kiwipath/")
                 request.fulfill(body=local.read_bytes(), content_type="font/ttf" if local.suffix==".ttf" else "application/javascript")
             elif "files.test/" in url:
@@ -1003,9 +1003,79 @@ class TravelTests(unittest.TestCase):
         self.assertEqual(self.page.locator('#memoryVisitCount').inner_text(),'0')
         self.assertEqual(self.page.locator('progress').get_attribute('value'),'0')
 
-    def test_memories_add_city_to_trip_and_real_map_pins(self):
-        self.page.add_script_tag(path=str(ROOT / 'tests/fixtures/leaflet/leaflet.js'))
-        self.page.add_style_tag(path=str(ROOT / 'tests/fixtures/leaflet/leaflet.css'))
+    def test_memory_globe_rotation_zoom_backside_pins_and_keyboard(self):
+        visits=[dict(id='front',name='Paris',countryCode='fr',latitude='48.85',longitude='2.35',date='2025-01-01'),
+                dict(id='back',name='Sydney',countryCode='au',latitude='-33.86',longitude='151.2',date='2025-01-01')]
+        self.page.evaluate('visits=>__travel.memories([],visits)',visits)
+        self.page.wait_for_selector('.memory-globe-svg')
+        self.assertFalse(self.page.locator('[data-globe-city="sydney|au"]').is_visible())
+        globe=self.page.locator('.memory-globe-svg')
+        globe.scroll_into_view_if_needed()
+        box=globe.bounding_box()
+        x,y=box['x']+box['width']/2,box['y']+box['height']/2
+        self.page.mouse.move(x,y)
+        self.page.mouse.down()
+        self.page.mouse.move(x+100,y+15,steps=12)
+        self.page.mouse.up()
+        self.assertNotEqual(self.page.evaluate('__travel.memoryMap().globe.getView().longitude'),0)
+        self.assertEqual(self.page.locator('.memory-globe-popup').count(),0)
+        globe.focus()
+        before=self.page.evaluate('__travel.memoryMap().globe.getView()')
+        self.page.keyboard.press('ArrowRight')
+        self.assertNotEqual(before['longitude'],self.page.evaluate('__travel.memoryMap().globe.getView().longitude'))
+        self.page.get_by_role('button',name='Aproximar globo',exact=True).click()
+        self.assertGreater(self.page.evaluate('__travel.memoryMap().globe.getView().zoom'),1)
+        self.page.locator('[data-action="memory-pin:sydney%7Cau"]').click()
+        self.assertTrue(self.page.locator('[data-globe-city="sydney|au"]').is_visible())
+        self.assertIn('Sydney',self.page.locator('.memory-globe-popup').inner_text())
+        self.page.locator('.memory-globe-popup').get_by_role('button',name='Ver memórias').click()
+        self.assertIn('Visita a Sydney',self.page.locator('#itemForm').inner_text())
+        self.page.locator('#cancelModal').click()
+        view=self.page.evaluate('__travel.memoryMap().globe.getView()')
+        self.page.locator('#memoryCitySearch').fill('Paris')
+        self.assertEqual(view,self.page.evaluate('__travel.memoryMap().globe.getView()'))
+        globe.focus()
+        self.page.keyboard.press('Home')
+        self.assertEqual(self.page.evaluate('__travel.memoryMap().globe.getView().zoom'),1)
+
+    def test_memory_globe_touch_pinch_and_city_list_scroll_on_mobile(self):
+        codes=['es','fr','gb','ie','pt','de','br','us','ar','cl','it','at','hu','cz','sk','ch','no','se','fi','au']
+        visits=[dict(id=str(i),name='City '+str(i).zfill(2),countryCode=codes[i%len(codes)],latitude=str(30+i/10),
+                     longitude=str(i),date='2025-01-01') for i in range(45)]
+        self.page.set_viewport_size({'width':375,'height':850})
+        self.page.evaluate('visits=>__travel.memories([],visits)',visits)
+        grid=self.page.get_by_role('region',name='Lista de cidades visitadas, com rolagem',exact=True)
+        self.assertLessEqual(grid.evaluate('el=>el.clientHeight'),360)
+        self.assertGreater(grid.evaluate('el=>el.scrollHeight'),grid.evaluate('el=>el.clientHeight')*5)
+        grid.evaluate('el=>el.scrollTop=el.scrollHeight')
+        self.assertGreater(grid.evaluate('el=>el.scrollTop'),0)
+        visits_list=self.page.get_by_role('region',name='Visitas registradas, com rolagem',exact=True)
+        self.assertLessEqual(visits_list.evaluate('el=>el.clientHeight'),360)
+        self.assertGreater(visits_list.evaluate('el=>el.scrollHeight'),visits_list.evaluate('el=>el.clientHeight')*3)
+        self.assertTrue(self.page.get_by_role('heading',name='Visitas registradas',exact=True).is_visible())
+        countries=self.page.get_by_role('region',name='Países visitados, com rolagem',exact=True)
+        self.assertLessEqual(countries.evaluate('el=>el.clientHeight'),360)
+        self.assertGreater(countries.evaluate('el=>el.scrollHeight'),countries.evaluate('el=>el.clientHeight'))
+        countries.evaluate('el=>el.scrollTop=el.scrollHeight')
+        self.assertGreater(countries.evaluate('el=>el.scrollTop'),0)
+        self.page.locator('#memoryCitySearch').fill('City 44')
+        self.assertEqual(self.page.locator('.memory-city:visible').count(),1)
+        self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+        globe=self.page.locator('.memory-globe-svg');globe.scroll_into_view_if_needed()
+        box=globe.bounding_box();x,y=box['x']+box['width']/2,box['y']+box['height']/2
+        cdp=self.context.new_cdp_session(self.page)
+        cdp.send('Emulation.setTouchEmulationEnabled',{'enabled':True,'maxTouchPoints':2})
+        def touches(kind,distance):
+            cdp.send('Input.dispatchTouchEvent',{'type':kind,'touchPoints':[
+                {'x':x-distance,'y':y,'id':1},{'x':x+distance,'y':y,'id':2}] if kind!='touchEnd' else []})
+        touches('touchStart',25);touches('touchMove',65);touches('touchEnd',0)
+        self.assertGreater(self.page.evaluate('__travel.memoryMap().globe.getView().zoom'),1)
+        self.assertEqual(self.page.locator('.memory-globe-popup').count(),0)
+        self.page.get_by_role('button',name='Passaporte',exact=True).click()
+        self.assertIsNone(self.page.evaluate('__travel.memoryMap()'))
+        cdp.detach()
+
+    def test_memories_add_city_to_trip_and_globe_pins(self):
         self.page.evaluate('trip=>__travel.memories([trip])',{**TRIP,'status':'done','countryCode':'es'})
         self.page.get_by_role('button',name='Cidades visitadas',exact=True).click()
         self.page.locator('#f-itineraryLocationSearch').fill('Paris')
@@ -1015,13 +1085,11 @@ class TravelTests(unittest.TestCase):
         self.assertEqual(self.page.locator('#memoryCountryCount').inner_text(),'2')
         self.page.wait_for_function('__travel.memoryMap()?.markers.size===2')
         self.page.locator('#tripMemoryMap').scroll_into_view_if_needed()
-        self.page.locator('.leaflet-marker-icon[title="Paris"]').click()
-        self.page.wait_for_function('[...__travel.memoryMap().markers.values()].some(m=>m.isPopupOpen())')
-        self.page.wait_for_function('!__travel.memoryMap().map._panAnim?._inProgress')
-        self.assertTrue(self.page.locator('.leaflet-popup').is_visible())
+        self.page.locator('[data-globe-city="paris|fr"]').click()
+        self.assertTrue(self.page.locator('.memory-globe-popup').is_visible())
+        self.assertIn('Paris',self.page.locator('.memory-globe-popup').inner_text())
         self.page.get_by_role('button',name='Ver mundo',exact=True).click()
-        self.page.wait_for_function('!__travel.memoryMap().map._animatingZoom && !__travel.memoryMap().map._panAnim?._inProgress')
-        self.assertEqual(self.page.evaluate('__travel.memoryMap().map.getZoom()'),2)
+        self.assertEqual(self.page.evaluate('__travel.memoryMap().globe.getView().zoom'),1)
         self.page.set_viewport_size({'width':375,'height':850})
         self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
         self.page.get_by_role('button',name='Passaporte',exact=True).click()

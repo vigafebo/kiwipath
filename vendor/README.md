@@ -14,3 +14,13 @@ an external conversion service. JavaScript distributions are unmodified.
 
 The npm tarballs were checked against their registry-published SHA-512 integrity
 before extracting the bundles. The font is embedded as a subset in generated PDFs.
+
+# Memory globe dependencies
+
+- **D3 7.9.0** — ISC; d3-LICENSE.txt. https://github.com/d3/d3
+- **topojson-client 3.1.0** — ISC; topojson-client-LICENSE.txt. https://github.com/topojson/topojson-client
+- **world-atlas 2.0.2 countries-110m** — ISC; world-atlas-LICENSE.txt.
+  https://github.com/topojson/world-atlas. Natural Earth geography is public domain.
+  memory-world-110m.js wraps the original JSON in a global assignment for local loading.
+
+The globe loads geometry locally and does not request external map tiles.
