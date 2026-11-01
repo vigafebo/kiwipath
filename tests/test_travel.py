@@ -45,6 +45,8 @@ class TravelTests(unittest.TestCase):
             document.querySelector('#kiwiApp').style.visibility='visible'; render(); },
           inspectDay(day) { tripSelectedDays.set(data.trips[0].id,day);
             tripMapDays.set(data.trips[0].id,'all'); render(); },
+          voucherStorage(fn) { supabaseClient.storage.from=fn;currentUser={id:'test-user'};
+            isApplyingCloudData=true; },
           mapSession:()=>tripMapSession, state:()=>data, open:()=>addTripItinerary(data.trips[0].id),
           points:tripMovementPoints, flight:tripFlightPath, countries:tripVisitedCountries, historyCountries:tripHistoryCountries, budget:tripBudgetSummary, warnings:tripItemWarnings, markerGroups:tripMapMarkerGroups, range:tripRange, sorted:tripSortedItinerary, exportEvent:downloadEventIcs, zone:()=>DEVICE_TIMEZONE, today:today,
           project:eventInDeviceZone, refreshZone:refreshDeviceTimeContext, eventIso:eventStartIso,
@@ -161,12 +163,52 @@ class TravelTests(unittest.TestCase):
                 self.page.wait_for_function("!__travel.mapSession().map._animatingZoom && !__travel.mapSession().map._panAnim?._inProgress")
                 self.page.unroute("**/brouter?**")
 
+    def test_real_leaflet_manual_navigation_survives_pending_route(self):
+        self.page.add_script_tag(path=str(ROOT / "tests/fixtures/leaflet/leaflet.js"))
+        self.page.add_style_tag(path=str(ROOT / "tests/fixtures/leaflet/leaflet.css"))
+        for index, action in enumerate(("zoom", "drag")):
+            with self.subTest(action=action):
+                pending=[]
+                self.page.route("**/brouter?**", lambda route: pending.append(route))
+                trip={**TRIP, "itinerary":[dict(id="stop",title="Stop",date="2026-10-15",
+                    latitude="41.3874",longitude=str(2.1686+index),transport="car")]}
+                self.page.evaluate("trip=>__travel.reset(trip)",trip)
+                self.page.wait_for_function("__travel.mapSession()?.markers.has('stop')")
+                # Disable drag inertia so the reference view is the completed gesture.
+                self.page.evaluate("__travel.mapSession().map.options.inertia=false")
+                container=self.page.locator("#tripMovementMap")
+                container.scroll_into_view_if_needed()
+                if action=="zoom":
+                    self.page.locator(".leaflet-control-zoom-in").click()
+                else:
+                    box=container.bounding_box()
+                    x,y=box["x"]+box["width"]/2,box["y"]+box["height"]/2
+                    self.page.mouse.move(x,y)
+                    self.page.mouse.down()
+                    self.page.mouse.move(x+100,y+60,steps=12)
+                    self.page.mouse.up()
+                self.page.wait_for_function("!__travel.mapSession().map._animatingZoom && !__travel.mapSession().map._panAnim?._inProgress")
+                self.assertTrue(self.page.evaluate("__travel.mapSession().focused"))
+                view=self.page.evaluate("({center:__travel.mapSession().map.getCenter(),zoom:__travel.mapSession().map.getZoom()})")
+                self.assertTrue(pending)
+                for route in pending:
+                    route.fulfill(body=json.dumps({"features":[{"properties":{"total-time":7200},
+                        "geometry":{"type":"LineString","coordinates":[[-3.7038,40.4168],[0,50],[2.1686+index,41.3874]]}}]}),
+                        content_type="application/json")
+                self.page.wait_for_function("document.querySelector('#tripMapStatus').textContent.includes('Traçados estimados')")
+                self.page.wait_for_function("!__travel.mapSession().map._animatingZoom && !__travel.mapSession().map._panAnim?._inProgress")
+                self.assertEqual(view,self.page.evaluate("({center:__travel.mapSession().map.getCenter(),zoom:__travel.mapSession().map.getZoom()})"))
+                self.page.unroute("**/brouter?**")
+
     def test_itinerary_more_options_keyboard_outside_and_mobile(self):
         trip={**TRIP,"itinerary":[dict(id="walk",title="Walk",location="Madrid",date="2026-10-15")]}
         self.page.evaluate("trip=>__travel.reset(trip)", trip)
         for width in (1280, 375, 320):
             self.page.set_viewport_size({"width":width,"height":850})
             summary=self.page.locator(".trip-more-options summary")
+            self.assertFalse(self.page.get_by_role("button",name="Editar",exact=True).is_visible())
+            self.assertFalse(self.page.get_by_role("button",name="Marcar feito",exact=True).is_visible())
+            self.assertEqual(summary.inner_text(),"⋯")
             summary.focus()
             self.page.keyboard.press("Enter")
             self.assertTrue(self.page.get_by_role("button",name="Duplicar",exact=True).is_visible())
@@ -277,6 +319,7 @@ class TravelTests(unittest.TestCase):
         self.page.locator("#f-time").fill("10:00")
         self.page.locator("#f-endTime").fill("11:30")
         self.page.locator("#itemForm button[type=submit]").click()
+        self.page.locator(".trip-more-options summary").click()
         self.page.get_by_role("button", name="Editar", exact=True).click()
         self.page.locator("#f-title").fill("Prado museum")
         self.page.locator("#itemForm button[type=submit]").click()
@@ -316,6 +359,7 @@ class TravelTests(unittest.TestCase):
         trip = {**TRIP, "itinerary":[dict(id="legacy", title="Museum", date="2026-10-15", time="10:00", location="Madrid", note="") ]}
         self.page.evaluate("trip=>__travel.reset(trip)", trip)
         self.page.evaluate("__travel.state().events=[{id:'old-event',tripId:'test-trip',title:'Spain · Museum',date:'2026-10-15',time:'10:00',location:'Madrid',note:''}]")
+        self.page.locator(".trip-more-options summary").click()
         self.page.get_by_role("button", name="Editar", exact=True).click()
         self.page.locator("#f-title").fill("Museum visit")
         self.page.locator("#itemForm button[type=submit]").click()
@@ -345,6 +389,67 @@ class TravelTests(unittest.TestCase):
         self.assertEqual(summary["actual"], 100)
         self.assertEqual(summary["planned"], 200)
         self.assertIn("Pendente", self.page.locator(".trip-reservation").inner_text())
+
+    def test_reservation_uploads_pdf_and_preserves_voucher_on_failed_replacement(self):
+        self.page.evaluate("""()=>{__travel.state().documents=[];window.__uploads=[];window.__uploadFailure=false;
+          __travel.voucherStorage(bucket=>({
+            upload:async(path,file,options)=>{__uploads.push({bucket,path,name:file.name,options});
+              return {error:__uploadFailure?{message:'Upload failed'}:null}},
+            createSignedUrl:async path=>({data:{signedUrl:'https://files.test/'+path}})
+          }));
+        }""")
+        self.page.locator('[data-action="travel-add-reservation:test-trip"]').click()
+        self.page.locator("#f-title").fill("Flight voucher")
+        self.page.locator("#f-startDate").fill("2026-10-15")
+        self.page.locator("#f-reservationPdf").set_input_files(ROOT / "tests/fixtures/voucher.pdf")
+        self.page.locator("#itemForm button[type=submit]").click()
+        self.page.wait_for_selector("#modalBackdrop",state="detached")
+        state=self.page.evaluate("__travel.state()")
+        reservation=state["trips"][0]["reservations"][0]
+        document=state["documents"][0]
+        self.assertEqual(reservation["documentId"],document["id"])
+        self.assertEqual(document["tripId"],TRIP["id"])
+        self.assertEqual(document["fileName"],"voucher.pdf")
+        self.assertEqual(self.page.evaluate("__uploads[0].bucket"),"kiwipath-documents")
+        self.page.get_by_role("button",name="Abrir voucher",exact=True).click()
+        self.assertIn(document["filePath"],self.page.locator(".pdf-preview-frame").get_attribute("src"))
+        self.page.locator("#pdfCloseBtn").click()
+        self.page.locator('[data-action^="travel-edit-reservation:"]').click()
+        self.assertEqual(self.page.locator("#f-documentId").input_value(),document["id"])
+        self.page.evaluate("window.__uploadFailure=true")
+        self.page.locator("#f-reservationPdf").set_input_files(ROOT / "tests/fixtures/voucher.pdf")
+        self.page.locator("#itemForm button[type=submit]").click()
+        self.page.wait_for_function("document.querySelector('#toast').textContent.includes('Não foi possível enviar')")
+        self.assertEqual(self.page.evaluate("__travel.state().trips[0].reservations[0].documentId"),document["id"])
+        self.assertEqual(self.page.evaluate("__travel.state().documents.length"),1)
+        self.page.wait_for_function("!document.querySelector('#itemForm button[type=submit]').disabled")
+        self.page.evaluate("window.__uploadFailure=false")
+        self.page.locator("#itemForm button[type=submit]").click()
+        self.page.wait_for_selector("#modalBackdrop",state="detached")
+        state=self.page.evaluate("__travel.state()")
+        self.assertEqual(len(state["documents"]),2)
+        self.assertNotEqual(state["trips"][0]["reservations"][0]["documentId"],document["id"])
+        self.assertEqual(len(state["trips"][0]["reservations"]),1)
+        self.page.locator('[data-action^="travel-edit-reservation:"]').click()
+        self.page.locator("#f-documentId").select_option(document["id"])
+        self.page.locator("#itemForm button[type=submit]").click()
+        self.page.wait_for_selector("#modalBackdrop",state="detached")
+        self.assertEqual(self.page.evaluate("__travel.state().trips[0].reservations[0].documentId"),document["id"])
+
+    def test_reservation_pdf_rejects_invalid_file_and_requires_sign_in(self):
+        self.page.evaluate("__travel.state().documents=[]")
+        self.page.locator('[data-action="travel-add-reservation:test-trip"]').click()
+        self.page.locator("#f-title").fill("Voucher")
+        self.page.locator("#f-reservationPdf").set_input_files(
+            {"name":"note.txt","mimeType":"text/plain","buffer":b"Not a PDF"})
+        self.page.locator("#itemForm button[type=submit]").click()
+        self.page.wait_for_function("document.querySelector('#toast').textContent.includes('Envie um arquivo PDF')")
+        self.assertEqual(self.page.evaluate("__travel.state().trips[0].reservations.length"),0)
+        self.page.wait_for_function("!document.querySelector('#itemForm button[type=submit]').disabled")
+        self.page.locator("#f-reservationPdf").set_input_files(ROOT / "tests/fixtures/voucher.pdf")
+        self.page.locator("#itemForm button[type=submit]").click()
+        self.page.wait_for_function("document.querySelector('#toast').textContent.includes('Entre na conta')")
+        self.assertEqual(self.page.evaluate("__travel.state().documents.length"),0)
 
     def test_missing_conversion_not_silently_summed(self):
         self.page.evaluate("""() => {
@@ -486,10 +591,13 @@ class TravelTests(unittest.TestCase):
             dict(id=str(i),title="Activity "+str(i),kind="activity",date="2026-10-15",time=str(10+i)+":00",timeZone="Europe/Madrid") for i in range(3)]}
         self.page.evaluate("trip=>__travel.reset(trip)",trip)
         self.assertIn("Activity 0",self.page.locator(".trip-now h2").inner_text())
+        self.page.locator("#trip-item-0 summary").click()
         self.page.locator('[data-action="travel-status:test-trip:0:done"]').click()
         self.assertIn("Activity 1",self.page.locator(".trip-now h2").inner_text())
+        self.page.locator("#trip-item-1 summary").click()
         self.page.locator('[data-action="travel-status:test-trip:1:skipped"]').click()
         self.assertIn("Activity 2",self.page.locator(".trip-now h2").inner_text())
+        self.page.locator("#trip-item-0 summary").click()
         self.page.locator('[data-action="travel-status:test-trip:0:pending"]').click()
         self.assertIn("Activity 0",self.page.locator(".trip-now h2").inner_text())
         self.page.reload()
@@ -560,6 +668,7 @@ class TravelTests(unittest.TestCase):
         self.assertEqual(state["trips"][0]["itinerary"][0]["time"],"16:00")
         self.assertEqual(len(state["events"]),2)
         self.assertEqual(state["transactions"],[])
+        self.page.locator(".trip-itinerary summary").first.click()
         self.page.locator('[data-action^="travel-edit-itinerary:"]').first.click()
         self.assertEqual(self.page.locator("#modalTitle").inner_text(),"Editar reserva")
 
@@ -569,14 +678,17 @@ class TravelTests(unittest.TestCase):
             dict(id='b',title='Paris',kind='travel',date='2026-10-15',time='10:00',location='Paris',latitude='48.85',longitude='2.35',transport='train',originSource='previous',origin='Barcelona',originLatitude='41.38',originLongitude='2.16'),
             dict(id='c',title='Lyon',kind='activity',date='2026-10-15',time='12:00',location='Lyon',latitude='45.76',longitude='4.83')]}
         self.page.evaluate("trip=>__travel.reset(trip)",trip)
+        self.page.locator("#trip-item-c summary").click()
         self.page.get_by_role('button',name='Mover Lyon para cima',exact=True).click()
         self.assertIn('Lyon → Paris',self.page.locator('.trip-order-preview').inner_text())
         self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary[1].origin"),'Barcelona')
         self.page.locator('#cancelModal').click()
+        self.page.locator("#trip-item-c summary").click()
         self.page.get_by_role('button',name='Mover Lyon para cima',exact=True).click()
         self.page.locator('#itemForm button[type=submit]').click()
         self.assertEqual(self.page.evaluate("__travel.sorted(__travel.state().trips[0]).map(x=>x.id)"),['a','c','b'])
         self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary[1].origin"),'Lyon')
+        self.page.locator("#trip-item-b summary").click()
         self.page.locator('[data-drag-itinerary="b"]').drag_to(self.page.locator('#trip-item-a'))
         self.page.locator('#itemForm button[type=submit]').click()
         self.assertEqual(self.page.evaluate("__travel.sorted(__travel.state().trips[0]).map(x=>x.id)"),['b','a','c'])
@@ -648,6 +760,7 @@ class TravelTests(unittest.TestCase):
             dict(id='a',title='A',date='2026-10-15',time='10:00'),
             dict(id='b',title='B',date='2026-10-15',time='11:00')]}
         self.page.evaluate('trip=>__travel.reset(trip)',trip)
+        self.page.locator("#trip-item-b summary").click()
         self.page.get_by_role('button',name='Mover B para cima',exact=True).click()
         self.page.evaluate("__travel.state().trips[0].itinerary[0].time='09:00'")
         self.page.locator('#itemForm button[type=submit]').click()
@@ -842,6 +955,7 @@ class TravelTests(unittest.TestCase):
         self.page.get_by_role('button',name='Adicionar ao roteiro',exact=True).click()
         self.page.locator('#itemForm button[type=submit]').click()
         self.assertEqual(self.page.evaluate('__travel.state().trips[0].itinerary[0].countryCode'),'es')
+        self.page.locator(".trip-itinerary summary").click()
         self.page.locator('[data-action^="travel-edit-itinerary:"]').click()
         self.page.locator('#f-title').fill('Updated visit')
         self.page.locator('#itemForm button[type=submit]').click()

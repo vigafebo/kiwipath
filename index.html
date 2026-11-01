@@ -941,18 +941,21 @@ h1{font-size:28px}
 .trip-item-actions [data-action^="travel-order:"]{width:34px;min-height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #dce6d8;border-radius:7px;background:#f4f8f0;font-size:14px}
 .trip-history-country-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.trip-history-country-list .trip-chip{display:inline-flex;align-items:center;gap:5px}.trip-history-country-list img{width:19px;height:13px;object-fit:cover;border-radius:2px}.trip-history-countries-edit{margin-top:12px;position:relative;z-index:1}.trip-country-picker{max-height:340px;overflow-y:auto;border:1px solid #dce6d8;border-radius:10px;padding:8px}.trip-country-picker label{display:flex;align-items:center;gap:9px;padding:8px;border-radius:7px;font-size:12px}.trip-country-picker input{width:17px;height:17px;flex:none;accent-color:var(--green)}.trip-country-picker small{display:block;font-size:10px;color:var(--muted)}.trip-country-picker [hidden]{display:none!important}
 
-.trip-itinerary-actions{align-items:center;gap:10px;padding-top:12px;border-top:1px solid var(--line)}
-.trip-status-actions,.trip-edit-actions,.trip-reorder-actions{display:flex;align-items:center;gap:8px}
-.trip-itinerary-actions button,.trip-itinerary-actions a,.trip-more-options summary{white-space:nowrap;flex-shrink:0;min-height:34px;display:inline-flex;align-items:center;padding:6px 10px;border-radius:8px}
-.trip-status-actions{flex-wrap:wrap}.trip-status-actions button:first-of-type{background:#eaf2e5}.trip-edit-actions{margin-left:auto}
-.trip-edit-actions button{border:1px solid #cbdcc4}.trip-edit-actions a{font-weight:500}
-.trip-reorder-actions{gap:4px;border-left:1px solid var(--line);padding-left:10px}
-.trip-more-options{position:relative;margin-left:auto}.trip-more-options summary{cursor:pointer;color:var(--green);font-size:11px;font-weight:700;list-style:none;border:1px solid #dce6d8;gap:8px}
-.trip-more-options summary::-webkit-details-marker{display:none}.trip-more-options summary::after{content:'⌄'}
-.trip-more-options[open] summary{background:#edf4e9}.trip-more-panel{position:absolute;right:0;top:calc(100% + 5px);z-index:20;min-width:150px;padding:6px;background:#fffef9;border:1px solid #dce6d8;border-radius:10px;box-shadow:0 8px 24px #183d3226}
-.trip-more-panel button{display:flex;width:100%;text-align:left}.trip-more-panel button:hover{background:#edf4e9}.trip-more-panel .trip-delete{color:#ad3f34}
-.trip-itinerary-actions :focus-visible{outline:2px solid var(--green);outline-offset:2px}
-@media(max-width:600px){.trip-itinerary-actions{gap:8px}.trip-status-actions{flex:1 1 calc(100% - 90px)}.trip-reorder-actions{border:0;padding:0}.trip-edit-actions{margin-left:0;flex:1}.trip-more-options summary,.trip-itinerary-actions button,.trip-itinerary-actions a{min-height:40px}}
+.trip-timeline-item .trip-item-heading{padding-right:42px}
+.trip-timeline-item .trip-status-label{padding:3px 7px;background:#eaf2e5;border-radius:6px}
+.trip-more-options{position:absolute;right:7px;top:12px;z-index:2}
+.trip-more-options[open]{z-index:20}
+.trip-more-options summary{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;cursor:pointer;list-style:none;color:var(--forest);font-size:24px;line-height:1}
+.trip-more-options summary::-webkit-details-marker{display:none}
+.trip-more-options summary:hover,.trip-more-options[open] summary{background:#edf4e9}
+.trip-more-panel{position:absolute;right:0;top:calc(100% + 4px);width:220px;max-height:min(60vh,360px);overflow-y:auto;padding:6px;background:#fffef9;border:1px solid #dce6d8;border-radius:12px;box-shadow:0 8px 24px #183d3226}
+.trip-more-panel button,.trip-more-panel a,.trip-more-panel .trip-drag-handle{display:flex;align-items:center;width:100%;min-height:36px;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--forest);font:inherit;font-size:12px;text-align:left;text-decoration:none;cursor:pointer}
+.trip-more-panel button:hover,.trip-more-panel a:hover{background:#edf4e9}
+.trip-more-group+.trip-more-group{border-top:1px solid var(--line);margin-top:5px;padding-top:5px}
+.trip-more-panel .trip-delete{color:#ad3f34}
+.trip-more-panel .trip-drag-handle{cursor:grab}
+.trip-more-options :focus-visible{outline:2px solid var(--green);outline-offset:2px}
+@media(max-width:600px){.trip-more-options summary{width:40px;height:40px}.trip-more-panel button,.trip-more-panel a{min-height:40px}.trip-more-panel .trip-drag-handle{display:none}}
 
 </style>
 
@@ -2219,6 +2222,22 @@ function tripItemWarnings(trip,item){
  return warnings;
 }
 
+function tripItineraryActions(trip,item){
+ const target=esc(trip.id)+':'+esc(item.id);
+ const button=(action,label,suffix='',attributes='')=>'<button type="button" data-action="'+action+':'+target+suffix+'" '+attributes+'>'+label+'</button>';
+ const status=item.status==='done'||item.status==='skipped';
+ return (status?'<span class="trip-status-label">'+(item.status==='done'?'Feito':'Pulado')+'</span>':'')+
+ '<details class="trip-more-options"><summary aria-label="Ações de '+esc(item.title)+'" title="Mais opções">⋯</summary><div class="trip-more-panel">'+
+ '<div class="trip-more-group">'+(status?button('travel-status','Retomar',':pending'):button('travel-status','Marcar feito',':done')+button('travel-status','Pular',':skipped'))+'</div>'+
+ '<div class="trip-more-group">'+button('travel-edit-itinerary','Editar')+
+ (item.location?'<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(hasTripCoordinates(item)?item.latitude+','+item.longitude:item.location)+'" target="_blank" rel="noopener">Como chegar</a>':'')+
+ button('travel-duplicate-itinerary','Duplicar')+button('travel-move-itinerary','Mover dia')+'</div>'+
+ '<div class="trip-more-group" role="group" aria-label="Reordenar parada">'+
+ button('travel-order','↑ Mover para cima',':up','aria-label="Mover '+esc(item.title)+' para cima"')+
+ button('travel-order','↓ Mover para baixo',':down','aria-label="Mover '+esc(item.title)+' para baixo"')+
+ '<span class="trip-drag-handle" draggable="true" data-drag-itinerary="'+esc(item.id)+'" data-drag-trip="'+esc(trip.id)+'" aria-label="Arrastar '+esc(item.title)+'">⠿ Arrastar para reordenar</span></div>'+
+ '<div class="trip-more-group">'+button('travel-remove-itinerary','Remover','','class="trip-delete"')+'</div></div></details>';
+}
 function tripItineraryRows(trip){
  const items=tripSortedItinerary(trip),days=tripDayOptions(trip).filter(([date])=>date),dates=[...new Set([...days.map(x=>x[0]),...items.map(x=>x.date||"")])].sort((a,b)=>(a||"9999").localeCompare(b||"9999"));
  const selected=tripSelectedDays.get(trip.id)||"all";
@@ -2226,7 +2245,7 @@ function tripItineraryRows(trip){
  const groups=dates.filter(date=>selected==="all"||(date||"flex")===selected).map(date=>{
   const rows=items.filter(x=>(x.date||"")===date).map(item=>{
    const number=items.indexOf(item)+1,warnings=tripItemWarnings(trip,item),travel=item.kind==="travel"||(!item.kind&&!!item.transport),linked=!!tripItineraryEvent(trip,item);
-   return '<article class="trip-itinerary trip-timeline-item is-'+esc(item.status||'pending')+'" data-trip-id="'+esc(trip.id)+'" id="trip-item-'+esc(item.id)+'" data-itinerary-id="'+esc(item.id)+'"><button type="button" class="trip-stop-number" data-action="travel-focus:'+esc(trip.id)+':'+esc(item.id)+'" aria-label="Mostrar '+esc(item.title)+' no mapa">'+number+'</button><div class="trip-item-main"><div class="trip-item-heading"><strong>'+esc(item.title)+'</strong><span class="trip-type-chip" style="--mode-color:'+transportColor(item.transport)+'">'+esc(travel?transportLabel(item.transport)||'Deslocamento':'Atividade')+'</span></div><small>'+esc(tripTimeLabel(item,trip))+(linked?' · Cronograma conectado':'')+'</small>'+(item.location?'<p class="trip-item-location">'+esc(travel?(item.origin||'Parada anterior')+' → '+item.location:item.location)+'</p>':'')+(item.note?'<p class="trip-item-note">'+esc(item.note)+'</p>':'')+'<span class="trip-route-detail" data-route-for="'+esc(item.id)+'"></span>'+warnings.map(w=>'<span class="trip-item-warning">'+esc(w)+'</span>').join('')+'<div class="trip-item-actions trip-itinerary-actions"><div class="trip-status-actions" role="group" aria-label="Status">'+(item.status==='done'||item.status==='skipped'?'<span class="trip-status-label">'+(item.status==='done'?'Feito':'Pulado')+'</span><button type="button" data-action="travel-status:'+esc(trip.id)+':'+esc(item.id)+':pending">Retomar</button>':'<button type="button" data-action="travel-status:'+esc(trip.id)+':'+esc(item.id)+':done">Marcar feito</button><button type="button" data-action="travel-status:'+esc(trip.id)+':'+esc(item.id)+':skipped">Pular</button>')+'</div><div class="trip-reorder-actions" role="group" aria-label="Reordenar parada"><span class="trip-drag-handle" draggable="true" data-drag-itinerary="'+esc(item.id)+'" data-drag-trip="'+esc(trip.id)+'" aria-label="Arrastar '+esc(item.title)+'" title="Arrastar para reordenar">⠿</span><button type="button" data-action="travel-order:'+esc(trip.id)+':'+esc(item.id)+':up" aria-label="Mover '+esc(item.title)+' para cima">↑</button><button type="button" data-action="travel-order:'+esc(trip.id)+':'+esc(item.id)+':down" aria-label="Mover '+esc(item.title)+' para baixo">↓</button></div><div class="trip-edit-actions"><button type="button" data-action="travel-edit-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Editar</button>'+(item.location?'<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(hasTripCoordinates(item)?item.latitude+','+item.longitude:item.location)+'" target="_blank" rel="noopener">Como chegar</a>':'')+'</div><details class="trip-more-options"><summary>Mais opções</summary><div class="trip-more-panel"><button type="button" data-action="travel-duplicate-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Duplicar</button><button type="button" data-action="travel-move-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Mover dia</button><button type="button" class="trip-delete" data-action="travel-remove-itinerary:'+esc(trip.id)+':'+esc(item.id)+'">Remover</button></div></details></div></div></article>';
+   return '<article class="trip-itinerary trip-timeline-item is-'+esc(item.status||'pending')+'" data-trip-id="'+esc(trip.id)+'" id="trip-item-'+esc(item.id)+'" data-itinerary-id="'+esc(item.id)+'"><button type="button" class="trip-stop-number" data-action="travel-focus:'+esc(trip.id)+':'+esc(item.id)+'" aria-label="Mostrar '+esc(item.title)+' no mapa">'+number+'</button><div class="trip-item-main"><div class="trip-item-heading"><strong>'+esc(item.title)+'</strong><span class="trip-type-chip" style="--mode-color:'+transportColor(item.transport)+'">'+esc(travel?transportLabel(item.transport)||'Deslocamento':'Atividade')+'</span>'+tripItineraryActions(trip,item)+'</div><small>'+esc(tripTimeLabel(item,trip))+(linked?' · Cronograma conectado':'')+'</small>'+(item.location?'<p class="trip-item-location">'+esc(travel?(item.origin||'Parada anterior')+' → '+item.location:item.location)+'</p>':'')+(item.note?'<p class="trip-item-note">'+esc(item.note)+'</p>':'')+'<span class="trip-route-detail" data-route-for="'+esc(item.id)+'"></span>'+warnings.map(w=>'<span class="trip-item-warning">'+esc(w)+'</span>').join('')+'</div></article>';
   }).join('');
   return '<section class="trip-day-group"><h3>'+esc(days.find(x=>x[0]===date)?.[1]||(date?fmtDate(date):'Sem data definida'))+'</h3>'+(rows||'<p class="trip-empty-line">Dia livre. Adicione atividades ou deslocamentos.</p>')+'</section>';
  }).join('');
@@ -2413,7 +2432,7 @@ function addTripReservation(tripId,reservationId=''){
  const trip=data.trips.find(x=>x.id===tripId),old=trip?.reservations?.find(r=>r.id===reservationId),accounts=accessibleAccounts();if(!trip||(reservationId&&!old))return;
  const linkedTransaction=tripTransactions(trip).find(t=>t.reservationId===reservationId&&reservationId);
  const accountOptions=[['','Não lançar agora'],...accounts.map(a=>[a.id,a.name+' · '+a.currency])];
- modal(old?'Editar reserva':'Adicionar reserva',field('title','Nome da reserva',old?.title||'','text','full')+selectField('type','Tipo',[['flight','Passagem'],['stay','Hospedagem'],['transport','Transporte'],['activity','Atividade'],['food','Restaurante'],['other','Outro']],old?.type||'flight')+field('provider','Companhia / fornecedor',old?.provider||'','text')+field('reference','Código de reserva',old?.reference||'','text','full')+field('startDate','Data / check-in',old?.startDate||'','date')+field('time','Horário / check-in',old?.time||'','time')+field('endDate','Data final / check-out',old?.endDate||'','date')+field('endTime','Horário final / check-out',old?.endTime||'','time')+'<div class="field full" id="tripReservationOrigin">'+tripItineraryLocationField({location:old?.origin||'',country:old?.originCountry||'',countryCode:old?.originCountryCode||'',latitude:old?.originLatitude||'',longitude:old?.originLongitude||''},'origin')+'</div>'+tripItineraryLocationField(old||{})+tripTimeZoneField('timeZone','Fuso da saída / check-in',old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE)+tripTimeZoneField('endTimeZone','Fuso da chegada / check-out',old?.endTimeZone||(old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE))+'<div id="tripReservationTransport" class="field full">'+selectField('transport','Transporte terrestre',[['car','Carro'],['bus','Ônibus'],['train','Trem'],['taxi','Táxi']],old?.transport||'car','full')+'</div>'+selectField('toItinerary','Conectar ao roteiro',[['yes','Sim, criar e manter os itens conectados'],['no','Não conectar']],old?(old.toItinerary?'yes':'no'):'yes','full')+selectField('currency','Moeda da reserva',tripCurrencies.map(c=>[c,c]),old?.currency||trip.currency)+field('cost','Valor total',old?.cost??'','number')+field('paidAmount','Valor já pago',old?.paidAmount??'','number')+field('exchangeRate','Cotação: 1 unidade da moeda em '+trip.currency,old?.exchangeRate||'','number')+selectField('accountId','Lançar valor pago em qual caixinha?',accountOptions,linkedTransaction?.accountId||'','full')+'<p class="field full file-hint">Para lançar o pagamento, escolha uma caixinha na mesma moeda da reserva. A cotação é manual e converte o orçamento para '+esc(trip.currency)+'.</p>'+selectField('documentId','Voucher em PDF',[['','Sem voucher'],...tripDocuments(trip).filter(d=>d.filePath).map(d=>[d.id,d.title])],old?.documentId||'','full')+textareaField('note','Notas',old?.note||'','full'),v=>{
+ modal(old?'Editar reserva':'Adicionar reserva',field('title','Nome da reserva',old?.title||'','text','full')+selectField('type','Tipo',[['flight','Passagem'],['stay','Hospedagem'],['transport','Transporte'],['activity','Atividade'],['food','Restaurante'],['other','Outro']],old?.type||'flight')+field('provider','Companhia / fornecedor',old?.provider||'','text')+field('reference','Código de reserva',old?.reference||'','text','full')+field('startDate','Data / check-in',old?.startDate||'','date')+field('time','Horário / check-in',old?.time||'','time')+field('endDate','Data final / check-out',old?.endDate||'','date')+field('endTime','Horário final / check-out',old?.endTime||'','time')+'<div class="field full" id="tripReservationOrigin">'+tripItineraryLocationField({location:old?.origin||'',country:old?.originCountry||'',countryCode:old?.originCountryCode||'',latitude:old?.originLatitude||'',longitude:old?.originLongitude||''},'origin')+'</div>'+tripItineraryLocationField(old||{})+tripTimeZoneField('timeZone','Fuso da saída / check-in',old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE)+tripTimeZoneField('endTimeZone','Fuso da chegada / check-out',old?.endTimeZone||(old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE))+'<div id="tripReservationTransport" class="field full">'+selectField('transport','Transporte terrestre',[['car','Carro'],['bus','Ônibus'],['train','Trem'],['taxi','Táxi']],old?.transport||'car','full')+'</div>'+selectField('toItinerary','Conectar ao roteiro',[['yes','Sim, criar e manter os itens conectados'],['no','Não conectar']],old?(old.toItinerary?'yes':'no'):'yes','full')+selectField('currency','Moeda da reserva',tripCurrencies.map(c=>[c,c]),old?.currency||trip.currency)+field('cost','Valor total',old?.cost??'','number')+field('paidAmount','Valor já pago',old?.paidAmount??'','number')+field('exchangeRate','Cotação: 1 unidade da moeda em '+trip.currency,old?.exchangeRate||'','number')+selectField('accountId','Lançar valor pago em qual caixinha?',accountOptions,linkedTransaction?.accountId||'','full')+'<p class="field full file-hint">Para lançar o pagamento, escolha uma caixinha na mesma moeda da reserva. A cotação é manual e converte o orçamento para '+esc(trip.currency)+'.</p>'+selectField('documentId','Voucher em PDF',[['','Sem voucher'],...tripDocuments(trip).filter(d=>d.filePath).map(d=>[d.id,d.title])],old?.documentId||'','full')+'<div class="field full"><label for="f-reservationPdf">Enviar novo voucher em PDF</label><input id="f-reservationPdf" name="reservationPdf" type="file" accept="application/pdf,.pdf"><div class="file-hint">Escolha um PDF de até 20 MB. Ele será vinculado à reserva e ficará disponível em Documentos da viagem. Um novo arquivo substitui a seleção acima nesta reserva.</div></div>'+textareaField('note','Notas',old?.note||'','full'),function saveReservation(v){
   const live=data.trips.find(t=>t.id===tripId),existing=live?.reservations?.find(r=>r.id===reservationId),title=String(v.title||'').trim();
   if(!live||(reservationId&&!existing)){notify('A viagem ou reserva foi removida.');return false}
   if(!title){notify('Informe a reserva.');return false}
@@ -2426,6 +2445,25 @@ function addTripReservation(tripId,reservationId=''){
   const currentPayment=data.transactions.find(t=>t.tripId===tripId&&t.reservationId===reservationId&&reservationId);
   if(currentPayment&&(!account||paidAmount<=0)){notify('Esta reserva possui um pagamento nas Finanças. Mantenha uma caixinha e um valor pago, ou ajuste o lançamento em Finanças.');return false}
   if(account&&account.currency!==v.currency){notify('Escolha uma caixinha na mesma moeda da reserva ou não lance agora.');return false}
+  const file=$('#f-reservationPdf')?.files?.[0];
+  if(file&&!v.uploadedDocument){
+   if(file.type!=='application/pdf'&&!file.name.toLowerCase().endsWith('.pdf')){notify('Envie um arquivo PDF.');return false}
+   if(file.size>20*1024*1024){notify('O PDF deve ter no máximo 20 MB.');return false}
+   if(!currentUser){notify('Entre na conta para enviar arquivos.');return false}
+   return (async()=>{
+    const documentId=uid(),path='shared/'+documentId+'.pdf',storage=supabaseClient.storage.from('kiwipath-documents');
+    try{
+     const {error}=await storage.upload(path,file,{upsert:false,contentType:'application/pdf'});
+     if(error)throw error;
+    }catch(error){console.error(error);notify('Não foi possível enviar o PDF. Tente novamente.');return false}
+    const document={id:documentId,title:title+' · Voucher',owner:live.owner||'both',status:'done',hasExpiry:false,expiryDate:'',due:'',note:'Voucher da reserva '+title,tripId,filePath:path,fileName:file.name,fileSize:file.size,fileUpdatedAt:new Date().toISOString()};
+    // Revalidate against current data after the upload, before changing the reservation.
+    const result=saveReservation({...v,documentId,uploadedDocument:document});
+    if(result===false)try{await storage.remove([path])}catch(error){console.warn(error)}
+    return result;
+   })();
+  }
+  if(v.uploadedDocument)data.documents.push(v.uploadedDocument);
   const reservation={...existing,id:existing?.id||uid(),title,type:v.type,provider:String(v.provider||'').trim(),reference:String(v.reference||'').trim(),startDate:v.startDate||'',time:v.time||'',endDate:v.endDate||'',endTime:v.endTime||'',timeZone:v.timeZone,endTimeZone:v.endTimeZone,origin:v.origin||'',originCountry:v.originCountry||'',originCountryCode:tripCountryCode(v.originCountryCode),originLatitude:v.originLatitude||'',originLongitude:v.originLongitude||'',location:String(v.location||'').trim(),country:String(v.country||'').trim(),countryCode:tripCountryCode(v.countryCode),latitude:v.latitude||'',longitude:v.longitude||'',transport:v.transport,toItinerary:v.toItinerary==='yes',cost,paidAmount,currency:v.currency,exchangeRate,documentId:v.documentId||'',note:String(v.note||'').trim()};
   if(!Array.isArray(live.reservations))live.reservations=[];
   if(existing)live.reservations=live.reservations.map(r=>r.id===reservationId?reservation:r);else live.reservations.push(reservation);
@@ -2614,7 +2652,10 @@ function renderTripMovementMap(){
   segments.push({from:latLngs[i-1],to:latLngs[i],mode,line,itemId});
  }
  const fit=()=>{if(latLngs.length===1)map.setView(latLngs[0],13);else map.fitBounds(window.L.latLngBounds(bounds),{padding:[28,28],maxZoom:13})};
- fit();session.redrawMarkers=()=>renderTripMapMarkers(session,trip,points);session.redrawMarkers();map.on('zoomend',session.redrawMarkers);session.resizeTimer=setTimeout(()=>{if(!controller.signal.aborted)map.invalidateSize()},60);
+ fit();
+ // Once navigation starts, pending route results must not override the chosen view.
+ map.on('movestart zoomstart dragstart',()=>{session.focused=true});
+ session.redrawMarkers=()=>renderTripMapMarkers(session,trip,points);session.redrawMarkers();map.on('zoomend',session.redrawMarkers);session.resizeTimer=setTimeout(()=>{if(!controller.signal.aborted)map.invalidateSize()},60);
  if(status)status.textContent=segments.some(s=>s.mode&&s.mode!=="flight")?"Calculando caminhos pelas vias…":"Voos: curva aproximada entre os locais. Pontilhado curto: trecho sem rota calculada.";
  // Sequential requests avoid flooding the public routing service on long itineraries.
  (async()=>{
@@ -3145,7 +3186,7 @@ $("#pageContent").addEventListener("change",e=>{if(e.target.id==="alertTypeFilte
 
 document.addEventListener('click',e=>{
  document.querySelectorAll('.trip-more-options[open]').forEach(menu=>{
-  if(!menu.contains(e.target)||e.target.closest('[data-action]'))menu.open=false;
+  if(!menu.contains(e.target)||e.target.closest('[data-action],a'))menu.open=false;
  });
 });
 document.addEventListener('keydown',e=>{
