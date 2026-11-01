@@ -2202,8 +2202,8 @@ function showTripMemoryDetails(kind,key){
  const city=kind==='city'?tripMemoryCities(trips).find(c=>c.key===key):null;
  const details=kind==='country'?tripMemoryCountryDetails(trips,key):null;
  if(!city&&!details)return;
- const visits=city?city.trips:details.visits,title=city?city.name:tripCountryName(key),date=city?city.firstVisit:details.first;
- modal(title,'<p class="field full file-hint">'+(date?'Primeira visita registrada: '+esc(fmtDate(date))+'. ':'')+visits.length+' visita(s) no período selecionado.</p><div class="field full memory-visit-list">'+visits.map(t=>'<button type="button" class="trip-add" data-memory-trip="'+esc(t.id)+'">'+esc(t.name||'Viagem')+(t.date||t.startDate?' · '+esc(fmtDate(t.date||t.startDate)):'')+'</button>').join('')+'</div>',()=>{});
+ const visits=[...(city?city.trips:details.visits)].sort((a,b)=>(b.date||b.startDate||b.endDate||'').localeCompare(a.date||a.startDate||a.endDate||'')),title=city?city.name:tripCountryName(key),date=city?city.firstVisit:details.first;
+ modal(title,'<p class="field full file-hint">'+(date?'Primeira visita registrada: '+esc(fmtDate(date))+'. ':'')+visits.length+' visita(s) no período selecionado.</p><div class="field full memory-visit-list">'+visits.map(t=>'<button type="button" class="trip-add" data-memory-trip="'+esc(t.id)+'">'+esc(t.name||'Viagem')+(t.date||t.startDate||t.endDate?' · '+esc(fmtDate(t.date||t.startDate||t.endDate)):'')+'</button>').join('')+'</div>',()=>{});
  $('#itemForm button[type="submit"]').hidden=true;
  $('#cancelModal').textContent='Fechar';
  $$('[data-memory-trip]').forEach(button=>button.addEventListener('click',()=>{

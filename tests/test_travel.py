@@ -922,6 +922,23 @@ class TravelTests(unittest.TestCase):
         payload=self.page.evaluate("__writes.filter(x=>x.table==='kiwipath_custom_alerts'&&x.action==='update').at(-1).payload")
         self.assertEqual(payload['scheduled_at'],'2026-10-25T00:30:00.000Z')
 
+    def test_country_visit_details_sort_newest_first_and_undated_last(self):
+        trips=[{**TRIP,'id':'older','name':'Older trip','status':'done','countryCode':'ie',
+                'startDate':'2024-05-01','endDate':'2024-05-03'},
+               {**TRIP,'id':'undated','name':'Without date','status':'done','countryCode':'ie',
+                'startDate':'','endDate':''}]
+        visits=[dict(id=key,name=key,countryCode='ie',date=date) for key,date in
+                [('august','2025-08-17'),('june','2025-06-07'),('july','2025-07-26')]]
+        self.page.evaluate('args=>__travel.memories(...args)',[trips,visits])
+        for passport in (False, True):
+            if passport:self.page.get_by_role('button',name='Passaporte',exact=True).click()
+            self.page.locator('[data-action="memory-country:ie"]').first.click()
+            self.assertEqual(self.page.locator('[data-memory-trip]').evaluate_all(
+                'buttons=>buttons.map(b=>b.dataset.memoryTrip)'),
+                ['quick-august','quick-july','quick-june','older','undated'])
+            self.assertIn('01 de mai. de 2024',self.page.locator('#itemForm').inner_text())
+            self.page.locator('#cancelModal').click()
+
     def test_memories_year_filter_passport_and_global_world_percentage(self):
         trips=[{**TRIP,'id':'winter','name':'Winter','status':'done','countryCode':'es',
                 'destination':'Madrid, España','startDate':'2024-12-30','endDate':'2025-01-02'},
