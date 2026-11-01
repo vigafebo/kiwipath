@@ -2,7 +2,8 @@
 (function(){
  'use strict';
  let nextId=0;
- window.createMemoryGlobe=function(container,cities,onSelect){
+ const MIN_ZOOM=.75,MAX_ZOOM=40;
+ window.createMemoryGlobe=function(container,cities,onSelect,initialView=null){
   const d3=window.d3,world=window.KiwiMemoryWorld,topo=window.topojson;
   if(!d3?.geoOrthographic||!world||!topo)throw new Error('Globe assets unavailable');
   const lifetime=new AbortController(),signal=lifetime.signal,ns='http://www.w3.org/2000/svg';
@@ -46,7 +47,10 @@
   help.textContent='Arraste para girar · Use + e − ou dois dedos para aproximar · Setas do teclado para explorar';
   container.appendChild(help);
   const credit=document.createElement('small');credit.className='memory-globe-credit';credit.textContent='Geografia: Natural Earth';container.appendChild(credit);
-  let longitude=0,latitude=20,zoom=1,width=1,height=1,selected='',disposed=false;
+  let longitude=Number.isFinite(initialView?.longitude)?initialView.longitude:0,
+      latitude=Number.isFinite(initialView?.latitude)?Math.max(-90,Math.min(90,initialView.latitude)):20,
+      zoom=Number.isFinite(initialView?.zoom)?Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,initialView.zoom)):1,
+      width=1,height=1,selected='',disposed=false;
   const pointers=new Map();
   let gesture=null,suppressClick=false;
   function draw(){
@@ -62,14 +66,14 @@
     if(visible){const [x,y]=projection([city.longitude,city.latitude]);pin.setAttribute('transform','translate('+x+','+y+')')}
     pin.classList.toggle('is-selected',selected===city.key);
    });
-   controls.children[0].disabled=zoom>=5;
-   controls.children[1].disabled=zoom<=.75;
+   controls.children[0].disabled=zoom>=MAX_ZOOM;
+   controls.children[1].disabled=zoom<=MIN_ZOOM;
   }
   function resize(){
    const rect=container.getBoundingClientRect();width=Math.max(1,rect.width);height=Math.max(1,rect.height);
    svg.setAttribute('viewBox','0 0 '+width+' '+height);draw();
   }
-  function zoomBy(factor){zoom=Math.max(.75,Math.min(5,zoom*factor));draw()}
+  function zoomBy(factor){zoom=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,zoom*factor));draw()}
   function select(city){selected=city.key;draw();onSelect(city)}
   function resetGesture(){
    const points=[...pointers.values()];
@@ -88,7 +92,7 @@
    if(Math.hypot(dx,dy)>4){gesture.moved=true;suppressClick=true}
    if(current.length===2&&gesture.points.length===2){
     const distance=points=>Math.hypot(points[1].x-points[0].x,points[1].y-points[0].y);
-    zoom=Math.max(.75,Math.min(5,gesture.zoom*distance(current)/Math.max(1,distance(gesture.points))));gesture.moved=true;
+    zoom=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,gesture.zoom*distance(current)/Math.max(1,distance(gesture.points))));gesture.moved=true;
    }
    const sensitivity=160/Math.max(200,Math.min(width,height))/zoom;
    longitude=((gesture.longitude-dx*sensitivity+540)%360)-180;

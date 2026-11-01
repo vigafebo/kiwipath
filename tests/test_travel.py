@@ -51,6 +51,7 @@ class TravelTests(unittest.TestCase):
             activeTripId='';tripsView='history';tripMemoryYear='all';tripMemoryView='map';
             document.querySelector('#authScreen').style.display='none';
             document.querySelector('#kiwiApp').style.visibility='visible';render(); },
+          refreshCloud:loadCloudData, redraw:render,
           memoryCities:tripMemoryCities, memoryEntries:tripMemoryTrips,
           worldCountries:()=>[...TRIP_WORLD_COUNTRIES], memoryMap:()=>tripMemoryMap,
           mapSession:()=>tripMapSession, state:()=>data, open:()=>addTripItinerary(data.trips[0].id),
@@ -193,6 +194,8 @@ class TravelTests(unittest.TestCase):
                     self.page.mouse.down()
                     self.page.mouse.move(x+100,y+60,steps=12)
                     self.page.mouse.up()
+                # Leaflet starts button zoom on the next animation frame.
+                self.page.wait_for_function("__travel.mapSession().focused===true")
                 self.page.wait_for_function("!__travel.mapSession().map._animatingZoom && !__travel.mapSession().map._panAnim?._inProgress")
                 self.assertTrue(self.page.evaluate("__travel.mapSession().focused"))
                 view=self.page.evaluate("({center:__travel.mapSession().map.getCenter(),zoom:__travel.mapSession().map.getZoom()})")
@@ -1054,6 +1057,70 @@ class TravelTests(unittest.TestCase):
         globe.focus()
         self.page.keyboard.press('Home')
         self.assertEqual(self.page.evaluate('__travel.memoryMap().globe.getView().zoom'),1)
+
+    def test_memory_cards_flags_hover_keyboard_and_nested_actions(self):
+        visits=[dict(id='paris',name='Paris',countryCode='fr',latitude='48.85',longitude='2.35',date='2025-01-01')]
+        self.page.evaluate('visits=>__travel.memories([],visits)',visits)
+        card=self.page.locator('.memory-city')
+        self.assertEqual(card.locator('.memory-country-label img').get_attribute('src'),
+                         'https://flagcdn.com/w80/fr.png')
+        self.assertIn('França',card.locator('.memory-country-label').inner_text())
+        card.hover()
+        self.page.wait_for_function("getComputedStyle(document.querySelector('.memory-city')).borderColor==='rgb(160, 188, 145)'")
+        self.assertEqual(card.evaluate("el=>getComputedStyle(el).cursor"),'pointer')
+        card.get_by_role('button',name='Ver memórias de Paris',exact=True).focus()
+        self.page.keyboard.press('Enter')
+        self.assertEqual(self.page.locator('#modalTitle').inner_text(),'Paris')
+        self.page.locator('#cancelModal').click()
+        card.locator('.memory-country-label').click()
+        self.assertEqual(self.page.locator('#modalTitle').inner_text(),'Paris')
+        self.page.locator('#cancelModal').click()
+        card.get_by_role('button',name='Ver pin',exact=True).click()
+        self.assertEqual(self.page.locator('#modalBackdrop').count(),0)
+        self.assertTrue(self.page.locator('.memory-globe-popup').is_visible())
+        quick=self.page.locator('.memory-quick-list article')
+        self.assertEqual(quick.locator('.memory-country-label img').get_attribute('src'),
+                         'https://flagcdn.com/w80/fr.png')
+        quick.get_by_role('button',name='Editar visita a Paris',exact=True).click()
+        self.assertEqual(self.page.locator('#modalTitle').inner_text(),'Editar visita')
+        self.page.locator('#cancelModal').click()
+        quick.get_by_role('button',name='Remover',exact=True).click()
+        self.assertTrue(self.page.get_by_role('button',name='Manter visita',exact=True).is_visible())
+        self.page.get_by_role('button',name='Manter visita',exact=True).click()
+        self.page.emulate_media(reduced_motion='reduce')
+        card.hover()
+        self.assertEqual(card.evaluate("el=>getComputedStyle(el).transitionDuration"),'0s')
+
+    def test_memory_globe_deep_zoom_survives_background_cloud_poll_and_redraw(self):
+        visits=[dict(id='city',name='Paris',countryCode='fr',latitude='48.85',longitude='2.35',date='2025-01-01')]
+        self.page.evaluate('visits=>__travel.memories([],visits)',visits)
+        globe=self.page.locator('.memory-globe-svg')
+        globe.scroll_into_view_if_needed();globe.focus()
+        for _ in range(20):self.page.keyboard.press('+')
+        self.assertEqual(self.page.evaluate('__travel.memoryMap().globe.getView().zoom'),40)
+        self.assertTrue(self.page.get_by_role('button',name='Aproximar globo',exact=True).is_disabled())
+        self.page.keyboard.press('ArrowRight');self.page.keyboard.press('ArrowDown')
+        view=self.page.evaluate('__travel.memoryMap().globe.getView()')
+        self.page.evaluate('__travel.redraw()')
+        self.page.wait_for_selector('.memory-globe-svg')
+        self.assertEqual(view,self.page.evaluate('__travel.memoryMap().globe.getView()'))
+        self.page.clock.install()
+        self.page.evaluate("""()=>{
+          window.__memoryPolls=0;
+          __travel.api(()=>({select(){return this},eq(){return this},order(){return this},
+            limit:async()=>{__memoryPolls++;return {data:[{id:'test-record',
+              content:__travel.state(),updated_at:'2026-11-01T10:00:00Z'}]}}}));
+        }""")
+        self.page.clock.run_for(16000)
+        self.page.wait_for_function('window.__memoryPolls>0 && __travel.memoryMap()!==null')
+        self.assertEqual(view,self.page.evaluate('__travel.memoryMap().globe.getView()'))
+        self.page.get_by_role('button',name='Passaporte',exact=True).click()
+        self.page.get_by_role('button',name='Mapa e cidades',exact=True).click()
+        self.page.wait_for_selector('.memory-globe-svg')
+        self.assertEqual(view,self.page.evaluate('__travel.memoryMap().globe.getView()'))
+        self.page.get_by_role('button',name='Ver mundo',exact=True).click()
+        self.assertEqual(self.page.evaluate('__travel.memoryMap().globe.getView()'),
+                         {'longitude':0,'latitude':20,'zoom':1})
 
     def test_memory_globe_touch_pinch_and_city_list_scroll_on_mobile(self):
         codes=['es','fr','gb','ie','pt','de','br','us','ar','cl','it','at','hu','cz','sk','ch','no','se','fi','au']
