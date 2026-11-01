@@ -43,7 +43,9 @@ class TravelTests(unittest.TestCase):
           reset(trip) { data={...initial(),trips:[trip],events:[]}; page="trips";
             activeTripId=trip.id; document.querySelector('#authScreen').style.display='none';
             document.querySelector('#kiwiApp').style.visibility='visible'; render(); },
-          state:()=>data, open:()=>addTripItinerary(data.trips[0].id),
+          inspectDay(day) { tripSelectedDays.set(data.trips[0].id,day);
+            tripMapDays.set(data.trips[0].id,'all'); render(); },
+          mapSession:()=>tripMapSession, state:()=>data, open:()=>addTripItinerary(data.trips[0].id),
           points:tripMovementPoints, flight:tripFlightPath, countries:tripVisitedCountries, historyCountries:tripHistoryCountries, budget:tripBudgetSummary, warnings:tripItemWarnings, markerGroups:tripMapMarkerGroups, range:tripRange, sorted:tripSortedItinerary, exportEvent:downloadEventIcs, zone:()=>DEVICE_TIMEZONE, today:today,
           project:eventInDeviceZone, refreshZone:refreshDeviceTimeContext, eventIso:eventStartIso,
           event:editEvent, alert:editAlert, alerts:rows=>{customAlerts=rows}, alertDate:displayAlertDate,
@@ -101,6 +103,85 @@ class TravelTests(unittest.TestCase):
     def tearDown(self):
         self.assertEqual(self.errors, [])
         self.context.close()
+
+    def test_real_leaflet_popup_survives_autopan_and_pending_route(self):
+        self.page.add_script_tag(path=str(ROOT / "tests/fixtures/leaflet/leaflet.js"))
+        self.page.add_style_tag(path=str(ROOT / "tests/fixtures/leaflet/leaflet.css"))
+        for clustered in (False, True):
+            with self.subTest(clustered=clustered):
+                pending = []
+                released = [False]
+                def finish_route(route):
+                    params=parse_qs(urlparse(route.request.url).query)
+                    ends=[[float(x) for x in pair.split(",")] for pair in params["lonlats"][0].split("|")]
+                    route.fulfill(body=json.dumps({"features":[{"properties":{"total-time":7200},
+                        "geometry":{"type":"LineString","coordinates":[ends[0],[0,45],ends[1]]}}]}),
+                        content_type="application/json")
+                self.page.route("**/brouter?**", lambda route: finish_route(route) if released[0] else pending.append(route))
+                items = [dict(id="edge", title="Edge stop", location="Barcelona",
+                              date="2026-10-16", latitude="41.3874",
+                              longitude="2.1686", transport="car")]
+                if clustered:
+                    items.append({**items[0], "id":"nearby", "title":"Nearby stop"})
+                self.page.evaluate("trip=>{__travel.reset(trip);__travel.inspectDay('2026-10-15')}", {**TRIP, "itinerary":items})
+                self.page.wait_for_function("__travel.mapSession()?.markers.has('edge')")
+                self.page.wait_for_function("document.querySelector('#tripMapStatus').textContent.includes('Calculando')")
+                self.page.evaluate("""()=>{
+                  const session=__travel.mapSession(),map=session.map;
+                  map.setView([41.3874,2.1686],13,{animate:false});
+                  map.panBy([0,145],{animate:false});
+                  window.__edgeMarker=session.markers.get('edge');
+                  window.__autoPans=0;window.__mapMoves=0;
+                  map.on('autopanstart',()=>window.__autoPans++);
+                  map.on('moveend',()=>window.__mapMoves++);
+                }""")
+                self.page.locator("#tripMovementMap").scroll_into_view_if_needed()
+                selector = ".trip-map-pin.is-cluster" if clustered else ".trip-map-pin"
+                if clustered:
+                    self.page.locator(selector).click()
+                else:
+                    self.page.locator(".leaflet-marker-icon[title='Edge stop']").click()
+                self.page.wait_for_function("window.__autoPans>0 && window.__mapMoves>0")
+                self.page.wait_for_function("!__travel.mapSession().map._panAnim?._inProgress")
+                self.assertTrue(self.page.evaluate("__edgeMarker.isPopupOpen()"))
+                self.assertTrue(self.page.evaluate("__travel.mapSession().focused"))
+                self.assertEqual(self.page.locator(".trip-timeline-item.selected").count(), 0)
+                self.assertEqual(self.page.locator("#trip-item-edge").count(), 0)
+                center = self.page.evaluate("__travel.mapSession().map.getCenter()")
+                self.assertTrue(pending)
+                released[0] = True
+                for route in pending:
+                    finish_route(route)
+                self.page.wait_for_function("document.querySelector('#tripMapStatus').textContent.includes('Traçados estimados')")
+                self.assertEqual(center, self.page.evaluate("__travel.mapSession().map.getCenter()"))
+                self.assertTrue(self.page.evaluate("__edgeMarker.isPopupOpen()"))
+                self.page.get_by_role("button", name="Ver no roteiro").first.click()
+                self.page.wait_for_selector("#trip-item-edge.selected")
+                self.page.wait_for_function("document.querySelector('#tripMapStatus').textContent.includes('Traçados estimados')")
+                self.page.wait_for_function("!__travel.mapSession().map._animatingZoom && !__travel.mapSession().map._panAnim?._inProgress")
+                self.page.unroute("**/brouter?**")
+
+    def test_itinerary_more_options_keyboard_outside_and_mobile(self):
+        trip={**TRIP,"itinerary":[dict(id="walk",title="Walk",location="Madrid",date="2026-10-15")]}
+        self.page.evaluate("trip=>__travel.reset(trip)", trip)
+        for width in (1280, 375, 320):
+            self.page.set_viewport_size({"width":width,"height":850})
+            summary=self.page.locator(".trip-more-options summary")
+            summary.focus()
+            self.page.keyboard.press("Enter")
+            self.assertTrue(self.page.get_by_role("button",name="Duplicar",exact=True).is_visible())
+            self.page.keyboard.press("Escape")
+            self.assertFalse(self.page.get_by_role("button",name="Duplicar",exact=True).is_visible())
+            self.assertTrue(summary.evaluate("el=>el===document.activeElement"))
+            summary.click()
+            self.page.locator(".trip-day-group h3").first.click()
+            self.assertEqual(self.page.locator(".trip-more-options[open]").count(),0)
+            summary.click()
+            bounds=self.page.locator(".trip-more-panel").bounding_box()
+            self.assertGreaterEqual(bounds["x"],0)
+            self.assertLessEqual(bounds["x"]+bounds["width"],width)
+            self.assertTrue(self.page.evaluate("document.documentElement.scrollWidth<=innerWidth"))
+            self.page.keyboard.press("Escape")
 
     def test_map_connects_madrid_to_first_stop_and_ignores_empty_coordinates(self):
         trip = {**TRIP, "itinerary": [
@@ -203,16 +284,19 @@ class TravelTests(unittest.TestCase):
         self.assertEqual(len(state["trips"][0]["itinerary"]), 1)
         self.assertEqual(len(state["events"]), 1)
         self.assertEqual(state["events"][0]["title"], "Spain · Prado museum")
+        self.page.locator(".trip-more-options summary").click()
         self.page.get_by_role("button", name="Duplicar", exact=True).click()
         self.page.locator("#f-date").select_option("2026-10-16")
         self.page.locator("#itemForm button[type=submit]").click()
         self.assertEqual(self.page.evaluate("__travel.state().events.length"), 2)
+        self.page.locator(".trip-more-options summary").click()
         self.page.get_by_role("button", name="Mover dia", exact=True).click()
         self.page.locator("#f-date").select_option("2026-10-15")
         self.page.locator("#itemForm button[type=submit]").click()
         self.assertEqual(self.page.evaluate("__travel.state().events[1].date"), "2026-10-15")
         self.assertEqual(self.page.locator(".trip-itinerary").count(), 2)
         self.assertGreater(self.page.locator(".trip-item-warning").count(), 0)
+        self.page.locator(".trip-itinerary").last.locator(".trip-more-options summary").click()
         self.page.locator(".trip-itinerary").last.get_by_role("button", name="Remover", exact=True).click()
         self.page.get_by_role("button", name="Remover item", exact=True).click()
         self.assertEqual(self.page.evaluate("__travel.state().events.length"), 1)
@@ -321,10 +405,12 @@ class TravelTests(unittest.TestCase):
     def test_unlinked_itinerary_removal_requires_confirmation_and_can_cancel(self):
         trip = {**TRIP, "itinerary":[dict(id="walk",kind="activity",title="Walk",date="2026-10-15")]}
         self.page.evaluate("trip=>__travel.reset(trip)", trip)
+        self.page.locator(".trip-more-options summary").click()
         self.page.get_by_role("button", name="Remover", exact=True).click()
         self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary.length"), 1)
         self.page.get_by_role("button", name="Manter item", exact=True).click()
         self.assertEqual(self.page.locator(".trip-itinerary").count(), 1)
+        self.page.locator(".trip-more-options summary").click()
         self.page.get_by_role("button", name="Remover", exact=True).click()
         self.page.get_by_role("button", name="Remover item", exact=True).click()
         self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary.length"), 0)
@@ -547,6 +633,7 @@ class TravelTests(unittest.TestCase):
         self.assertEqual(item['kind'],'travel')
         self.assertEqual(item['transport'],'flight')
         self.assertEqual(len(state['events']),1)
+        self.page.locator(".trip-more-options summary").click()
         self.page.locator('[data-action^="travel-remove-itinerary:"]').click()
         self.page.get_by_role('button',name='Remover item',exact=True).click()
         self.page.locator('[data-action^="travel-edit-reservation:"]').click()
@@ -586,6 +673,7 @@ class TravelTests(unittest.TestCase):
         trip={**TRIP,'startDate':'2026-03-28','endDate':'2026-03-30','itinerary':[
             dict(id='dst',title='Early activity',date='2026-03-28',time='02:30',timeZone='Europe/Madrid')]}
         self.page.evaluate('trip=>__travel.reset(trip)',trip)
+        self.page.locator(".trip-more-options summary").click()
         self.page.get_by_role('button',name='Mover dia',exact=True).click()
         self.page.locator('#f-date').select_option('2026-03-29')
         self.page.locator('#itemForm button[type=submit]').click()
