@@ -942,6 +942,33 @@ class TravelTests(unittest.TestCase):
             self.assertIn('01 de mai. de 2024',self.page.locator('#itemForm').inner_text())
             self.page.locator('#cancelModal').click()
 
+    def test_memory_summary_combines_old_visits_and_trips_and_finance_style_tabs(self):
+        trip={**TRIP,'status':'done','countryCode':'es','startDate':'2025-06-01','endDate':'2025-06-03'}
+        visits=[dict(id='old',name='Barcelona',countryCode='es',date='2024-01-01'),
+                dict(id='recent',name='Paris',countryCode='fr',date='2025-05-01')]
+        self.page.evaluate('args=>__travel.memories(...args)',[[trip],visits])
+        self.assertEqual(self.page.locator('.memory-stats .trip-history-stat').count(),3)
+        self.assertEqual(self.page.locator('#memoryTripCount').inner_text(),'3')
+        self.assertNotIn('Orçamentos',self.page.locator('.memory-stats').inner_text())
+        self.assertNotIn('Visitas registradas',self.page.locator('.memory-stats').inner_text())
+        self.page.locator('#memoryYear').select_option('2024')
+        self.assertEqual(self.page.locator('#memoryTripCount').inner_text(),'1')
+        self.page.locator('#memoryYear').select_option('2025')
+        self.assertEqual(self.page.locator('#memoryTripCount').inner_text(),'2')
+        buttons=self.page.locator('.memory-view-switch.finance-tabs button')
+        self.assertEqual(buttons.count(),2)
+        self.assertEqual(buttons.locator('svg[aria-hidden="true"]').count(),2)
+        self.page.get_by_role('button',name='Passaporte',exact=True).click()
+        self.assertEqual(self.page.get_by_role('button',name='Passaporte',exact=True).get_attribute('aria-pressed'),'true')
+        self.assertTrue(self.page.get_by_role('button',name='Passaporte',exact=True).evaluate("el=>el.classList.contains('selected')"))
+        self.page.set_viewport_size({'width':375,'height':850})
+        self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+        self.assertGreaterEqual(buttons.first.bounding_box()['height'],52)
+        self.page.get_by_role('button',name='Mapa e cidades',exact=True).click()
+        self.page.wait_for_selector('.memory-globe-svg')
+        self.assertEqual(self.page.evaluate('__travel.state().trips.length'),1)
+        self.assertEqual(self.page.evaluate('__travel.state().memoryVisits.length'),2)
+
     def test_memories_year_filter_passport_and_global_world_percentage(self):
         trips=[{**TRIP,'id':'winter','name':'Winter','status':'done','countryCode':'es',
                 'destination':'Madrid, España','startDate':'2024-12-30','endDate':'2025-01-02'},
@@ -1002,8 +1029,7 @@ class TravelTests(unittest.TestCase):
         self.page.locator('#f-visitDate').fill('2025-05-01')
         self.page.locator('#itemForm button[type=submit]').click()
         self.assertEqual(self.page.evaluate('__travel.state().trips.length'),0)
-        self.assertEqual(self.page.locator('#memoryVisitCount').inner_text(),'1')
-        self.assertEqual(self.page.locator('#memoryTripCount').inner_text(),'0')
+        self.assertEqual(self.page.locator('#memoryTripCount').inner_text(),'1')
         self.assertEqual(self.page.locator('#memoryCityCount').inner_text(),'1')
         self.assertEqual(self.page.locator('#memoryCountryCount').inner_text(),'1')
         self.assertEqual(self.page.evaluate('__travel.state().events.length'),0)
@@ -1017,10 +1043,10 @@ class TravelTests(unittest.TestCase):
         self.page.evaluate('()=>__travel.memories([],__travel.state().memoryVisits)')
         self.page.locator('[data-action^="memory-quick-remove:"]').click()
         self.page.get_by_role('button',name='Manter visita',exact=True).click()
-        self.assertEqual(self.page.locator('#memoryVisitCount').inner_text(),'1')
+        self.assertEqual(self.page.locator('#memoryTripCount').inner_text(),'1')
         self.page.locator('[data-action^="memory-quick-remove:"]').click()
         self.page.get_by_role('button',name='Remover visita',exact=True).click()
-        self.assertEqual(self.page.locator('#memoryVisitCount').inner_text(),'0')
+        self.assertEqual(self.page.locator('#memoryTripCount').inner_text(),'0')
         self.assertEqual(self.page.locator('progress').get_attribute('value'),'0')
 
     def test_memory_globe_rotation_zoom_backside_pins_and_keyboard(self):
