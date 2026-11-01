@@ -1014,6 +1014,12 @@ h1{font-size:28px}
  .modal-form input[type="date"]::-webkit-datetime-edit{display:block;min-width:0;padding:0}
  .modal-form input[type="date"]::-webkit-date-and-time-value{min-width:0;text-align:left}
 }
+.trip-flight-lookup{padding:14px;border:1px solid #d5e3ce;border-radius:12px;background:#f2f6ed}
+.trip-flight-lookup>p{margin:0;font-size:11px;line-height:1.6;color:var(--muted)}
+.trip-flight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;min-width:0}
+.trip-flight-links{display:flex;flex-wrap:wrap;gap:8px}.trip-flight-links[hidden],#tripFlightLookup[hidden]{display:none!important}
+.trip-flight-links a{text-decoration:none}
+@media(max-width:600px){.trip-flight-grid{grid-template-columns:minmax(0,1fr)}.trip-flight-links a,.trip-flight-lookup>.trip-add{min-height:40px}}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1135,6 +1141,7 @@ h1{font-size:28px}
 <script src="./vendor/topojson-client-3.1.0.min.js"></script>
 <script src="./vendor/memory-world-110m.js"></script>
 <script src="./memory-globe.js?v=2"></script>
+<script src="./flight-lookup.js"></script>
 <script>
 (() => {
 "use strict";
@@ -2113,14 +2120,32 @@ function tripPointCountry(point,origin=false){
  for(const part of parts){const inferred=tripCountryFromName(part);if(inferred)return {code:inferred,name:tripCountryName(inferred)}}
  return null;
 }
+function tripVisitMode(point){
+ return ['transit','destination','both'].includes(point?.visitMode)?point.visitMode:'both';
+}
+function tripVisitModeField(mode){
+ return selectField('visitMode','Este trecho conta como visita?',[
+  ['transit','Não · só deslocamento ou conexão'],
+  ['destination','Sim · visitei o destino'],
+  ['both','Sim · visitei a origem e o destino']
+ ],mode,'full')+'<p class="field full file-hint">Conexões continuam no mapa e no roteiro, mas não entram nos países e cidades visitados. Cidades cadastradas manualmente continuam no histórico.</p>';
+}
+function toggleTripVisitMode(tripId,itemId){
+ const trip=data.trips.find(t=>t.id===tripId),item=trip?.itinerary?.find(i=>i.id===itemId);if(!item)return;
+ const mode=tripVisitMode(item)==='transit'?'destination':'transit';
+ const reservation=trip.reservations?.find(r=>r.id===item.sourceReservationId);
+ if(reservation){reservation.visitMode=mode;syncTripReservationItinerary(trip,reservation)}
+ else item.visitMode=mode;
+ save();render();notify(mode==='transit'?'Trecho marcado como conexão.':'Destino incluído nas visitas.');
+}
 function tripVisitedCountries(trip,includeManual=true){
  const countries=new Map(),add=(point,origin=false)=>{const country=tripPointCountry(point,origin);if(country)countries.set(country.code,country)};
  add(trip);
- for(const item of trip.itinerary||[])if(item.status!=='skipped'){add(item);add(item,true)}
+ for(const item of trip.itinerary||[])if(item.status!=='skipped'&&tripVisitMode(item)!=='transit'){add(item);if(tripVisitMode(item)==='both')add(item,true)}
  for(const reservation of trip.reservations||[]){
   const linked=(trip.itinerary||[]).filter(item=>item.sourceReservationId===reservation.id);
-  if(['skipped','cancelled','canceled'].includes(reservation.status)||(linked.length&&linked.every(item=>item.status==='skipped')))continue;
-  add(reservation);add(reservation,true);
+  if(tripVisitMode(reservation)==='transit'||['skipped','cancelled','canceled'].includes(reservation.status)||(linked.length&&linked.every(item=>item.status==='skipped')))continue;
+  add(reservation);if(tripVisitMode(reservation)==='both')add(reservation,true);
  }
  for(const city of trip.visitedCities||[])add(city);
  if(includeManual)for(const value of trip.visitedCountries||[]){const code=tripCountryCode(typeof value==='string'?value:value.code||value.countryCode);if(code)countries.set(code,{code,name:tripCountryName(code)})}
@@ -2194,9 +2219,15 @@ function tripMemoryCities(trips){
  for(const trip of trips){
   const date=trip.startDate||trip.endDate||'';
   if(trip.destination)add({...trip,city:trip.city||trip.destination.split(',')[0]},trip,date);
-  for(const item of trip.itinerary||[])if(item.status!=='skipped'){
+  for(const item of trip.itinerary||[])if(item.status!=='skipped'&&tripVisitMode(item)!=='transit'){
    if(item.city)add(item,trip,item.date||date);
-   if(item.originCity)add({city:item.originCity,countryCode:item.originCountryCode,country:item.originCountry,latitude:item.originLatitude,longitude:item.originLongitude},trip,item.date||date);
+   if(item.originCity&&tripVisitMode(item)==='both')add({city:item.originCity,countryCode:item.originCountryCode,country:item.originCountry,latitude:item.originLatitude,longitude:item.originLongitude},trip,item.date||date);
+  }
+  for(const reservation of trip.reservations||[]){
+   const linked=(trip.itinerary||[]).filter(item=>item.sourceReservationId===reservation.id);
+   if(tripVisitMode(reservation)==='transit'||['skipped','cancelled','canceled'].includes(reservation.status)||(linked.length&&linked.every(item=>item.status==='skipped')))continue;
+   if(reservation.city)add(reservation,trip,reservation.startDate||date);
+   if(reservation.originCity&&tripVisitMode(reservation)==='both')add({city:reservation.originCity,country:reservation.originCountry,countryCode:reservation.originCountryCode,latitude:reservation.originLatitude,longitude:reservation.originLongitude},trip,reservation.startDate||date);
   }
   for(const city of trip.visitedCities||[])add(city,trip,city.date||date);
  }
@@ -2387,10 +2418,10 @@ function syncTripItemEvent(trip,item,create=false){
  if(event)Object.assign(event,values);else if(trip.status!=='done'&&item.date)data.events.push({id:uid(),...values});
 }
 function refreshTripOrigins(trip){
- let previous={location:trip.destination,country:trip.country,countryCode:trip.countryCode,latitude:trip.latitude,longitude:trip.longitude};
+ let previous={city:trip.city||trip.destination?.split(',')[0]||'',location:trip.destination,country:trip.country,countryCode:trip.countryCode,latitude:trip.latitude,longitude:trip.longitude};
  for(const item of tripSortedItinerary(trip)){
   if(item.status==='skipped')continue;
-  if(item.kind==='travel'&&item.originSource==='previous')Object.assign(item,{origin:previous.location||'',originCountry:tripPointCountry(previous)?.name||'',originCountryCode:tripPointCountry(previous)?.code||'',originLatitude:String(previous.latitude??''),originLongitude:String(previous.longitude??'')});
+  if(item.kind==='travel'&&item.originSource==='previous')Object.assign(item,{origin:previous.location||'',originCity:previous.city||'',originCountry:tripPointCountry(previous)?.name||'',originCountryCode:tripPointCountry(previous)?.code||'',originLatitude:String(previous.latitude??''),originLongitude:String(previous.longitude??'')});
   if(hasTripCoordinates(item))previous=item;
  }
 }
@@ -2440,7 +2471,7 @@ function editTripPlace(tripId,placeId=''){
  modal(old?'Editar lugar salvo':'Salvar lugar',field('title','Nome do lugar',old?.title||'','text','full')+selectField('category','Categoria',[['Passeio','Passeio'],['Restaurante','Restaurante'],['Atração','Atração'],['Outro','Outro']],old?.category||'Passeio','full')+tripItineraryLocationField(old||{})+tripTimeZoneField('timeZone','Fuso local',old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE)+textareaField('note','Notas',old?.note||'','full'),v=>{
   const live=data.trips.find(t=>t.id===tripId),existing=live?.savedPlaces?.find(p=>p.id===placeId);if(!live||(placeId&&!existing)){notify('O lugar ou a viagem foi removido.');return false}
   if(!String(v.title||'').trim()||!tripValidZone(v.timeZone)){notify('Informe um nome e um fuso válido.');return false}
-  const place={...existing,id:existing?.id||uid(),title:v.title.trim(),category:v.category,location:String(v.location||'').trim(),country:String(v.country||'').trim(),countryCode:tripCountryCode(v.countryCode),latitude:v.latitude||'',longitude:v.longitude||'',timeZone:v.timeZone,note:v.note||''};
+  const place={...existing,id:existing?.id||uid(),title:v.title.trim(),category:v.category,city:String(v.city||''),location:String(v.location||'').trim(),country:String(v.country||'').trim(),countryCode:tripCountryCode(v.countryCode),latitude:v.latitude||'',longitude:v.longitude||'',timeZone:v.timeZone,note:v.note||''};
   if(!Array.isArray(live.savedPlaces))live.savedPlaces=[];
   if(existing)live.savedPlaces=live.savedPlaces.map(p=>p.id===placeId?place:p);else live.savedPlaces.push(place);
  });setupTripItineraryLocationSearch();
@@ -2479,7 +2510,7 @@ function tripItineraryActions(trip,item){
  '<div class="trip-more-group">'+(status?button('travel-status','Retomar',':pending'):button('travel-status','Marcar feito',':done')+button('travel-status','Pular',':skipped'))+'</div>'+
  '<div class="trip-more-group">'+button('travel-edit-itinerary','Editar')+
  (item.location?'<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(hasTripCoordinates(item)?item.latitude+','+item.longitude:item.location)+'" target="_blank" rel="noopener">Como chegar</a>':'')+
- button('travel-duplicate-itinerary','Duplicar')+button('travel-move-itinerary','Mover dia')+'</div>'+
+ (item.kind==='travel'||item.transport?button('travel-visit-mode',tripVisitMode(item)==='transit'?'Contar destino como visita':'Marcar como conexão'):'')+button('travel-duplicate-itinerary','Duplicar')+button('travel-move-itinerary','Mover dia')+'</div>'+
  '<div class="trip-more-group" role="group" aria-label="Reordenar parada">'+
  button('travel-order','↑ Mover para cima',':up','aria-label="Mover '+esc(item.title)+' para cima"')+
  button('travel-order','↓ Mover para baixo',':down','aria-label="Mover '+esc(item.title)+' para baixo"')+
@@ -2493,7 +2524,7 @@ function tripItineraryRows(trip){
  const groups=dates.filter(date=>selected==="all"||(date||"flex")===selected).map(date=>{
   const rows=items.filter(x=>(x.date||"")===date).map(item=>{
    const number=items.indexOf(item)+1,warnings=tripItemWarnings(trip,item),travel=item.kind==="travel"||(!item.kind&&!!item.transport),linked=!!tripItineraryEvent(trip,item);
-   return '<article class="trip-itinerary trip-timeline-item is-'+esc(item.status||'pending')+'" data-trip-id="'+esc(trip.id)+'" id="trip-item-'+esc(item.id)+'" data-itinerary-id="'+esc(item.id)+'"><button type="button" class="trip-stop-number" data-action="travel-focus:'+esc(trip.id)+':'+esc(item.id)+'" aria-label="Mostrar '+esc(item.title)+' no mapa">'+number+'</button><div class="trip-item-main"><div class="trip-item-heading"><strong>'+esc(item.title)+'</strong><span class="trip-type-chip" style="--mode-color:'+transportColor(item.transport)+'">'+esc(travel?transportLabel(item.transport)||'Deslocamento':'Atividade')+'</span>'+tripItineraryActions(trip,item)+'</div><small>'+esc(tripTimeLabel(item,trip))+(linked?' · Cronograma conectado':'')+'</small>'+(item.location?'<p class="trip-item-location">'+esc(travel?(item.origin||'Parada anterior')+' → '+item.location:item.location)+'</p>':'')+(item.note?'<p class="trip-item-note">'+esc(item.note)+'</p>':'')+'<span class="trip-route-detail" data-route-for="'+esc(item.id)+'"></span>'+warnings.map(w=>'<span class="trip-item-warning">'+esc(w)+'</span>').join('')+'</div></article>';
+   return '<article class="trip-itinerary trip-timeline-item is-'+esc(item.status||'pending')+'" data-trip-id="'+esc(trip.id)+'" id="trip-item-'+esc(item.id)+'" data-itinerary-id="'+esc(item.id)+'"><button type="button" class="trip-stop-number" data-action="travel-focus:'+esc(trip.id)+':'+esc(item.id)+'" aria-label="Mostrar '+esc(item.title)+' no mapa">'+number+'</button><div class="trip-item-main"><div class="trip-item-heading"><strong>'+esc(item.title)+'</strong><span class="trip-type-chip" style="--mode-color:'+transportColor(item.transport)+'">'+esc(travel?transportLabel(item.transport)||'Deslocamento':'Atividade')+'</span>'+tripItineraryActions(trip,item)+'</div><small>'+esc(tripTimeLabel(item,trip))+(linked?' · Cronograma conectado':'')+(tripVisitMode(item)==='transit'?' · Conexão / deslocamento':'')+'</small>'+(item.location?'<p class="trip-item-location">'+esc(travel?(item.origin||'Parada anterior')+' → '+item.location:item.location)+'</p>':'')+(item.note?'<p class="trip-item-note">'+esc(item.note)+'</p>':'')+'<span class="trip-route-detail" data-route-for="'+esc(item.id)+'"></span>'+warnings.map(w=>'<span class="trip-item-warning">'+esc(w)+'</span>').join('')+'</div></article>';
   }).join('');
   return '<section class="trip-day-group"><h3>'+esc(days.find(x=>x[0]===date)?.[1]||(date?fmtDate(date):'Sem data definida'))+'</h3>'+(rows||'<p class="trip-empty-line">Dia livre. Adicione atividades ou deslocamentos.</p>')+'</section>';
  }).join('');
@@ -2568,7 +2599,7 @@ function editTripBudget(tripId){
 function tripReservationRows(trip){
  return (trip.reservations||[]).map(reservation=>{
   const outside=reservation.startDate&&((trip.startDate&&reservation.startDate<trip.startDate)||(trip.endDate&&reservation.startDate>trip.endDate));
-  return '<article class="trip-reservation"><span class="trip-reservation-symbol">'+tripSvg(reservation.type==='stay'?'stay':reservation.type==='flight'?'plane':'route')+'</span><div class="trip-item-main"><strong>'+esc(reservation.title)+'</strong><small>'+esc(tripLabel(reservation.type))+(reservation.provider?' · '+esc(reservation.provider):'')+'</small><p class="trip-item-location">'+esc(reservation.startDate?fmtDate(reservation.startDate):'Data flexível')+(reservation.time?' · '+esc(reservation.time):'')+(reservation.endDate?' → '+esc(fmtDate(reservation.endDate))+(reservation.endTime?' · '+esc(reservation.endTime):''):'')+'</p>'+(reservation.location?'<p class="trip-item-note">'+esc(reservation.location)+'</p>':'')+(reservation.reference?'<p class="trip-item-note">Confirmação: '+esc(reservation.reference)+'</p>':'')+'<small>Total '+tripMoney(reservation.cost||0,reservation.currency||trip.currency)+' · Pago '+tripMoney(reservation.paidAmount||0,reservation.currency||trip.currency)+' · Pendente '+tripMoney(Math.max(0,(reservation.cost||0)-(reservation.paidAmount||0)),reservation.currency||trip.currency)+'</small>'+(outside?'<span class="trip-item-warning">Reserva fora das datas da viagem</span>':'')+'<div class="trip-item-actions"><button type="button" data-action="travel-edit-reservation:'+esc(trip.id)+':'+esc(reservation.id)+'">Editar</button>'+(reservation.documentId?'<button type="button" data-action="preview-document:'+esc(reservation.documentId)+'">Abrir voucher</button>':'')+'<button type="button" class="trip-delete" data-action="travel-remove-reservation:'+esc(trip.id)+':'+esc(reservation.id)+'">Remover</button></div></div></article>';
+  return '<article class="trip-reservation"><span class="trip-reservation-symbol">'+tripSvg(reservation.type==='stay'?'stay':reservation.type==='flight'?'plane':'route')+'</span><div class="trip-item-main"><strong>'+esc(reservation.title)+'</strong><small>'+esc(tripLabel(reservation.type))+(reservation.provider?' · '+esc(reservation.provider):'')+(reservation.flightNumber?' · '+esc(reservation.flightNumber):'')+(tripVisitMode(reservation)==='transit'?' · Não conta como visita':'')+'</small><p class="trip-item-location">'+esc(reservation.startDate?fmtDate(reservation.startDate):'Data flexível')+(reservation.time?' · '+esc(reservation.time):'')+(reservation.endDate?' → '+esc(fmtDate(reservation.endDate))+(reservation.endTime?' · '+esc(reservation.endTime):''):'')+'</p>'+(reservation.location?'<p class="trip-item-note">'+esc(reservation.location)+'</p>':'')+(reservation.reference?'<p class="trip-item-note">Confirmação: '+esc(reservation.reference)+'</p>':'')+'<small>Total '+tripMoney(reservation.cost||0,reservation.currency||trip.currency)+' · Pago '+tripMoney(reservation.paidAmount||0,reservation.currency||trip.currency)+' · Pendente '+tripMoney(Math.max(0,(reservation.cost||0)-(reservation.paidAmount||0)),reservation.currency||trip.currency)+'</small>'+(outside?'<span class="trip-item-warning">Reserva fora das datas da viagem</span>':'')+'<div class="trip-item-actions"><button type="button" data-action="travel-edit-reservation:'+esc(trip.id)+':'+esc(reservation.id)+'">Editar</button>'+(reservation.documentId?'<button type="button" data-action="preview-document:'+esc(reservation.documentId)+'">Abrir voucher</button>':'')+'<button type="button" class="trip-delete" data-action="travel-remove-reservation:'+esc(trip.id)+':'+esc(reservation.id)+'">Remover</button></div></div></article>';
  }).join('')||'<div class="trip-empty-line">Adicione passagens, hospedagens e atividades. Anexe vouchers em Documentos e vincule-os à reserva.</div>';
 }
 function tripChecklistRows(trip){
@@ -2655,11 +2686,11 @@ function syncTripReservationItinerary(trip,reservation){
  let desired=[];
  if(!reservation.toItinerary){const standalone=data.events.find(event=>event.tripId===trip.id&&event.reservationId===reservation.id);if(standalone)delete standalone.itineraryId}
  if(reservation.toItinerary){
-  const base={date:reservation.startDate||'',time:reservation.time||'',timeZone:reservation.timeZone||tripZone(null,trip),location:reservation.location||'',country:reservation.country||'',countryCode:reservation.countryCode||'',latitude:reservation.latitude||'',longitude:reservation.longitude||'',note:reservation.note||''};
+  const base={city:reservation.city||'',visitMode:tripVisitMode(reservation),date:reservation.startDate||'',time:reservation.time||'',timeZone:reservation.timeZone||tripZone(null,trip),location:reservation.location||'',country:reservation.country||'',countryCode:reservation.countryCode||'',latitude:reservation.latitude||'',longitude:reservation.longitude||'',note:reservation.note||''};
   if(reservation.type==='stay'){
    desired.push({...base,reservationPart:'checkin',title:'Check-in · '+reservation.title,kind:'activity'});
    if(reservation.endDate)desired.push({...base,reservationPart:'checkout',title:'Check-out · '+reservation.title,date:reservation.endDate,time:reservation.endTime||'',timeZone:reservation.endTimeZone||base.timeZone,kind:'activity'});
-  }else if(['flight','transport'].includes(reservation.type))desired.push({...base,reservationPart:'transfer',title:reservation.title,kind:'travel',transport:reservation.type==='flight'?'flight':reservation.transport||'car',endDate:reservation.endDate||reservation.startDate||'',endTime:reservation.endTime||'',endTimeZone:reservation.endTimeZone||base.timeZone,origin:reservation.origin||'',originCountry:reservation.originCountry||'',originCountryCode:reservation.originCountryCode||'',originLatitude:reservation.originLatitude||'',originLongitude:reservation.originLongitude||'',originSource:reservation.origin?'custom':'previous'});
+  }else if(['flight','transport'].includes(reservation.type))desired.push({...base,reservationPart:'transfer',title:reservation.title,kind:'travel',transport:reservation.type==='flight'?'flight':reservation.transport||'car',endDate:reservation.endDate||reservation.startDate||'',endTime:reservation.endTime||'',endTimeZone:reservation.endTimeZone||base.timeZone,origin:reservation.origin||'',originCity:reservation.originCity||'',originCountry:reservation.originCountry||'',originCountryCode:reservation.originCountryCode||'',originLatitude:reservation.originLatitude||'',originLongitude:reservation.originLongitude||'',originSource:reservation.origin?'custom':'previous'});
   else desired.push({...base,reservationPart:'activity',title:reservation.title,kind:'activity',endDate:reservation.endDate||reservation.startDate||'',endTime:reservation.endTime||'',endTimeZone:reservation.endTimeZone||base.timeZone});
  }
  desired=desired.filter(item=>!excluded.includes(item.reservationPart));
@@ -2680,7 +2711,7 @@ function addTripReservation(tripId,reservationId=''){
  const trip=data.trips.find(x=>x.id===tripId),old=trip?.reservations?.find(r=>r.id===reservationId),accounts=accessibleAccounts();if(!trip||(reservationId&&!old))return;
  const linkedTransaction=tripTransactions(trip).find(t=>t.reservationId===reservationId&&reservationId);
  const accountOptions=[['','Não lançar agora'],...accounts.map(a=>[a.id,a.name+' · '+a.currency])];
- modal(old?'Editar reserva':'Adicionar reserva',field('title','Nome da reserva',old?.title||'','text','full')+selectField('type','Tipo',[['flight','Passagem'],['stay','Hospedagem'],['transport','Transporte'],['activity','Atividade'],['food','Restaurante'],['other','Outro']],old?.type||'flight')+field('provider','Companhia / fornecedor',old?.provider||'','text')+field('reference','Código de reserva',old?.reference||'','text','full')+field('startDate','Data / check-in',old?.startDate||'','date')+field('time','Horário / check-in',old?.time||'','time')+field('endDate','Data final / check-out',old?.endDate||'','date')+field('endTime','Horário final / check-out',old?.endTime||'','time')+'<div class="field full" id="tripReservationOrigin">'+tripItineraryLocationField({location:old?.origin||'',country:old?.originCountry||'',countryCode:old?.originCountryCode||'',latitude:old?.originLatitude||'',longitude:old?.originLongitude||''},'origin')+'</div>'+tripItineraryLocationField(old||{})+tripTimeZoneField('timeZone','Fuso da saída / check-in',old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE)+tripTimeZoneField('endTimeZone','Fuso da chegada / check-out',old?.endTimeZone||(old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE))+'<div id="tripReservationTransport" class="field full">'+selectField('transport','Transporte terrestre',[['car','Carro'],['bus','Ônibus'],['train','Trem'],['taxi','Táxi']],old?.transport||'car','full')+'</div>'+selectField('toItinerary','Conectar ao roteiro',[['yes','Sim, criar e manter os itens conectados'],['no','Não conectar']],old?(old.toItinerary?'yes':'no'):'yes','full')+selectField('currency','Moeda da reserva',tripCurrencies.map(c=>[c,c]),old?.currency||trip.currency)+field('cost','Valor total',old?.cost??'','number')+field('paidAmount','Valor já pago',old?.paidAmount??'','number')+field('exchangeRate','Cotação: 1 unidade da moeda em '+trip.currency,old?.exchangeRate||'','number')+selectField('accountId','Lançar valor pago em qual caixinha?',accountOptions,linkedTransaction?.accountId||'','full')+'<p class="field full file-hint">Para lançar o pagamento, escolha uma caixinha na mesma moeda da reserva. A cotação é manual e converte o orçamento para '+esc(trip.currency)+'.</p>'+selectField('documentId','Voucher em PDF',[['','Sem voucher'],...tripDocuments(trip).filter(d=>d.filePath).map(d=>[d.id,d.title])],old?.documentId||'','full')+'<div class="field full"><label for="f-reservationPdf">Enviar novo voucher em PDF</label><input id="f-reservationPdf" name="reservationPdf" type="file" accept="application/pdf,.pdf"><div class="file-hint">Escolha um PDF de até 20 MB. Ele será vinculado à reserva e ficará disponível em Documentos da viagem. Um novo arquivo substitui a seleção acima nesta reserva.</div></div>'+textareaField('note','Notas',old?.note||'','full'),function saveReservation(v){
+ modal(old?'Editar reserva':'Adicionar reserva',field('title','Nome da reserva',old?.title||'','text','full')+selectField('type','Tipo',[['flight','Voo / passagem aérea'],['stay','Hospedagem'],['transport','Transporte'],['activity','Atividade'],['food','Restaurante'],['other','Outro']],old?.type||'flight')+(window.KiwiFlightLookup?.fields(old||{})||'')+tripVisitModeField(old?tripVisitMode(old):'transit')+field('provider','Companhia / fornecedor',old?.provider||'','text')+field('reference','Código de reserva',old?.reference||'','text','full')+field('startDate','Data / check-in',old?.startDate||'','date')+field('time','Horário / check-in',old?.time||'','time')+field('endDate','Data final / check-out',old?.endDate||'','date')+field('endTime','Horário final / check-out',old?.endTime||'','time')+'<div class="field full" id="tripReservationOrigin">'+tripItineraryLocationField({city:old?.originCity||'',location:old?.origin||'',country:old?.originCountry||'',countryCode:old?.originCountryCode||'',latitude:old?.originLatitude||'',longitude:old?.originLongitude||''},'origin')+'</div>'+tripItineraryLocationField(old||{})+tripTimeZoneField('timeZone','Fuso da saída / check-in',old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE)+tripTimeZoneField('endTimeZone','Fuso da chegada / check-out',old?.endTimeZone||(old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE))+'<div id="tripReservationTransport" class="field full">'+selectField('transport','Transporte terrestre',[['car','Carro'],['bus','Ônibus'],['train','Trem'],['taxi','Táxi']],old?.transport||'car','full')+'</div>'+selectField('toItinerary','Conectar ao roteiro',[['yes','Sim, criar e manter os itens conectados'],['no','Não conectar']],old?(old.toItinerary?'yes':'no'):'yes','full')+selectField('currency','Moeda da reserva',tripCurrencies.map(c=>[c,c]),old?.currency||trip.currency)+field('cost','Valor total',old?.cost??'','number')+field('paidAmount','Valor já pago',old?.paidAmount??'','number')+field('exchangeRate','Cotação: 1 unidade da moeda em '+trip.currency,old?.exchangeRate||'','number')+selectField('accountId','Lançar valor pago em qual caixinha?',accountOptions,linkedTransaction?.accountId||'','full')+'<p class="field full file-hint">Para lançar o pagamento, escolha uma caixinha na mesma moeda da reserva. A cotação é manual e converte o orçamento para '+esc(trip.currency)+'.</p>'+selectField('documentId','Voucher em PDF',[['','Sem voucher'],...tripDocuments(trip).filter(d=>d.filePath).map(d=>[d.id,d.title])],old?.documentId||'','full')+'<div class="field full"><label for="f-reservationPdf">Enviar novo voucher em PDF</label><input id="f-reservationPdf" name="reservationPdf" type="file" accept="application/pdf,.pdf"><div class="file-hint">Escolha um PDF de até 20 MB. Ele será vinculado à reserva e ficará disponível em Documentos da viagem. Um novo arquivo substitui a seleção acima nesta reserva.</div></div>'+textareaField('note','Notas',old?.note||'','full'),function saveReservation(v){
   const live=data.trips.find(t=>t.id===tripId),existing=live?.reservations?.find(r=>r.id===reservationId),title=String(v.title||'').trim();
   if(!live||(reservationId&&!existing)){notify('A viagem ou reserva foi removida.');return false}
   if(!title){notify('Informe a reserva.');return false}
@@ -2712,7 +2743,7 @@ function addTripReservation(tripId,reservationId=''){
    })();
   }
   if(v.uploadedDocument)data.documents.push(v.uploadedDocument);
-  const reservation={...existing,id:existing?.id||uid(),title,type:v.type,provider:String(v.provider||'').trim(),reference:String(v.reference||'').trim(),startDate:v.startDate||'',time:v.time||'',endDate:v.endDate||'',endTime:v.endTime||'',timeZone:v.timeZone,endTimeZone:v.endTimeZone,origin:v.origin||'',originCountry:v.originCountry||'',originCountryCode:tripCountryCode(v.originCountryCode),originLatitude:v.originLatitude||'',originLongitude:v.originLongitude||'',location:String(v.location||'').trim(),country:String(v.country||'').trim(),countryCode:tripCountryCode(v.countryCode),latitude:v.latitude||'',longitude:v.longitude||'',transport:v.transport,toItinerary:v.toItinerary==='yes',cost,paidAmount,currency:v.currency,exchangeRate,documentId:v.documentId||'',note:String(v.note||'').trim()};
+  const reservation={...existing,id:existing?.id||uid(),title,type:v.type,city:String(v.city||''),originCity:String(v.originCity||''),visitMode:v.visitMode,flightNumber:v.type==='flight'?String(v.flightNumber||'').toUpperCase().replace(/[\s-]/g,''):'',provider:String(v.provider||'').trim(),reference:String(v.reference||'').trim(),startDate:v.startDate||'',time:v.time||'',endDate:v.endDate||'',endTime:v.endTime||'',timeZone:v.timeZone,endTimeZone:v.endTimeZone,origin:v.origin||'',originCountry:v.originCountry||'',originCountryCode:tripCountryCode(v.originCountryCode),originLatitude:v.originLatitude||'',originLongitude:v.originLongitude||'',location:String(v.location||'').trim(),country:String(v.country||'').trim(),countryCode:tripCountryCode(v.countryCode),latitude:v.latitude||'',longitude:v.longitude||'',transport:v.transport,toItinerary:v.toItinerary==='yes',cost,paidAmount,currency:v.currency,exchangeRate,documentId:v.documentId||'',note:String(v.note||'').trim()};
   if(!Array.isArray(live.reservations))live.reservations=[];
   if(existing)live.reservations=live.reservations.map(r=>r.id===reservationId?reservation:r);else live.reservations.push(reservation);
   const event=data.events.find(e=>e.tripId===tripId&&e.reservationId===reservation.id);
@@ -2728,7 +2759,9 @@ function addTripReservation(tripId,reservationId=''){
   }
  });
  setupTripItineraryLocationSearch();setupTripItineraryLocationSearch('origin');
- const updateReservationFields=()=>{$('#tripReservationOrigin').hidden=!['flight','transport'].includes($('#f-type').value);$('#tripReservationTransport').hidden=$('#f-type').value!=='transport'};$('#f-type').addEventListener('change',updateReservationFields);updateReservationFields();
+ window.KiwiFlightLookup?.setup($('#modalBackdrop'));
+ const updateReservationFields=()=>{if(!old&&!$('#f-visitMode').dataset.edited)$('#f-visitMode').value=['flight','transport'].includes($('#f-type').value)?'transit':'destination';$('#tripReservationOrigin').hidden=!['flight','transport'].includes($('#f-type').value);$('#tripReservationTransport').hidden=$('#f-type').value!=='transport'};$('#f-type').addEventListener('change',updateReservationFields);updateReservationFields();
+ $('#f-visitMode').addEventListener('change',()=>{$('#f-visitMode').dataset.edited='true'});
  bindCurrencyInput('f-cost',old?.cost??'');bindCurrencyInput('f-paidAmount',old?.paidAmount??'');
 }
 
@@ -2741,14 +2774,14 @@ function tripDayOptions(trip){
 }
 function tripItineraryLocationField(point={},prefix="itinerary"){
  const resolvedCountry=tripPointCountry(point),origin=prefix==="origin",stem=origin?"tripOrigin":"tripItinerary",name=origin?"origin":"location",lat=origin?"originLatitude":"latitude",lon=origin?"originLongitude":"longitude";
- return '<div class="field full trip-itinerary-location"><label for="f-'+prefix+'LocationSearch">'+(origin?'Local de partida':'Destino / localização')+'</label><div class="trip-destination-input"><input id="f-'+prefix+'LocationSearch" type="search" autocomplete="off" placeholder="Pesquise um lugar real" value="'+esc(point.location||'')+'"></div><input id="f-'+prefix+'Location" name="'+name+'" type="hidden" value="'+esc(point.location||'')+'"><input id="f-'+prefix+'Latitude" name="'+lat+'" type="hidden" value="'+esc(point.latitude??'')+'"><input id="f-'+prefix+'Longitude" name="'+lon+'" type="hidden" value="'+esc(point.longitude??'')+'"><input id="f-'+prefix+'Country" name="'+(origin?'originCountry':'country')+'" type="hidden" value="'+esc(point.country||resolvedCountry?.name||'')+'"><input id="f-'+prefix+'CountryCode" name="'+(origin?'originCountryCode':'countryCode')+'" type="hidden" value="'+esc(point.countryCode||resolvedCountry?.code||'')+'"><div id="'+stem+'LocationResults" class="trip-destination-results" hidden></div><div id="'+stem+'LocationSummary" class="trip-destination-summary" hidden></div></div>';
+ return '<div class="field full trip-itinerary-location"><label for="f-'+prefix+'LocationSearch">'+(origin?'Local de partida':'Destino / localização')+'</label><div class="trip-destination-input"><input id="f-'+prefix+'LocationSearch" type="search" autocomplete="off" placeholder="Pesquise um lugar real" value="'+esc(point.location||'')+'"></div><input id="f-'+prefix+'Location" name="'+name+'" type="hidden" value="'+esc(point.location||'')+'"><input id="f-'+prefix+'Latitude" name="'+lat+'" type="hidden" value="'+esc(point.latitude??'')+'"><input id="f-'+prefix+'Longitude" name="'+lon+'" type="hidden" value="'+esc(point.longitude??'')+'"><input id="f-'+prefix+'City" name="'+(origin?'originCity':'city')+'" type="hidden" value="'+esc(point.city||'')+'"><input id="f-'+prefix+'Country" name="'+(origin?'originCountry':'country')+'" type="hidden" value="'+esc(point.country||resolvedCountry?.name||'')+'"><input id="f-'+prefix+'CountryCode" name="'+(origin?'originCountryCode':'countryCode')+'" type="hidden" value="'+esc(point.countryCode||resolvedCountry?.code||'')+'"><div id="'+stem+'LocationResults" class="trip-destination-results" hidden></div><div id="'+stem+'LocationSummary" class="trip-destination-summary" hidden></div></div>';
 }
 function setupTripItineraryLocationSearch(prefix="itinerary"){
- const stem=prefix==="origin"?"tripOrigin":"tripItinerary",input=$("#f-"+prefix+"LocationSearch"),location=$("#f-"+prefix+"Location"),latitude=$("#f-"+prefix+"Latitude"),longitude=$("#f-"+prefix+"Longitude"),results=$("#"+stem+"LocationResults"),summary=$("#"+stem+"LocationSummary"),countryField=$("#f-"+prefix+"Country"),countryCodeField=$("#f-"+prefix+"CountryCode");
+ const stem=prefix==="origin"?"tripOrigin":"tripItinerary",input=$("#f-"+prefix+"LocationSearch"),location=$("#f-"+prefix+"Location"),latitude=$("#f-"+prefix+"Latitude"),longitude=$("#f-"+prefix+"Longitude"),results=$("#"+stem+"LocationResults"),summary=$("#"+stem+"LocationSummary"),cityField=$("#f-"+prefix+"City"),countryField=$("#f-"+prefix+"Country"),countryCodeField=$("#f-"+prefix+"CountryCode");
  if(!input||!location||!results)return;
  let timer=null,controller=null;
- const choose=item=>{clearTimeout(timer);if(controller)controller.abort();const address=item.address||{},name=(item.name||item.display_name?.split(",")[0]||input.value).trim(),country=address.country||"",label=[name,country].filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).join(", ");input.value=label;location.value=label;countryField.value=country;countryCodeField.value=tripCountryCode(address.country_code);latitude.value=item.lat||"";longitude.value=item.lon||"";results.hidden=true;results.innerHTML="";summary.hidden=false;summary.innerHTML='<span>'+esc(label)+'</span>'};
- input.addEventListener("input",()=>{location.value=input.value.trim();countryField.value="";countryCodeField.value="";latitude.value="";longitude.value="";summary.hidden=true;clearTimeout(timer);if(controller)controller.abort();const query=input.value.trim();if(query.length<3){results.hidden=true;return}results.hidden=false;results.innerHTML='<div class="trip-search-status">Buscando localização…</div>';timer=setTimeout(async()=>{try{controller=new AbortController();const url="https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&accept-language="+encodeURIComponent(data.language==="pt"?"pt-BR":"en")+"&q="+encodeURIComponent(query);const response=await fetch(url,{signal:controller.signal});if(!response.ok)throw new Error("search failed");const places=await response.json();if(!input.isConnected||input.value.trim()!==query)return;if(!Array.isArray(places)||!places.length){results.innerHTML='<div class="trip-search-status">Nenhum local encontrado. Você pode salvar o texto digitado.</div>';return}results.innerHTML=places.map((item,index)=>{const address=item.address||{},name=item.name||item.display_name?.split(",")[0]||"Local";return '<button type="button" class="trip-destination-result" data-itinerary-location="'+index+'"><span><strong>'+esc(name)+'</strong><small>'+esc([address.city||address.town||address.village||"",address.country||""].filter(Boolean).join(" · ")||item.display_name)+'</small></span></button>'}).join("");results.querySelectorAll("[data-itinerary-location]").forEach(button=>button.addEventListener("click",()=>choose(places[Number(button.dataset.itineraryLocation)])));}catch(error){if(error.name==="AbortError"||!input.isConnected||input.value.trim()!==query)return;results.innerHTML='<div class="trip-search-status">Não foi possível buscar agora. Você pode salvar o local digitado.</div>';}},280)});
+ const choose=item=>{clearTimeout(timer);if(controller)controller.abort();const address=item.address||{},name=(item.name||item.display_name?.split(",")[0]||input.value).trim(),country=address.country||"",label=[name,country].filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).join(", ");input.value=label;location.value=label;if(cityField)cityField.value=address.city||address.town||address.village||address.municipality||(['city','town','village','municipality'].includes(item.type)?name:'');countryField.value=country;countryCodeField.value=tripCountryCode(address.country_code);latitude.value=item.lat||"";longitude.value=item.lon||"";results.hidden=true;results.innerHTML="";summary.hidden=false;summary.innerHTML='<span>'+esc(label)+'</span>'};
+ input.addEventListener("input",()=>{location.value=input.value.trim();if(cityField)cityField.value="";countryField.value="";countryCodeField.value="";latitude.value="";longitude.value="";summary.hidden=true;clearTimeout(timer);if(controller)controller.abort();const query=input.value.trim();if(query.length<3){results.hidden=true;return}results.hidden=false;results.innerHTML='<div class="trip-search-status">Buscando localização…</div>';timer=setTimeout(async()=>{try{controller=new AbortController();const url="https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&accept-language="+encodeURIComponent(data.language==="pt"?"pt-BR":"en")+"&q="+encodeURIComponent(query);const response=await fetch(url,{signal:controller.signal});if(!response.ok)throw new Error("search failed");const places=await response.json();if(!input.isConnected||input.value.trim()!==query)return;if(!Array.isArray(places)||!places.length){results.innerHTML='<div class="trip-search-status">Nenhum local encontrado. Você pode salvar o texto digitado.</div>';return}results.innerHTML=places.map((item,index)=>{const address=item.address||{},name=item.name||item.display_name?.split(",")[0]||"Local";return '<button type="button" class="trip-destination-result" data-itinerary-location="'+index+'"><span><strong>'+esc(name)+'</strong><small>'+esc([address.city||address.town||address.village||"",address.country||""].filter(Boolean).join(" · ")||item.display_name)+'</small></span></button>'}).join("");results.querySelectorAll("[data-itinerary-location]").forEach(button=>button.addEventListener("click",()=>choose(places[Number(button.dataset.itineraryLocation)])));}catch(error){if(error.name==="AbortError"||!input.isConnected||input.value.trim()!==query)return;results.innerHTML='<div class="trip-search-status">Não foi possível buscar agora. Você pode salvar o local digitado.</div>';}},280)});
  input.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();results.querySelector("[data-itinerary-location]")?.focus()}});
  results.addEventListener("pointerdown",e=>{if(e.target.closest("[data-itinerary-location]"))e.preventDefault()});
  input.addEventListener("blur",()=>setTimeout(()=>{results.hidden=true},180));
@@ -2932,33 +2965,33 @@ function addTripItinerary(tripId,itemId="",duplicate=false,initialKind="activity
  const linked=old&&!duplicate?tripItineraryEvent(trip,old):null;
  const origins=[['previous','Parada anterior (automática)'],['trip','Início da viagem · '+(trip.destination||trip.name)],...tripSortedItinerary(trip).filter(x=>x.id!==itemId&&hasTripCoordinates(x)).map(x=>[x.id,x.title+' · '+x.location]),['custom','Pesquisar outra origem']];
  const selectedOrigin=old?.originSource&&origins.some(([id])=>id===old.originSource)?old.originSource:old?.origin?'custom':'previous';
- const originPoint={location:old?.origin||'',country:old?.originCountry||'',countryCode:old?.originCountryCode||'',latitude:old?.originLatitude||'',longitude:old?.originLongitude||''};
+ const originPoint={city:old?.originCity||'',location:old?.origin||'',country:old?.originCountry||'',countryCode:old?.originCountryCode||'',latitude:old?.originLatitude||'',longitude:old?.originLongitude||''};
  const fields=selectField('kind','Tipo de item',[['activity','Atividade'],['travel','Deslocamento']],kind,'full')+
  field('title','Atividade ou compromisso',old?.title||'','text','full')+
  selectField('date','Dia da viagem',days,old?.date||(selectedDay&&selectedDay!=='all'&&selectedDay!=='flex'?selectedDay:days[0]?.[0])||'','full')+
  field('time','Horário de saída / início',old?.time||'','time')+tripTimeZoneField('timeZone','Fuso da saída / início',old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE)+field('endDate','Data final (se diferente)',old?.endDate||'','date')+field('endTime','Horário de chegada / término',old?.endTime||'','time')+tripTimeZoneField('endTimeZone','Fuso da chegada / término',old?.endTimeZone||(old?tripZone(old,trip):trip.timeZone||DEVICE_TIMEZONE))+
  '<div id="tripOriginWrap" class="field full"'+(kind==='travel'?'':' hidden')+'>'+selectField('originSource','Origem',origins,selectedOrigin,'full')+'<div id="tripCustomOrigin"'+(selectedOrigin==='custom'?'':' hidden')+'>'+tripItineraryLocationField(originPoint,'origin')+'</div>'+selectField('transport','Transporte',[['walk','Caminhando'],['car','Carro'],['bus','Ônibus'],['train','Trem'],['flight','Avião'],['taxi','Táxi']],old?.transport||'walk','full')+'</div>'+
- tripItineraryLocationField(old||{})+selectField('toTimeline','Criar também no Cronograma',trip.status!=='done'?[['yes','Sim, manter conectado'],['no','Não agora']]:[['no','Viagem histórica — não criar no Cronograma']],old&&!duplicate?(linked?'yes':'no'):(trip.status!=='done'?'yes':'no'),'full')+
+ tripItineraryLocationField(old||{})+tripVisitModeField(old?tripVisitMode(old):kind==='travel'?'transit':'destination')+selectField('toTimeline','Criar também no Cronograma',trip.status!=='done'?[['yes','Sim, manter conectado'],['no','Não agora']]:[['no','Viagem histórica — não criar no Cronograma']],old&&!duplicate?(linked?'yes':'no'):(trip.status!=='done'?'yes':'no'),'full')+
  textareaField('note','Notas',old?.note||'','full')+'<p class="field full file-hint">Selecione um resultado da busca para posicionar o item no mapa. Informe a data da chegada quando for em outro dia. Os eventos conectados são convertidos para o horário do Cronograma.</p>';
  modal(duplicate?'Duplicar item':old?'Editar roteiro':initialKind==='travel'?'Adicionar deslocamento':'Adicionar atividade',fields,v=>{
   const title=String(v.title||'').trim();if(!title){notify('Informe o item do roteiro.');return false}
   const live=data.trips.find(x=>x.id===tripId),existing=live?.itinerary?.find(x=>x.id===itemId);
   if(!live){notify('Esta viagem foi removida. Feche o formulário e confira suas viagens.');return false}
   if(itemId&&!duplicate&&!existing){notify('Este item foi removido enquanto você editava.');return false}
-  const item={...(duplicate?old:existing),id:!duplicate&&existing?existing.id:uid(),title,kind:v.kind,date:v.date||'',time:v.time||'',endTime:v.endTime||'',endDate:v.endDate||v.date||'',timeZone:v.timeZone||tripZone(existing,live),endTimeZone:v.endTimeZone||v.timeZone||tripZone(existing,live),status:duplicate?'pending':existing?.status||'pending',sourceSavedPlaceId:existing?.sourceSavedPlaceId||seed?.sourceSavedPlaceId||'',location:String(v.location||'').trim(),country:String(v.country||'').trim(),countryCode:tripCountryCode(v.countryCode),latitude:String(v.latitude||''),longitude:String(v.longitude||''),transport:v.kind==='travel'?v.transport:'',note:String(v.note||'').trim(),updatedAt:new Date().toISOString()};
+  const item={...(duplicate?old:existing),id:!duplicate&&existing?existing.id:uid(),title,kind:v.kind,city:String(v.city||''),visitMode:v.visitMode,date:v.date||'',time:v.time||'',endTime:v.endTime||'',endDate:v.endDate||v.date||'',timeZone:v.timeZone||tripZone(existing,live),endTimeZone:v.endTimeZone||v.timeZone||tripZone(existing,live),status:duplicate?'pending':existing?.status||'pending',sourceSavedPlaceId:existing?.sourceSavedPlaceId||seed?.sourceSavedPlaceId||'',location:String(v.location||'').trim(),country:String(v.country||'').trim(),countryCode:tripCountryCode(v.countryCode),latitude:String(v.latitude||''),longitude:String(v.longitude||''),transport:v.kind==='travel'?v.transport:'',note:String(v.note||'').trim(),updatedAt:new Date().toISOString()};
   if(duplicate){delete item.sourceReservationId;delete item.reservationPart;delete item.sequence}
   const scheduleError=tripScheduleError(item,live);if(scheduleError){notify(scheduleError);return false}
   if(item.kind==='travel'){
    let origin;
-   if(v.originSource==='custom')origin={location:String(v.origin||'').trim(),country:v.originCountry||'',countryCode:v.originCountryCode||'',latitude:v.originLatitude||'',longitude:v.originLongitude||''};
-   else if(v.originSource==='trip')origin={location:live.destination,country:live.country,countryCode:live.countryCode,latitude:live.latitude,longitude:live.longitude};
+   if(v.originSource==='custom')origin={city:v.originCity||'',location:String(v.origin||'').trim(),country:v.originCountry||'',countryCode:v.originCountryCode||'',latitude:v.originLatitude||'',longitude:v.originLongitude||''};
+   else if(v.originSource==='trip')origin={city:live.city||live.destination?.split(',')[0]||'',location:live.destination,country:live.country,countryCode:live.countryCode,latitude:live.latitude,longitude:live.longitude};
    else if(v.originSource==='previous'){
     const before=tripSortedItinerary(live).filter(x=>x.id!==itemId&&hasTripCoordinates(x)&&((x.date||'')+'T'+(x.time||'00:00'))<=((item.date||'')+'T'+(item.time||'00:00')));
     origin=before[before.length-1]||{location:live.destination,country:live.country,countryCode:live.countryCode,latitude:live.latitude,longitude:live.longitude};
    }else origin=live.itinerary?.find(x=>x.id===v.originSource);
    if(!origin?.location||!item.location){notify('Informe a origem e o destino do deslocamento.');return false}
-   Object.assign(item,{originSource:v.originSource,origin:origin.location,originCountry:tripPointCountry(origin)?.name||'',originCountryCode:tripPointCountry(origin)?.code||'',originLatitude:String(origin.latitude??''),originLongitude:String(origin.longitude??'')});
-  }else Object.assign(item,{originSource:'',origin:'',originCountry:'',originCountryCode:'',originLatitude:'',originLongitude:''});
+   Object.assign(item,{originSource:v.originSource,origin:origin.location,originCity:origin.city||'',originCountry:tripPointCountry(origin)?.name||'',originCountryCode:tripPointCountry(origin)?.code||'',originLatitude:String(origin.latitude??''),originLongitude:String(origin.longitude??'')});
+  }else Object.assign(item,{originSource:'',origin:'',originCity:'',originCountry:'',originCountryCode:'',originLatitude:'',originLongitude:''});
   const linkedEvent=existing&&!duplicate?tripItineraryEvent(live,existing):null;
   if(!Array.isArray(live.itinerary))live.itinerary=[];
   if(existing&&!duplicate)live.itinerary=live.itinerary.map(x=>x.id===itemId?item:x);else live.itinerary.push(item);
@@ -2971,8 +3004,9 @@ function addTripItinerary(tripId,itemId="",duplicate=false,initialKind="activity
   refreshTripOrigins(live);tripSelectedDays.set(tripId,item.date||'flex');tripMapDays.set(tripId,item.date||'flex');
  });
  setupTripItineraryLocationSearch();setupTripItineraryLocationSearch('origin');
- const update=()=>{$('#tripOriginWrap').hidden=$('#f-kind').value!=='travel';$('#tripCustomOrigin').hidden=$('#f-originSource').value!=='custom'};
+ const update=()=>{if(!old&&!$('#f-visitMode').dataset.edited)$('#f-visitMode').value=$('#f-kind').value==='travel'?'transit':'destination';$('#tripOriginWrap').hidden=$('#f-kind').value!=='travel';$('#tripCustomOrigin').hidden=$('#f-originSource').value!=='custom'};
  $('#f-kind').addEventListener('change',update);$('#f-originSource').addEventListener('change',update);
+ $('#f-visitMode').addEventListener('change',()=>{$('#f-visitMode').dataset.edited='true'});
  let previousDate=$('#f-date').value,arrivalEdited=false;
  $('#f-endDate').addEventListener('input',()=>{arrivalEdited=true});
  $('#f-date').addEventListener('change',()=>{const date=$('#f-date').value,end=$('#f-endDate');if(!arrivalEdited&&end.value&&previousDate&&date){const offset=Date.parse(date+'T12:00:00Z')-Date.parse(previousDate+'T12:00:00Z');end.value=new Date(Date.parse(end.value+'T12:00:00Z')+offset).toISOString().slice(0,10)}previousDate=date});
@@ -3460,6 +3494,7 @@ if(a.startsWith("travel-offline:")){downloadTripGuide(a.slice("travel-offline:".
 
 if(a.startsWith("travel-add-itinerary:"))return addTripItinerary(a.slice("travel-add-itinerary:".length));
 if(a.startsWith("travel-add-transfer:"))return addTripItinerary(a.slice("travel-add-transfer:".length),"",false,"travel");
+if(a.startsWith('travel-visit-mode:')){const p=a.split(':');return toggleTripVisitMode(p[1],p[2])}
 if(a.startsWith("travel-status:")){const p=a.split(":");return setTripItemStatus(p[1],p[2],p[3])}
 if(a.startsWith("travel-order:")){const p=a.split(":");return previewTripOrder(p[1],p[2],p[3]==='up'?-1:1)}
 if(a.startsWith("travel-place-new:"))return editTripPlace(a.slice('travel-place-new:'.length));

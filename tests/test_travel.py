@@ -85,7 +85,7 @@ class TravelTests(unittest.TestCase):
                 request.fulfill(body=sdk, content_type="application/javascript")
             elif url.endswith("leaflet.js"):
                 request.fulfill(body=leaflet, content_type="application/javascript")
-            elif urlparse(url).path.startswith("/kiwipath/vendor/") or urlparse(url).path in ("/kiwipath/trip-guide.js","/kiwipath/memory-globe.js"):
+            elif urlparse(url).path.startswith("/kiwipath/vendor/") or urlparse(url).path in ("/kiwipath/trip-guide.js","/kiwipath/memory-globe.js","/kiwipath/flight-lookup.js"):
                 local = ROOT / urlparse(url).path.removeprefix("/kiwipath/")
                 request.fulfill(body=local.read_bytes(), content_type="font/ttf" if local.suffix==".ttf" else "application/javascript")
             elif "files.test/" in url:
@@ -101,7 +101,7 @@ class TravelTests(unittest.TestCase):
                     request.fulfill(body=json.dumps({"features":[{"properties":{"total-time":7200},"geometry":{"type":"LineString","coordinates":coords}}]}), content_type="application/json")
             elif "nominatim.openstreetmap.org" in url:
                 query=parse_qs(urlparse(url).query).get('q',[''])[0]
-                result=dict(name="Paris",lat="48.8566",lon="2.3522",address={"country":"France","country_code":"fr"}) if query=='Paris' else dict(name="Zürich",lat="47.3769",lon="8.5417",address={"country":"Schweiz","country_code":"ch"}) if query=='Zürich' else dict(name="Barcelona",lat="41.3874",lon="2.1686",address={"country":"España","country_code":"es"})
+                result=dict(name="Paris",lat="48.8566",lon="2.3522",address={"city":"Paris","country":"France","country_code":"fr"}) if query=='Paris' else dict(name="Zürich",lat="47.3769",lon="8.5417",address={"city":"Zürich","country":"Schweiz","country_code":"ch"}) if query=='Zürich' else dict(name="Barcelona",lat="41.3874",lon="2.1686",address={"city":"Barcelona","country":"España","country_code":"es"})
                 request.fulfill(body=json.dumps([result]),content_type="application/json")
             else:
                 request.fulfill(body="", content_type="text/css")
@@ -1303,8 +1303,81 @@ class TravelTests(unittest.TestCase):
         self.page.reload()
         self.assertEqual(self.page.evaluate('__travel.state().trips[0].visitedCountries'),['ch'])
 
+    def test_flight_research_links_are_free_explicit_and_preserve_reservation_fields(self):
+        self.page.locator('[data-action="travel-add-reservation:test-trip"]').click()
+        self.assertTrue(self.page.locator('#tripFlightLookup').is_visible())
+        self.assertEqual(self.page.locator('#f-visitMode').input_value(),'transit')
+        self.page.locator('#f-provider').fill('Companhia manual')
+        self.page.locator('#f-reference').fill('BOOK123')
+        self.page.locator('#f-flightNumber').fill('la 803')
+        self.page.locator('#f-flightDate').fill('2026-10-15')
+        self.page.locator('#f-flightDate').dispatch_event('change')
+        self.page.locator('#tripFlightSearch').click()
+        self.assertEqual(self.page.get_by_role('link',name='Abrir no FlightRadar24').get_attribute('href'),
+                         'https://www.flightradar24.com/data/flights/la803')
+        self.assertIn('2026-10-15',self.page.get_by_role('link',name='Pesquisar na web').get_attribute('href'))
+        self.assertIn('não são importados automaticamente',self.page.locator('#tripFlightStatus').inner_text())
+        self.assertEqual(self.page.locator('#f-provider').input_value(),'Companhia manual')
+        self.assertEqual(self.page.locator('#f-reference').input_value(),'BOOK123')
+        self.assertEqual(self.page.locator('#f-startDate').input_value(),'2026-10-15')
+        self.page.locator('#f-type').select_option('stay')
+        self.assertFalse(self.page.locator('#tripFlightLookup').is_visible())
+        self.assertEqual(self.page.locator('#f-visitMode').input_value(),'destination')
+        self.page.locator('#f-type').select_option('flight')
+        self.page.locator('#f-title').fill('Voo LA803')
+        self.page.set_viewport_size({'width':320,'height':844})
+        self.assertTrue(self.page.locator('#itemForm').evaluate('el=>el.scrollWidth<=el.clientWidth'))
+        self.page.locator('#itemForm button[type=submit]').click()
+        state=self.page.evaluate('__travel.state()')
+        self.assertEqual(state['trips'][0]['reservations'][0]['flightNumber'],'LA803')
+        self.assertEqual(state['trips'][0]['reservations'][0]['visitMode'],'transit')
+        self.assertEqual(state['trips'][0]['itinerary'][0]['visitMode'],'transit')
+
+    def test_transit_airports_stay_on_route_without_counting_as_visited_cities(self):
+        trip={**TRIP,'name':'Sinop','destination':'Sinop, Brasil','countryCode':'br',
+              'latitude':'-11.86','longitude':'-55.5','status':'done','itinerary':[
+                dict(id='gru',kind='travel',transport='flight',title='CWB → GRU',city='São Paulo',
+                     countryCode='br',latitude='-23.43',longitude='-46.47',visitMode='transit'),
+                dict(id='bsb',kind='travel',transport='flight',title='GRU → BSB',city='Brasília',
+                     countryCode='br',latitude='-15.87',longitude='-47.92',visitMode='transit'),
+                dict(id='ops',kind='travel',transport='flight',title='BSB → OPS',city='Sinop',
+                     originCity='Brasília',originCountryCode='br',countryCode='br',
+                     latitude='-11.86',longitude='-55.5',visitMode='destination')]}
+        self.page.evaluate('trip=>__travel.reset(trip)',trip)
+        cities=self.page.evaluate('__travel.memoryCities([__travel.state().trips[0]])')
+        self.assertEqual([city['name'] for city in cities],['Sinop'])
+        self.assertTrue(any(point.get('itineraryId')=='gru' for point in self.page.evaluate('__travel.points(__travel.state().trips[0])')))
+        self.page.locator('#trip-item-gru summary').click()
+        self.page.get_by_role('button',name='Contar destino como visita',exact=True).click()
+        self.assertEqual({city['name'] for city in self.page.evaluate('__travel.memoryCities([__travel.state().trips[0]])')},{'Sinop','São Paulo'})
+        self.page.locator('#trip-item-gru summary').click()
+        self.page.get_by_role('button',name='Marcar como conexão',exact=True).click()
+        self.assertEqual([city['name'] for city in self.page.evaluate('__travel.memoryCities([__travel.state().trips[0]])')],['Sinop'])
+
+    def test_transit_reservation_visit_modes_sync_to_itinerary_and_passport(self):
+        trip={**TRIP,'countryCode':'es','reservations':[
+            dict(id='connection',title='Zürich to Paris',type='flight',toItinerary=True,visitMode='transit',
+                 city='Paris',countryCode='fr',location='Paris, France',origin='Zürich, Schweiz',
+                 originCity='Zürich',originCountryCode='ch')]}
+        self.page.evaluate('trip=>__travel.reset(trip)',trip)
+        self.page.locator('[data-action^="travel-edit-reservation:"]').click()
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual({c['code'] for c in self.page.evaluate('__travel.countries(__travel.state().trips[0])')},{'es'})
+        self.page.locator('.trip-itinerary summary').click()
+        self.page.get_by_role('button',name='Contar destino como visita',exact=True).click()
+        state=self.page.evaluate('__travel.state().trips[0]')
+        self.assertEqual(state['reservations'][0]['visitMode'],'destination')
+        self.assertEqual(state['itinerary'][0]['visitMode'],'destination')
+        self.assertEqual({c['code'] for c in self.page.evaluate('__travel.countries(__travel.state().trips[0])')},{'es','fr'})
+        self.assertEqual({c['name'] for c in self.page.evaluate('__travel.memoryCities([__travel.state().trips[0]])')},{'Madrid','Paris'})
+        self.page.locator('[data-action^="travel-edit-reservation:"]').click()
+        self.page.locator('#f-visitMode').select_option('both')
+        self.page.locator('#itemForm button[type=submit]').click()
+        self.assertEqual({c['code'] for c in self.page.evaluate('__travel.countries(__travel.state().trips[0])')},{'es','fr','ch'})
+
     def test_reservation_country_metadata_reaches_connected_transfer(self):
         self.page.locator('[data-action="travel-add-reservation:test-trip"]').click()
+        self.page.locator('#f-visitMode').select_option('both')
         self.page.locator('#f-title').fill('Zürich to Paris')
         self.page.locator('#f-originLocationSearch').fill('Zürich')
         self.page.locator('#tripOriginLocationResults [data-itinerary-location="0"]').click()
@@ -1316,6 +1389,8 @@ class TravelTests(unittest.TestCase):
         item=state['trips'][0]['itinerary'][0]
         self.assertEqual((reservation['originCountryCode'],reservation['countryCode']),('ch','fr'))
         self.assertEqual((item['originCountryCode'],item['countryCode']),('ch','fr'))
+        self.assertEqual((reservation['originCity'],reservation['city']),('Zürich','Paris'))
+        self.assertEqual((item['originCity'],item['city']),('Zürich','Paris'))
         self.assertEqual({row['code'] for row in self.page.evaluate('__travel.countries(__travel.state().trips[0])')},{'es','ch','fr'})
 
     def test_deleted_trip_does_not_report_a_successful_save(self):

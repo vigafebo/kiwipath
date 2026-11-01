@@ -121,3 +121,27 @@ country. “Países visitados” on each history card allows explicit additions 
 countries visited in transit or older locations without country metadata. These
 additions supplement the automatically identified countries; countries crossed by
 a route are not guessed from a straight line or flight path.
+
+## Flight research and airport connections
+
+When adding a flight reservation, enter the flight number (for example LA803) and
+the local departure date. “Pesquisar voo” offers public FlightRadar24 and web-search
+links. This is external research, **not automatic flight-data import**: the user
+checks the source and fills airline, airports and local departure/arrival times.
+No paid API, provider account, scraping proxy or provider key is used. FlightRadar24
+opens the flight-number page; its date must be checked there. The web query includes
+both the number and date. The booking reference is separate and is not sent.
+
+Reservations and itinerary segments have a visitMode: transit, destination
+or both. New flight/transport reservations default to transit. Connections stay
+in the travel map, itinerary and calendar, but contribute no countries or cities
+to the passport/memory globe. Destination mode includes only the arrival location;
+both includes both endpoints. Connected itinerary items inherit the reservation's
+choice. The itinerary's three-dot menu can toggle a segment between a connection
+and a destination visit. Legacy entries with no choice preserve their prior
+behavior until edited; explicitly registered cities/countries remain visits.
+
+City names resolved from location searches are stored separately from airport or
+street labels. Only visit-marked city metadata contributes city pins; airport labels
+are not guessed to be cities. The trip's main destination and manually registered
+cities remain included.
