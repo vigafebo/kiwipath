@@ -1006,6 +1006,14 @@ h1{font-size:28px}
 
 .memory-view-switch.finance-tabs{grid-template-columns:repeat(2,minmax(0,1fr));width:min(440px,100%);margin:0}
 @media(max-width:600px){.memory-stats .trip-history-stat:last-child{grid-column:1/-1}}
+/* Keep native mobile date controls inside the modal's available column. */
+@media(max-width:600px){
+ .modal-form .trip-date-fields{grid-template-columns:minmax(0,1fr);min-width:0;max-width:100%}
+ .modal-form .trip-date-control{width:100%;min-width:0;max-width:100%}
+ .modal-form input[type="date"]{-webkit-appearance:none;appearance:none;display:block;box-sizing:border-box;width:100%;min-width:0;max-width:100%;inline-size:100%;min-inline-size:0;max-inline-size:100%;min-height:48px;text-align:left}
+ .modal-form input[type="date"]::-webkit-datetime-edit{display:block;min-width:0;padding:0}
+ .modal-form input[type="date"]::-webkit-date-and-time-value{min-width:0;text-align:left}
+}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">

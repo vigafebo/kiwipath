@@ -942,6 +942,43 @@ class TravelTests(unittest.TestCase):
             self.assertIn('01 de mai. de 2024',self.page.locator('#itemForm').inner_text())
             self.page.locator('#cancelModal').click()
 
+    def test_mobile_visit_and_trip_dates_stay_inside_modal(self):
+        self.page.evaluate('__travel.memories([])')
+        for width in (320,375,390,430):
+            self.page.set_viewport_size({'width':width,'height':844})
+            self.page.locator('[data-action="memory-quick-new"]').first.click()
+            for value in ('','2025-06-15'):
+                self.page.locator('#f-visitDate').fill(value)
+                bounds=self.page.locator('#f-visitDate').bounding_box()
+                parent=self.page.locator('#f-visitDate').locator('..').bounding_box()
+                self.assertGreaterEqual(bounds['x'],parent['x']-1)
+                self.assertLessEqual(bounds['x']+bounds['width'],parent['x']+parent['width']+1)
+                self.assertLessEqual(bounds['x']+bounds['width'],width-8)
+                self.assertGreaterEqual(bounds['height'],48)
+            self.assertTrue(self.page.locator('#itemForm').evaluate('el=>el.scrollWidth<=el.clientWidth'))
+            self.page.locator('#cancelModal').click()
+            self.page.locator('[data-action="travel-new"]').first.click()
+            for name in ('startDate','endDate'):
+                for value in ('','2025-06-15'):
+                    self.page.locator('#f-'+name).fill(value)
+                    bounds=self.page.locator('#f-'+name).bounding_box()
+                    parent=self.page.locator('#f-'+name).locator('..').bounding_box()
+                    self.assertGreaterEqual(bounds['x'],parent['x']-1)
+                    self.assertLessEqual(bounds['x']+bounds['width'],parent['x']+parent['width']+1)
+                    self.assertLessEqual(bounds['x']+bounds['width'],width-8)
+                    self.assertGreaterEqual(bounds['height'],48)
+            self.assertTrue(self.page.locator('#itemForm').evaluate('el=>el.scrollWidth<=el.clientWidth'))
+            self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+            self.page.locator('#cancelModal').click()
+        self.page.set_viewport_size({'width':1280,'height':900})
+        self.page.locator('[data-action="travel-new"]').first.click()
+        start=self.page.locator('#f-startDate').bounding_box()
+        end=self.page.locator('#f-endDate').bounding_box()
+        self.assertAlmostEqual(start['y'],end['y'],delta=1)
+        self.assertGreater(end['x'],start['x'])
+        self.assertNotEqual(self.page.locator('#f-startDate').evaluate('el=>getComputedStyle(el).appearance'),'none')
+        self.page.locator('#cancelModal').click()
+
     def test_memory_summary_combines_old_visits_and_trips_and_finance_style_tabs(self):
         trip={**TRIP,'status':'done','countryCode':'es','startDate':'2025-06-01','endDate':'2025-06-03'}
         visits=[dict(id='old',name='Barcelona',countryCode='es',date='2024-01-01'),
