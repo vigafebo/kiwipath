@@ -1,6 +1,11 @@
 # kiwipath
 Our journey to New Zealand — immigration, study, finances and dreams.
 
+## Version
+
+Current official version: **v1.0.0**. This is the starting point for future
+versioned KiwiPath releases. The app displays the version in its footer.
+
 ## Local development
 
 Run `python3 -m http.server 8000 --bind 127.0.0.1 --directory /workspace`
