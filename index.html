@@ -1067,13 +1067,13 @@ h1{font-size:28px}
  .finance-analytics-shell .finance-box-custom-dates input{-webkit-appearance:none;appearance:none;padding:8px 5px;font-size:12px}
 }
 @media(max-width:700px){
- .sidebar{inset:auto 12px calc(12px + env(safe-area-inset-bottom,0px));height:72px;padding:5px 6px;background:linear-gradient(145deg,#ffffffd9,#eaf3e9b8 52%,#ffffffc4);border:1px solid #ffffffed;border-radius:25px;box-shadow:0 14px 38px #102d2b30,inset 0 1px 1px #fff, inset 0 -1px 2px #ffffff80;backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);transition:transform .38s cubic-bezier(.2,.8,.2,1),opacity .3s ease,box-shadow .3s ease;will-change:transform;z-index:30}
- .sidebar::before{content:"";pointer-events:none;position:absolute;inset:1px;border-radius:24px;background:linear-gradient(170deg,#ffffffb0,transparent 42%,#ffffff43);opacity:.72}
+ .sidebar{inset:auto 12px calc(12px + env(safe-area-inset-bottom,0px));height:72px;padding:5px 6px;background:linear-gradient(145deg,#a7cbb9d9,#80ae99c9 52%,#b4d3bfcf);border:1px solid #d9f0dfd9;border-radius:25px;box-shadow:0 14px 38px #102d2b30,inset 0 1px 1px #f2fff2c9,inset 0 -1px 2px #47785c50;backdrop-filter:blur(28px) saturate(165%);-webkit-backdrop-filter:blur(28px) saturate(165%);transition:transform .65s cubic-bezier(.22,1,.36,1),opacity .55s ease,box-shadow .4s ease;will-change:transform;z-index:30}
+ .sidebar::before{content:"";pointer-events:none;position:absolute;inset:1px;border-radius:24px;background:linear-gradient(170deg,#e6ffe491,transparent 42%,#e8ffe43b);opacity:.72}
  .sidebar.nav-hidden{transform:translateY(calc(100% + 32px + env(safe-area-inset-bottom,0px)));opacity:0;pointer-events:none}
  .nav{position:relative;z-index:1;align-items:stretch}
  .nav button{min-width:0;color:#315447;border-radius:19px;font-size:9px;font-weight:650;line-height:1.1;transition:background .22s ease,transform .22s ease,color .22s ease,box-shadow .22s ease}
- .nav button:hover{background:#ffffff90;color:#183d32}
- .nav button.active{color:#123b30;background:linear-gradient(145deg,#ffffffea,#e6f2e9d9);box-shadow:0 3px 10px #183d321b,inset 0 1px 1px #fff,inset 0 -1px 1px #d6e6d8}
+ .nav button:hover{background:#e6f6e6a8;color:#183d32}
+ .nav button.active{color:#123b30;background:linear-gradient(145deg,#f3fff0e8,#c8e4c8d9);box-shadow:0 3px 10px #183d321b,inset 0 1px 1px #fff,inset 0 -1px 1px #8cbb9a}
  .nav button:active{transform:scale(.94)}
  .nav-icon{display:grid;place-items:center;min-height:23px}
  .nav button span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -3799,19 +3799,25 @@ supabaseClient.auth.onAuthStateChange((event,session)=>{
 (()=>{
   const dock=document.querySelector('.sidebar');
   if(!dock)return;
-  let previousY=window.scrollY, lastChangeY=previousY, pending=false;
+  let previousY=window.scrollY, directionStartY=previousY, direction=0, lastToggle=0, pending=false;
   const update=()=>{
     pending=false;
     const y=Math.max(0,window.scrollY), delta=y-previousY;
-    if(window.innerWidth>700 || y<64){dock.classList.remove('nav-hidden');lastChangeY=y;}
-    else if(Math.abs(delta)>1 && Math.abs(y-lastChangeY)>18){
-      dock.classList.toggle('nav-hidden',delta>0);
-      lastChangeY=y;
+    if(window.innerWidth>700 || y<64){dock.classList.remove('nav-hidden');directionStartY=y;direction=0;}
+    else if(Math.abs(delta)>1){
+      const nextDirection=Math.sign(delta);
+      if(nextDirection!==direction){direction=nextDirection;directionStartY=y;}
+      const distance=Math.abs(y-directionStartY), threshold=direction>0?80:48;
+      if(distance>=threshold && performance.now()-lastToggle>550){
+        dock.classList.toggle('nav-hidden',direction>0);
+        directionStartY=y;
+        lastToggle=performance.now();
+      }
     }
     previousY=y;
   };
   window.addEventListener('scroll',()=>{if(!pending){pending=true;requestAnimationFrame(update)}},{passive:true});
-  window.addEventListener('resize',()=>{previousY=window.scrollY;lastChangeY=previousY;if(window.innerWidth>700)dock.classList.remove('nav-hidden')},{passive:true});
+  window.addEventListener('resize',()=>{previousY=window.scrollY;directionStartY=previousY;direction=0;if(window.innerWidth>700)dock.classList.remove('nav-hidden')},{passive:true});
   dock.addEventListener('click',()=>dock.classList.remove('nav-hidden'));
 })();
 </script>
