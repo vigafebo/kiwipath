@@ -236,7 +236,7 @@ class TravelTests(unittest.TestCase):
 
     def test_money_box_opens_own_transactions_and_period_filters(self):
         self.page.evaluate('''()=>{const d=__travel.state();
-          d.accounts=[{id:'a',name:'Conta A',currency:'BRL',owner:'both'},
+          d.accounts=[{id:'a',name:'Conta A',currency:'BRL',owner:'zack'},
                       {id:'b',name:'Conta B',currency:'BRL',owner:'both'}];
           d.transactions=[{id:'one',accountId:'a',title:'Only A',date:__travel.today(),amount:10,type:'income'},
                           {id:'two',accountId:'b',title:'Only B',date:__travel.today(),amount:20,type:'income'}]}''')
@@ -247,6 +247,10 @@ class TravelTests(unittest.TestCase):
         self.assertEqual(self.page.locator('.finance-account-card').count(),2)
         card=self.page.locator('[data-action="finance-account-open:a"]')
         card.focus();self.page.keyboard.press('Enter')
+        self.assertEqual(self.page.locator('.finance-tabs > button').count(),4)
+        self.assertEqual(self.page.locator('.finance-tabs .finance-filters').count(),0)
+        self.assertNotIn('data-action=',self.page.locator('.finance-tabs').inner_text())
+        self.assertIn('Movimentações · Conta A',self.page.locator('#pageContent').inner_text())
         for mode in ['day','week','month','custom']:
             self.page.locator('[data-action="finance-period:'+mode+'"]').first.click()
             text=self.page.locator('#pageContent').inner_text()
