@@ -14,7 +14,7 @@
   };
   container.replaceChildren();
   const helpId='memory-globe-help-'+(++nextId);
-  const svg=node('svg',{class:'memory-globe-svg',tabindex:'0',role:'group','aria-label':'Globo interativo de cidades visitadas','aria-describedby':helpId});
+  const svg=node('svg',{class:'memory-globe-svg',tabindex:'0',role:'group','aria-label':window.KiwiI18n.text('Globo interativo de cidades visitadas'),'aria-describedby':helpId});
   const defs=node('defs',{},svg),ocean=node('radialGradient',{id:helpId+'-ocean',cx:'35%',cy:'30%',r:'75%'},defs);
   node('stop',{offset:'0%','stop-color':'#d3e8e2'},ocean);
   node('stop',{offset:'100%','stop-color':'#8fbbb7'},ocean);
@@ -26,7 +26,7 @@
   const countries=topo.feature(world,world.objects.countries),mesh=topo.mesh(world,world.objects.countries,(a,b)=>a!==b),graticule=d3.geoGraticule10();
   const markers=new Map();
   cities.forEach(city=>{
-   const pin=node('g',{'data-globe-city':city.key,class:'memory-globe-pin',role:'button',tabindex:'-1','aria-label':'Ver memórias de '+city.name},pins);
+   const pin=node('g',{'data-globe-city':city.key,class:'memory-globe-pin',role:'button',tabindex:'-1','aria-label':window.KiwiI18n.text('Ver memórias de ')+city.name},pins);
    node('circle',{r:'10',class:'memory-globe-pin-halo'},pin);
    node('circle',{r:'6',class:'memory-globe-pin-dot'},pin);
    const title=node('title',{},pin);title.textContent=city.name;
@@ -44,7 +44,7 @@
   controls.children[0].addEventListener('click',()=>zoomBy(1.25),{signal});
   controls.children[1].addEventListener('click',()=>zoomBy(1/1.25),{signal});
   const help=document.createElement('p');help.className='memory-globe-help';help.id=helpId;
-  help.textContent='Arraste para girar · Use + e − ou dois dedos para aproximar · Setas do teclado para explorar';
+  help.textContent=window.KiwiI18n.text('Arraste para girar · Use + e − ou dois dedos para aproximar · Setas do teclado para explorar');
   container.appendChild(help);
   const credit=document.createElement('small');credit.className='memory-globe-credit';credit.textContent='Geografia: Natural Earth';container.appendChild(credit);
   let longitude=Number.isFinite(initialView?.longitude)?initialView.longitude:0,

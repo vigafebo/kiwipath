@@ -3,8 +3,7 @@ Our journey to New Zealand — immigration, study, finances and dreams.
 
 ## Version
 
-Current official version: **v1.0.0**. This is the starting point for future
-versioned KiwiPath releases. The app displays the version in its footer.
+Current official version: **v1.1.0**. Version numbering began with v1.0.0. The app displays the version in its footer.
 
 ## Local development
 
@@ -150,3 +149,11 @@ City names resolved from location searches are stored separately from airport or
 street labels. Only visit-marked city metadata contributes city pins; airport labels
 are not guessed to be cities. The trip's main destination and manually registered
 cities remain included.
+
+## Bilingual UI
+
+All new UI must include Portuguese and English; see AGENTS.md. Static legacy
+copy is centralised in translations.js. User-entered text is never translated.
+Generated default records use defaultCopy metadata and translate only unchanged
+default fields. Version 1.1.0 covers UI, validation, flight research, globe
+accessibility and travel PDF copy.

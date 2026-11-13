@@ -51,6 +51,7 @@ class TravelTests(unittest.TestCase):
             activeTripId='';tripsView='history';tripMemoryYear='all';tripMemoryView='map';
             document.querySelector('#authScreen').style.display='none';
             document.querySelector('#kiwiApp').style.visibility='visible';render(); },
+          language(value) { data.language=value;render(); },
           refreshCloud:loadCloudData, redraw:render,
           memoryCities:tripMemoryCities, memoryEntries:tripMemoryTrips,
           worldCountries:()=>[...TRIP_WORLD_COUNTRIES], memoryMap:()=>tripMemoryMap,
@@ -85,7 +86,7 @@ class TravelTests(unittest.TestCase):
                 request.fulfill(body=sdk, content_type="application/javascript")
             elif url.endswith("leaflet.js"):
                 request.fulfill(body=leaflet, content_type="application/javascript")
-            elif urlparse(url).path.startswith("/kiwipath/vendor/") or urlparse(url).path in ("/kiwipath/trip-guide.js","/kiwipath/memory-globe.js","/kiwipath/flight-lookup.js"):
+            elif urlparse(url).path.startswith("/kiwipath/vendor/") or urlparse(url).path in ("/kiwipath/trip-guide.js","/kiwipath/memory-globe.js","/kiwipath/flight-lookup.js","/kiwipath/translations.js"):
                 local = ROOT / urlparse(url).path.removeprefix("/kiwipath/")
                 request.fulfill(body=local.read_bytes(), content_type="font/ttf" if local.suffix==".ttf" else "application/javascript")
             elif "files.test/" in url:
@@ -233,6 +234,44 @@ class TravelTests(unittest.TestCase):
             self.assertLessEqual(bounds["x"]+bounds["width"],width)
             self.assertTrue(self.page.evaluate("document.documentElement.scrollWidth<=innerWidth"))
             self.page.keyboard.press("Escape")
+
+    def test_bilingual_navigation_forms_and_user_text(self):
+        self.page.evaluate("__travel.language('en')")
+        for page, heading in [('home','The life'),('documents','Documents'),
+                              ('timeline','Shared calendar'),('finances','Income & expenses'),
+                              ('shopping','Shopping list'),('study','Study & career'),('dreams','Our dreams')]:
+            self.page.locator('[data-page="'+page+'"]').click()
+            self.assertIn(heading,self.page.locator('#pageContent').inner_text())
+        self.assertIn('Arrive in New Zealand together',self.page.locator('#pageContent').inner_text())
+        self.page.evaluate("()=>{__travel.state().dreams=[{id:'custom',title:'Minha viagem especial',note:'Anotações pessoais'}];__travel.redraw()}")
+        self.assertIn('Minha viagem especial',self.page.locator('#pageContent').inner_text())
+        self.assertIn('Anotações pessoais',self.page.locator('#pageContent').inner_text())
+        self.page.locator('[data-page="trips"]').click()
+        self.page.locator('[data-action="travel-add-reservation:test-trip"]').click()
+        text=self.page.locator('#modalBackdrop').inner_text()
+        for expected in ['Add reservation','Flight number','Flight date at origin','Booking reference','Does this leg count as a visit?','Amount already paid','Save']:
+            self.assertIn(expected,text)
+        self.assertNotRegex(text,r'Pesquisar voo|Número do voo|Companhia|Cotação|Salvar')
+        self.page.locator('#tripFlightSearch').click()
+        self.assertIn('Enter the date and a valid flight number',self.page.locator('#tripFlightStatus').inner_text())
+        self.page.locator('#cancelModal').click()
+        self.page.evaluate("__travel.language('pt')")
+        self.page.locator('[data-action="travel-add-reservation:test-trip"]').click()
+        self.assertIn('Número do voo',self.page.locator('#modalBackdrop').inner_text())
+        self.assertIn('Salvar',self.page.locator('#modalBackdrop').inner_text())
+        self.assertEqual(self.errors,[])
+
+    def test_travel_guide_exports_english_copy(self):
+        self.page.evaluate("__travel.language('en')")
+        self.page.get_by_role('button',name='Share PDF guide',exact=True).click()
+        with self.page.expect_download() as download:
+            self.page.get_by_role('button',name='Download PDF',exact=True).click()
+        reader=PdfReader(download.value.path())
+        contents='\n'.join(page.extract_text() for page in reader.pages)
+        self.assertIn('Daily itinerary',contents)
+        self.assertIn('Reservations and tickets',contents)
+        self.assertIn('Preparation checklist',contents)
+        self.assertNotIn('Roteiro dia a dia',contents)
 
     def test_money_box_opens_own_transactions_and_period_filters(self):
         self.page.evaluate('''()=>{const d=__travel.state();

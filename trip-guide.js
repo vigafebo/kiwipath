@@ -7,8 +7,8 @@
   if(ready())return Promise.resolve();
   return new Promise((resolve,reject)=>{
    const node=document.createElement('script');node.src=new URL(file,base).href;
-   node.onload=()=>ready()?resolve():reject(new Error('Biblioteca PDF indisponível.'));
-   node.onerror=()=>{node.remove();reject(new Error('Não foi possível carregar o gerador de PDF.'))};document.head.appendChild(node);
+   node.onload=()=>ready()?resolve():reject(new Error(window.KiwiI18n.text('Biblioteca PDF indisponível.')));
+   node.onerror=()=>{node.remove();reject(new Error(window.KiwiI18n.text('Não foi possível carregar o gerador de PDF.')))};document.head.appendChild(node);
   });
  }
  async function load(){
@@ -17,7 +17,7 @@
    script('vendor/fontkit-1.1.1.min.js',()=>!!window.fontkit)
   ]).catch(error=>{dependencies=null;throw error});
   await dependencies;
-  if(!fontBytes)fontBytes=fetch(new URL('vendor/DejaVuSans.ttf',base)).then(response=>{if(!response.ok)throw new Error('Fonte do PDF indisponível.');return response.arrayBuffer()}).catch(error=>{fontBytes=null;throw error});
+  if(!fontBytes)fontBytes=fetch(new URL('vendor/DejaVuSans.ttf',base)).then(response=>{if(!response.ok)throw new Error(window.KiwiI18n.text('Fonte do PDF indisponível.'));return response.arrayBuffer()}).catch(error=>{fontBytes=null;throw error});
   return fontBytes;
  }
  async function create({trip,documents=[],loadDocument,formatDate,formatMoney,transportLabel}){
@@ -55,47 +55,47 @@
   }
   function section(title){space(56);y-=10;page.drawRectangle({x:margin,y:y-10,width:content,height:30,color:colors.sage});page.drawText(clean(title),{x:margin+12,y,size:12,font,color:colors.forest});y-=33}
   function separator(){space(12);page.drawLine({start:{x:margin,y},end:{x:width-margin,y},thickness:.5,color:colors.line});y-=16}
-  const date=value=>value?formatDate(value):'Data a definir';
+  const date=value=>value?formatDate(value):window.KiwiI18n.text('Data a definir');
   newPage();
-  const titleLines=wrap(trip.name||'Nossa viagem',26).slice(0,5),heroHeight=95+titleLines.length*33;
+  const titleLines=wrap(trip.name||window.KiwiI18n.text('Nossa viagem'),26).slice(0,5),heroHeight=95+titleLines.length*33;
   page.drawRectangle({x:margin-12,y:y-heroHeight,width:content+24,height:heroHeight+12,color:colors.forest});
   let titleY=y-27;
   titleLines.forEach(line=>{page.drawText(line,{x:margin+8,y:titleY,size:26,font,color:colors.white});titleY-=33});
-  const destinationLines=wrap(trip.destination||'Destino a definir',11,content-20).slice(0,2);
+  const destinationLines=wrap(trip.destination||window.KiwiI18n.text('Destino a definir'),11,content-20).slice(0,2);
   destinationLines.forEach(line=>{page.drawText(line,{x:margin+8,y:titleY-7,size:11,font,color:colors.white});titleY-=16});
   page.drawText(clean(date(trip.startDate)+' → '+date(trip.endDate)),{x:margin+8,y:y-heroHeight+19,size:10,font,color:colors.white});
   y-=heroHeight+30;
-  paragraph('Seu roteiro, reservas e documentos em um só lugar.',{size:12});
-  paragraph('Preparado em '+new Date().toLocaleDateString('pt-BR')+'. Cópia para consulta offline; mapas e alterações posteriores precisam de conexão.',{size:8,color:colors.muted,gap:12});
+  paragraph(window.KiwiI18n.text('Seu roteiro, reservas e documentos em um só lugar.'),{size:12});
+  paragraph(window.KiwiI18n.text('Preparado em ')+new Date().toLocaleDateString(window.KiwiI18n.language==='en'?'en-NZ':'pt-BR')+window.KiwiI18n.text('. Cópia para consulta offline; mapas e alterações posteriores precisam de conexão.'),{size:8,color:colors.muted,gap:12});
   const itinerary=(trip.itinerary||[]).slice().sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')||((Number.isFinite(a.sequence)?a.sequence:Infinity)-(Number.isFinite(b.sequence)?b.sequence:Infinity))||(a.time||'').localeCompare(b.time||''));
-  section('Roteiro dia a dia');
-  if(!itinerary.length)paragraph('Roteiro ainda não definido.',{color:colors.muted});
+  section(window.KiwiI18n.text('Roteiro dia a dia'));
+  if(!itinerary.length)paragraph(window.KiwiI18n.text('Roteiro ainda não definido.'),{color:colors.muted});
   let lastDay;
   itinerary.forEach((item,index)=>{
    if(item.date!==lastDay||index===0){space(64);paragraph(date(item.date),{size:11,gap:10});lastDay=item.date}
    space(55);page.drawCircle({x:margin+10,y:y-1,size:10,color:colors.forest});
    const number=String(index+1);page.drawText(number,{x:margin+10-font.widthOfTextAtSize(number,8)/2,y:y-4,size:8,font,color:colors.white});
-   paragraph(item.title||'Atividade',{size:12,indent:29});
-   paragraph((item.time||'Horário livre')+(item.timeZone?' · '+item.timeZone:'')+(item.endTime?' → '+(item.endDate&&item.endDate!==item.date?date(item.endDate)+' · ':'')+item.endTime+(item.endTimeZone?' · '+item.endTimeZone:''):'')+(item.transport?' · '+transportLabel(item.transport):'')+(item.status==='done'?' · Feito':item.status==='skipped'?' · Pulado':''),{size:9,color:colors.muted,indent:29});
+   paragraph(item.title||window.KiwiI18n.text('Atividade'),{size:12,indent:29});
+   paragraph((item.time||window.KiwiI18n.text('Horário livre'))+(item.timeZone?' · '+item.timeZone:'')+(item.endTime?' → '+(item.endDate&&item.endDate!==item.date?date(item.endDate)+' · ':'')+item.endTime+(item.endTimeZone?' · '+item.endTimeZone:''):'')+(item.transport?' · '+transportLabel(item.transport):'')+(item.status==='done'?window.KiwiI18n.text(' · Feito'):item.status==='skipped'?window.KiwiI18n.text(' · Pulado'):''),{size:9,color:colors.muted,indent:29});
    if(item.origin||item.location)paragraph((item.origin?item.origin+' → ':'')+(item.location||''),{size:10,indent:29});
    if(item.note)paragraph(item.note,{size:9,color:colors.muted,indent:29});separator();
   });
-  section('Reservas e passagens');
-  if(!(trip.reservations||[]).length)paragraph('Nenhuma reserva cadastrada.',{color:colors.muted});
+  section(window.KiwiI18n.text('Reservas e passagens'));
+  if(!(trip.reservations||[]).length)paragraph(window.KiwiI18n.text('Nenhuma reserva cadastrada.'),{color:colors.muted});
   for(const reservation of trip.reservations||[]){
    space(65);paragraph(reservation.title,{size:12});
    paragraph(date(reservation.startDate)+(reservation.time?' · '+reservation.time+(reservation.timeZone?' · '+reservation.timeZone:''):'')+(reservation.endDate?' → '+date(reservation.endDate)+(reservation.endTime?' · '+reservation.endTime+(reservation.endTimeZone?' · '+reservation.endTimeZone:''):''):''),{size:9,color:colors.muted});
-   if(reservation.provider||reservation.reference)paragraph([reservation.provider,reservation.reference?'Confirmação: '+reservation.reference:''].filter(Boolean).join(' · '));
+   if(reservation.provider||reservation.reference)paragraph([reservation.provider,reservation.reference?window.KiwiI18n.text('Confirmação: ')+reservation.reference:''].filter(Boolean).join(' · '));
    if(reservation.location)paragraph(reservation.location);
-   paragraph('Total: '+formatMoney(reservation.cost||0,reservation.currency||trip.currency)+'  ·  Pago: '+formatMoney(reservation.paidAmount||0,reservation.currency||trip.currency)+'  ·  Pendente: '+formatMoney(Math.max(0,(reservation.cost||0)-(reservation.paidAmount||0)),reservation.currency||trip.currency),{size:9});
+   paragraph('Total: '+formatMoney(reservation.cost||0,reservation.currency||trip.currency)+window.KiwiI18n.text('  ·  Pago: ')+formatMoney(reservation.paidAmount||0,reservation.currency||trip.currency)+window.KiwiI18n.text('  ·  Pendente: ')+formatMoney(Math.max(0,(reservation.cost||0)-(reservation.paidAmount||0)),reservation.currency||trip.currency),{size:9});
    if(reservation.note)paragraph(reservation.note,{size:9,color:colors.muted});separator();
   }
-  if((trip.savedPlaces||[]).length){section('Lugares salvos');for(const place of trip.savedPlaces){paragraph(place.title,{size:11});if(place.location)paragraph(place.location,{size:9,color:colors.muted});if(place.note)paragraph(place.note,{size:9,color:colors.muted})}}
-  section('Checklist de preparação');
-  if(!(trip.checklist||[]).length)paragraph('Nenhum item de preparação cadastrado.',{color:colors.muted});
+  if((trip.savedPlaces||[]).length){section(window.KiwiI18n.text('Lugares salvos'));for(const place of trip.savedPlaces){paragraph(place.title,{size:11});if(place.location)paragraph(place.location,{size:9,color:colors.muted});if(place.note)paragraph(place.note,{size:9,color:colors.muted})}}
+  section(window.KiwiI18n.text('Checklist de preparação'));
+  if(!(trip.checklist||[]).length)paragraph(window.KiwiI18n.text('Nenhum item de preparação cadastrado.'),{color:colors.muted});
   for(const item of trip.checklist||[]){
    space(44);page.drawRectangle({x:margin,y:y-2,width:9,height:9,borderColor:colors.muted,borderWidth:.8,color:item.done?colors.forest:colors.white});
-   paragraph(item.title,{indent:20,size:10});paragraph((item.done?'Concluído':'Pendente')+' · '+(item.owner==='vitor'?'Vitor':item.owner==='zack'?'Zack':'Vitor & Zack')+(item.due?' · Prazo: '+date(item.due):''),{indent:20,size:8,color:colors.muted});
+   paragraph(item.title,{indent:20,size:10});paragraph((item.done?window.KiwiI18n.text('Concluído'):window.KiwiI18n.text('Pendente'))+' · '+(item.owner==='vitor'?'Vitor':item.owner==='zack'?'Zack':'Vitor & Zack')+(item.due?window.KiwiI18n.text(' · Prazo: ')+date(item.due):''),{indent:20,size:8,color:colors.muted});
   }
   const attachments=[],missing=[];
   for(const document of documents){
@@ -103,18 +103,18 @@
    try{
     const attachment=await PDFDocument.load(await loadDocument(document));
     const copied=await pdf.copyPages(attachment,attachment.getPageIndices());
-    if(!copied.length)throw new Error('PDF sem páginas');attachments.push({document,pages:copied});
+    if(!copied.length)throw new Error(window.KiwiI18n.text('PDF sem páginas'));attachments.push({document,pages:copied});
    }catch(error){missing.push(document.title||'Comprovante')}
   }
-  section('Documentos e comprovantes');
-  if(!documents.length)paragraph('Nenhum documento cadastrado.',{color:colors.muted});
+  section(window.KiwiI18n.text('Documentos e comprovantes'));
+  if(!documents.length)paragraph(window.KiwiI18n.text('Nenhum documento cadastrado.'),{color:colors.muted});
   for(const document of documents){
    paragraph(document.title,{size:11});
-   paragraph((document.expiryDate?'Validade: '+date(document.expiryDate)+' · ':'')+(attachments.some(a=>a.document.id===document.id)?'PDF incluído nas páginas seguintes.':document.filePath?'Não incluído: indisponível ou formato inválido.':'Sem arquivo PDF.'),{size:8,color:colors.muted});
+   paragraph((document.expiryDate?window.KiwiI18n.text('Validade: ')+date(document.expiryDate)+' · ':'')+(attachments.some(a=>a.document.id===document.id)?window.KiwiI18n.text('PDF incluído nas páginas seguintes.'):document.filePath?window.KiwiI18n.text('Não incluído: indisponível ou formato inválido.'):window.KiwiI18n.text('Sem arquivo PDF.')),{size:8,color:colors.muted});
   }
-  if(missing.length)paragraph('Não foi possível incluir: '+missing.join(', ')+'.',{size:9});
+  if(missing.length)paragraph(window.KiwiI18n.text('Não foi possível incluir: ')+missing.join(', ')+'.',{size:9});
   for(const attachment of attachments){
-   newPage();section(attachment.document.title||'Comprovante');paragraph('Comprovante original nas páginas seguintes.',{color:colors.muted});
+   newPage();section(attachment.document.title||'Comprovante');paragraph(window.KiwiI18n.text('Comprovante original nas páginas seguintes.'),{color:colors.muted});
    attachment.pages.forEach(copied=>pdf.addPage(copied));
   }
   const all=pdf.getPages();
@@ -123,7 +123,7 @@
    sheet.drawLine({start:{x:margin,y:39},end:{x:width-margin,y:39},thickness:.5,color:colors.line});
    sheet.drawText('KiwiPath · '+number+' / '+all.length,{x:margin,y:25,size:8,font,color:colors.muted});
   });
-  pdf.setTitle(clean((trip.name||'Viagem')+' · Guia de viagem'));pdf.setAuthor('KiwiPath');pdf.setSubject('Roteiro e comprovantes de viagem');pdf.setLanguage('pt-BR');
+  pdf.setTitle(clean((trip.name||window.KiwiI18n.text('Viagem'))+window.KiwiI18n.text(' · Guia de viagem')));pdf.setAuthor('KiwiPath');pdf.setSubject(window.KiwiI18n.text('Roteiro e comprovantes de viagem'));pdf.setLanguage(window.KiwiI18n.language==='en'?'en-NZ':'pt-BR');
   return {bytes:await pdf.save(),missing};
  }
  window.KiwiTripGuide={create};
