@@ -1022,29 +1022,30 @@ h1{font-size:28px}
 @media(max-width:600px){.trip-flight-grid{grid-template-columns:minmax(0,1fr)}.trip-flight-links a,.trip-flight-lookup>.trip-add{min-height:40px}}
 .finance-account-card{cursor:pointer;transition:box-shadow .18s,border-color .18s}.finance-account-card:hover,.finance-account-card:focus-visible{border-color:var(--account-color);box-shadow:0 8px 24px #183d3218}
 .finance-account-statement>.trip-add{margin:0 0 16px;min-height:38px}
-.finance-account-statement .finance-filters{display:block;padding:18px;margin:0 0 18px;border-radius:18px}
-.finance-account-statement .finance-filters .finance-filter-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-.finance-account-statement .finance-filter-controls>.finance-filter-group:first-child,.finance-account-statement .finance-filter-controls>.finance-date-range{grid-column:1/-1}
-.finance-account-statement .finance-filter-controls>.finance-filter-group{width:100%;min-width:0;max-width:100%}
-.finance-account-statement .finance-filters .segmented{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%;min-width:0}
-.finance-account-statement .finance-filters .segmented button{width:100%;min-width:0;min-height:44px;padding:10px 8px;white-space:normal;border-radius:10px;font-size:12px}
-.finance-account-statement .finance-filters .finance-date-range{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);gap:10px;width:100%;min-width:0;max-width:100%;margin:0;padding:0}
-.finance-account-statement .finance-filters .finance-date-range label{display:grid;gap:7px;width:100%;min-width:0;max-width:100%}
-.finance-account-statement .finance-filters .finance-date-range input,.finance-account-statement .finance-filters select{box-sizing:border-box;width:100%;min-width:0;max-width:100%;height:44px;min-height:44px;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fffefb;color:var(--forest);font-size:13px}
-.finance-account-statement .finance-date-separator{align-self:end;text-align:center;padding-bottom:10px}
+:is(.finance-account-statement,.finance-statement-view) .finance-filters{display:block;padding:18px;margin:0 0 18px;border-radius:18px}
+:is(.finance-account-statement,.finance-statement-view) .finance-filters .finance-filter-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+:is(.finance-account-statement,.finance-statement-view) .finance-filter-controls>.finance-filter-group:first-child,:is(.finance-account-statement,.finance-statement-view) .finance-filter-controls>.finance-date-range{grid-column:1/-1}
+:is(.finance-account-statement,.finance-statement-view) .finance-filter-controls>.finance-filter-group{width:100%;min-width:0;max-width:100%}
+:is(.finance-account-statement,.finance-statement-view) .finance-filters .segmented{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;width:100%;min-width:0}
+:is(.finance-account-statement,.finance-statement-view) .finance-filters .segmented button{width:100%;min-width:0;min-height:44px;padding:10px 8px;white-space:normal;border-radius:10px;font-size:12px}
+:is(.finance-account-statement,.finance-statement-view) .finance-filters .finance-date-range{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr);gap:10px;width:100%;min-width:0;max-width:100%;margin:0;padding:0}
+:is(.finance-account-statement,.finance-statement-view) .finance-filters .finance-date-range label{display:grid;gap:7px;width:100%;min-width:0;max-width:100%}
+:is(.finance-account-statement,.finance-statement-view) .finance-filters .finance-date-range input,:is(.finance-account-statement,.finance-statement-view) .finance-filters select{box-sizing:border-box;width:100%;min-width:0;max-width:100%;height:44px;min-height:44px;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fffefb;color:var(--forest);font-size:13px}
+:is(.finance-account-statement,.finance-statement-view) .finance-date-separator{align-self:end;text-align:center;padding-bottom:10px}
 .finance-account-statement>.panel{padding:22px;border-radius:18px}
 .finance-account-statement>.panel h2{font-size:19px;margin:0 0 14px}
 .finance-account-statement .empty{padding:24px 12px;font-size:12px;background:#f6f8f1;border-radius:12px}
 @media(max-width:600px){
- .finance-account-statement .finance-filters{padding:14px}
- .finance-account-statement .finance-filters .finance-filter-controls{display:none;grid-template-columns:minmax(0,1fr);gap:14px}
- .finance-account-statement .finance-filters.mobile-filters-open .finance-filter-controls{display:grid}
- .finance-account-statement .finance-filters .segmented{grid-template-columns:repeat(2,minmax(0,1fr))}
- .finance-account-statement .finance-filters .finance-date-range{gap:5px}
- .finance-account-statement .finance-filters .finance-date-range input{-webkit-appearance:none;appearance:none;padding:8px 5px;font-size:12px}
+ :is(.finance-account-statement,.finance-statement-view) .finance-filters{padding:14px}
+ :is(.finance-account-statement,.finance-statement-view) .finance-filters .finance-filter-controls{display:none;grid-template-columns:minmax(0,1fr);gap:14px}
+ :is(.finance-account-statement,.finance-statement-view) .finance-filters.mobile-filters-open .finance-filter-controls{display:grid}
+ :is(.finance-account-statement,.finance-statement-view) .finance-filters .segmented{grid-template-columns:repeat(2,minmax(0,1fr))}
+ :is(.finance-account-statement,.finance-statement-view) .finance-filters .finance-date-range{gap:5px}
+ :is(.finance-account-statement,.finance-statement-view) .finance-filters .finance-date-range input{-webkit-appearance:none;appearance:none;padding:8px 5px;font-size:12px}
 }
 
-.finance-account-statement .finance-filters .finance-filter-controls>.finance-date-range{grid-column:1/-1!important}
+:is(.finance-account-statement,.finance-statement-view) .finance-filters .finance-filter-controls>.finance-date-range{grid-column:1/-1!important}
+@media(max-width:600px){.finance-statement-view .finance-recent-head{flex-wrap:wrap}.finance-statement-view .finance-back-to-summary{max-width:100%}}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1886,7 +1887,7 @@ function financeStatementPage(){
   const heading=financeStatementView==="charts"?(pt?"Análises detalhadas":"Detailed analytics"):(pt?"Todas as movimentações":"All transactions");
   const caption=financeStatementView==="charts"?(pt?"Gráficos calculados a partir dos filtros ativos.":"Charts calculated from the active filters."):(report.sorted.length+" "+(pt?"movimentos encontrados":"transactions found"));
   const content=financeStatementView==="charts"?financeStatementAnalytics(report.filtered,pt):(report.sorted.length?'<div class="finance-transaction-list">'+report.sorted.map(financeTransactionRow).join("")+'</div>':empty(pt?"Nenhuma movimentação encontrada para estes filtros.":"No transactions found for these filters."));
-  return pageHead(title,pt?"Consulte todo o histórico, com os filtros do período que você escolher.":"Browse your complete history with the period filters you choose.")+financeFilterMarkup(report.cats)+'<section class="panel finance-statement-panel"><div class="finance-recent-head"><div><span class="finance-section-kicker">'+(financeStatementView==="charts"?(pt?"ANÁLISES":"ANALYTICS"):(pt?"EXTRATO COMPLETO":"FULL STATEMENT"))+'</span><h2>'+heading+'</h2><p>'+caption+'</p></div><button type="button" class="finance-back-to-summary" data-action="finance-tab:monthly">'+(pt?"Voltar ao resumo":"Back to overview")+'</button></div>'+tools+'<div class="finance-statement-content">'+content+'</div></section>';
+  return '<section class="finance-statement-view">'+pageHead(title,pt?"Consulte todo o histórico, com os filtros do período que você escolher.":"Browse your complete history with the period filters you choose.")+financeFilterMarkup(report.cats)+'<section class="panel finance-statement-panel"><div class="finance-recent-head"><div><span class="finance-section-kicker">'+(financeStatementView==="charts"?(pt?"ANÁLISES":"ANALYTICS"):(pt?"EXTRATO COMPLETO":"FULL STATEMENT"))+'</span><h2>'+heading+'</h2><p>'+caption+'</p></div><button type="button" class="finance-back-to-summary" data-action="finance-tab:monthly">'+(pt?"Voltar ao resumo":"Back to overview")+'</button></div>'+tools+'<div class="finance-statement-content">'+content+'</div></section></section>';
 }
 
 
