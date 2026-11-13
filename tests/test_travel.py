@@ -234,6 +234,27 @@ class TravelTests(unittest.TestCase):
             self.assertTrue(self.page.evaluate("document.documentElement.scrollWidth<=innerWidth"))
             self.page.keyboard.press("Escape")
 
+    def test_money_box_opens_own_transactions_and_period_filters(self):
+        self.page.evaluate('''()=>{const d=__travel.state();
+          d.accounts=[{id:'a',name:'Conta A',currency:'BRL',owner:'both'},
+                      {id:'b',name:'Conta B',currency:'BRL',owner:'both'}];
+          d.transactions=[{id:'one',accountId:'a',title:'Only A',date:__travel.today(),amount:10,type:'income'},
+                          {id:'two',accountId:'b',title:'Only B',date:__travel.today(),amount:20,type:'income'}]}''')
+        self.page.locator('[data-page="finances"]').click()
+        self.page.locator('[data-action="finance-tab:boxes"]').click()
+        card=self.page.locator('[data-action="finance-account-open:a"]')
+        card.locator('[data-action^="finance-account-visibility:"]').click()
+        self.assertEqual(self.page.locator('.finance-account-card').count(),2)
+        card=self.page.locator('[data-action="finance-account-open:a"]')
+        card.focus();self.page.keyboard.press('Enter')
+        for mode in ['day','week','month','custom']:
+            self.page.locator('[data-action="finance-period:'+mode+'"]').first.click()
+            text=self.page.locator('#pageContent').inner_text()
+            self.assertIn('Only A',text)
+            self.assertNotIn('Only B',text)
+        self.page.locator('[data-action="finance-tab:boxes"]').first.click()
+        self.assertEqual(self.page.locator('.finance-account-card').count(),2)
+
     def test_map_connects_madrid_to_first_stop_and_ignores_empty_coordinates(self):
         trip = {**TRIP, "itinerary": [
             dict(title="Unselected", date="2026-10-15", latitude="", longitude=""),
