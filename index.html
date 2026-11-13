@@ -1046,6 +1046,19 @@ h1{font-size:28px}
 
 :is(.finance-account-statement,.finance-statement-view) .finance-filters .finance-filter-controls>.finance-date-range{grid-column:1/-1!important}
 @media(max-width:600px){.finance-statement-view .finance-recent-head{flex-wrap:wrap}.finance-statement-view .finance-back-to-summary{max-width:100%}}
+@media(max-width:700px){
+ .sidebar{inset:auto 12px calc(12px + env(safe-area-inset-bottom,0px));height:72px;padding:5px 6px;background:linear-gradient(145deg,#ffffffd9,#eaf3e9b8 52%,#ffffffc4);border:1px solid #ffffffed;border-radius:25px;box-shadow:0 14px 38px #102d2b30,inset 0 1px 1px #fff, inset 0 -1px 2px #ffffff80;backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);transition:transform .38s cubic-bezier(.2,.8,.2,1),opacity .3s ease,box-shadow .3s ease;will-change:transform;z-index:30}
+ .sidebar::before{content:"";pointer-events:none;position:absolute;inset:1px;border-radius:24px;background:linear-gradient(170deg,#ffffffb0,transparent 42%,#ffffff43);opacity:.72}
+ .sidebar.nav-hidden{transform:translateY(calc(100% + 32px + env(safe-area-inset-bottom,0px)));opacity:0;pointer-events:none}
+ .nav{position:relative;z-index:1;align-items:stretch}
+ .nav button{min-width:0;color:#315447;border-radius:19px;font-size:9px;font-weight:650;line-height:1.1;transition:background .22s ease,transform .22s ease,color .22s ease,box-shadow .22s ease}
+ .nav button:hover{background:#ffffff90;color:#183d32}
+ .nav button.active{color:#123b30;background:linear-gradient(145deg,#ffffffea,#e6f2e9d9);box-shadow:0 3px 10px #183d321b,inset 0 1px 1px #fff,inset 0 -1px 1px #d6e6d8}
+ .nav button:active{transform:scale(.94)}
+ .nav-icon{display:grid;place-items:center;min-height:23px}
+ .nav button span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+@media(max-width:700px) and (prefers-reduced-motion:reduce){.sidebar,.nav button{transition:none!important}}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -3758,6 +3771,28 @@ supabaseClient.auth.onAuthStateChange((event,session)=>{
   if(event==="SIGNED_OUT"){currentUser=null;cloudRecordId=null;showAuth();}
   else if(event==="SIGNED_IN" && session?.user){currentUser=session.user;updateProfile();}
 });
+})();
+</script>
+
+<script>
+// Keep the mobile dock available when scrolling up, and out of the way when reading down.
+(()=>{
+  const dock=document.querySelector('.sidebar');
+  if(!dock)return;
+  let previousY=window.scrollY, lastChangeY=previousY, pending=false;
+  const update=()=>{
+    pending=false;
+    const y=Math.max(0,window.scrollY), delta=y-previousY;
+    if(window.innerWidth>700 || y<64){dock.classList.remove('nav-hidden');lastChangeY=y;}
+    else if(Math.abs(delta)>1 && Math.abs(y-lastChangeY)>18){
+      dock.classList.toggle('nav-hidden',delta>0);
+      lastChangeY=y;
+    }
+    previousY=y;
+  };
+  window.addEventListener('scroll',()=>{if(!pending){pending=true;requestAnimationFrame(update)}},{passive:true});
+  window.addEventListener('resize',()=>{previousY=window.scrollY;lastChangeY=previousY;if(window.innerWidth>700)dock.classList.remove('nav-hidden')},{passive:true});
+  dock.addEventListener('click',()=>dock.classList.remove('nav-hidden'));
 })();
 </script>
 
