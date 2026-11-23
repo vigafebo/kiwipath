@@ -289,6 +289,35 @@ class TravelTests(unittest.TestCase):
         self.page.get_by_role('button',name='What’s new',exact=True).click()
         self.assertTrue(self.page.get_by_role('dialog',name='What’s new').is_visible())
 
+    def test_mobile_finance_add_expands_shortcuts_and_desktop_keeps_direct_actions(self):
+        self.page.set_viewport_size({'width':375,'height':844})
+        self.page.evaluate("""()=>__travel.state().accounts=[
+            {id:'a',name:'Conta',currency:'NZD',owner:'both'}]""")
+        self.page.locator('[data-page="finances"]').click()
+        self.page.locator('.finance-entry[data-section="monthly"]').click()
+        toggle=self.page.locator('.finance-quick-toggle')
+        shortcuts=self.page.locator('#financeQuickList')
+        self.assertTrue(toggle.is_visible())
+        self.assertFalse(shortcuts.is_visible())
+        toggle.click()
+        self.assertEqual(toggle.get_attribute('aria-expanded'),'true')
+        for label in ['Mercado','Transporte','Lazer','Outro']:
+            self.assertTrue(shortcuts.get_by_role('button',name=label,exact=True).is_visible())
+        shortcuts.get_by_role('button',name='Mercado',exact=True).click()
+        self.assertTrue(self.page.locator('#itemForm').is_visible())
+        self.assertEqual(toggle.get_attribute('aria-expanded'),'false')
+        self.page.locator('#cancelModal').click()
+        toggle.click()
+        shortcuts.get_by_role('button',name='Outro',exact=True).click()
+        self.assertTrue(self.page.locator('#itemForm').is_visible())
+        self.page.locator('#cancelModal').click()
+        self.page.evaluate("__travel.language('en')")
+        toggle.click()
+        self.assertTrue(shortcuts.get_by_role('button',name='Other',exact=True).is_visible())
+        self.page.set_viewport_size({'width':1100,'height':844})
+        self.assertFalse(toggle.is_visible())
+        self.assertTrue(shortcuts.get_by_role('button',name='Add',exact=True).is_visible())
+
     def test_finance_cards_have_distinct_motion_and_compact_mobile_footer(self):
         self.page.set_viewport_size({'width':375,'height':844})
         self.page.locator('[data-page="finances"]').click()
