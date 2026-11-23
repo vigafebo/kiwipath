@@ -263,6 +263,26 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Salvar',self.page.locator('#modalBackdrop').inner_text())
         self.assertEqual(self.errors,[])
 
+    def test_home_drag_reorders_before_release_and_keeps_saved_order(self):
+        self.page.set_viewport_size({'width':1100,'height':850})
+        self.page.locator('[data-page="home"]').click()
+        self.page.get_by_role('button',name='Personalizar Home').click()
+        cards=self.page.locator('.home-board > [data-home-widget]')
+        handle=cards.locator('.home-drag').first
+        handle.scroll_into_view_if_needed()
+        source=handle.bounding_box()
+        target=self.page.locator('.home-board > [data-home-widget="alerts"]').bounding_box()
+        self.page.mouse.move(source['x']+source['width']/2,source['y']+source['height']/2)
+        self.page.mouse.down()
+        self.page.mouse.move(target['x']+target['width']/2,target['y']+target['height']/2)
+        self.page.wait_for_selector('.home-ghost')
+        self.assertEqual(cards.first.get_attribute('data-home-widget'),'alerts')
+        self.page.mouse.up()
+        self.page.locator('[data-action="home-save"]').click()
+        self.assertEqual(cards.first.get_attribute('data-home-widget'),'alerts')
+        self.page.evaluate("__travel.language('en')")
+        self.assertEqual(cards.first.get_attribute('data-home-widget'),'alerts')
+
     def test_home_layout_adds_hides_removes_reorders_and_restores_widgets(self):
         self.page.set_viewport_size({'width':375,'height':844})
         self.page.locator('[data-page="home"]').click()
@@ -286,7 +306,7 @@ class TravelTests(unittest.TestCase):
 
     def test_home_weather_uses_gps_without_saving_coordinates(self):
         self.page.route('https://api.open-meteo.com/v1/forecast?**', lambda route: route.fulfill(
-            json={'current':{'temperature_2m':22.2,'apparent_temperature':23.1}}))
+            json={'current':{'temperature_2m':22.2,'apparent_temperature':23.1,'is_day':0}}))
         self.page.evaluate("""()=>{
             Object.defineProperty(navigator,'geolocation',{configurable:true,value:{
                 getCurrentPosition(resolve){resolve({coords:{latitude:-23.55051,longitude:-46.63331}})}
@@ -300,6 +320,7 @@ class TravelTests(unittest.TestCase):
         self.assertEqual(coords['longitude'],['-46.63'])
         self.page.locator('[data-home-widget="weather"] .home-widget-value').wait_for()
         self.assertIn('22 °C',self.page.locator('[data-home-widget="weather"]').inner_text())
+        self.assertTrue(self.page.locator('.home-weather-orbit.is-night').is_visible())
         self.assertEqual(self.page.evaluate("JSON.parse(localStorage.getItem('kiwipath.home.guest')).location"),{'mode':'gps'})
 
     def test_upcoming_calendar_scrolls_inside_card_in_both_languages(self):
