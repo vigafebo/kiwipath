@@ -4,6 +4,7 @@
 
 - Aligned the Documents, Calendar and Shopping headers with Finance.
 - Moved Travel History alongside trip plans.
+- Made the desktop Income & expenses and Statement filters start collapsed.
 
 ## 1.9.0
 
