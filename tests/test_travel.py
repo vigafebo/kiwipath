@@ -301,10 +301,14 @@ class TravelTests(unittest.TestCase):
         self.assertFalse(shortcuts.is_visible())
         toggle.click()
         self.assertEqual(toggle.get_attribute('aria-expanded'),'true')
+        self.assertTrue(self.page.get_by_role('dialog',name='Adicionar').is_visible())
+        self.assertEqual(shortcuts.locator('[data-action="quick-transaction:market"]').evaluate(
+            'el=>getComputedStyle(el).animationName'),'finance-glass-fan')
         for label in ['Mercado','Transporte','Lazer','Outro']:
             self.assertTrue(shortcuts.get_by_role('button',name=label,exact=True).is_visible())
         shortcuts.get_by_role('button',name='Mercado',exact=True).click()
         self.assertTrue(self.page.locator('#itemForm').is_visible())
+        self.page.locator('#financeQuickDialog').wait_for(state='detached')
         self.assertEqual(toggle.get_attribute('aria-expanded'),'false')
         self.page.locator('#cancelModal').click()
         toggle.click()
@@ -326,6 +330,7 @@ class TravelTests(unittest.TestCase):
             self.page.locator('.finance-entry[data-section="'+section+'"]').click()
             view=self.page.locator('.finance-detail-view')
             self.assertEqual(view.evaluate('el=>getComputedStyle(el).animationName'),'finance-'+animation+'-in')
+            self.assertEqual(view.evaluate('el=>getComputedStyle(el).animationDuration'),'1s')
             self.page.locator('.finance-return').click()
         self.page.emulate_media(reduced_motion='reduce')
         self.page.locator('.finance-entry[data-section="statement"]').click()
