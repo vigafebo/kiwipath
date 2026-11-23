@@ -522,6 +522,22 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Preparation checklist',contents)
         self.assertNotIn('Roteiro dia a dia',contents)
 
+    def test_login_sign_up_explains_access_and_opens_request_form(self):
+        self.page.set_viewport_size({'width':375,'height':844})
+        self.page.evaluate("""()=>{
+            document.querySelector('#authScreen').style.display='grid';
+            document.querySelector('#kiwiApp').style.visibility='hidden';
+        }""")
+        self.page.get_by_role('button',name='Inscrever-se').click()
+        self.assertTrue(self.page.get_by_role('heading',name='Conheça o KiwiPath').is_visible())
+        self.page.get_by_role('button',name='Solicitar cadastro').click()
+        self.assertTrue(self.page.get_by_label('Qual e-mail você quer usar?').is_visible())
+        self.assertTrue(self.page.get_by_label('Qual é seu nome?').is_visible())
+        self.assertTrue(self.page.get_by_label('Qual é sua data de nascimento?').is_visible())
+        self.page.evaluate("__travel.language('en')")
+        self.page.get_by_role('button',name='Voltar',exact=True).click()
+        self.assertTrue(self.page.get_by_role('heading',name='Get to know KiwiPath').is_visible())
+
     def test_finance_filters_start_closed_on_desktop(self):
         self.page.set_viewport_size({'width':1100,'height':844})
         for section, selector in [('monthly','.finance-monthly-filter-scope'),('statement','.finance-statement-view')]:
