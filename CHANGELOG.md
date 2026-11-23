@@ -1,5 +1,10 @@
 # Release history
 
+## 1.3.0
+
+- Added Today to travel mode with the day’s itinerary, next commitment, local departure details and voucher access.
+- Made the offline PDF guide available from Today.
+
 ## 1.2.1
 
 - Made the Upcoming events list scroll within its card and removed its 12-entry limit.
