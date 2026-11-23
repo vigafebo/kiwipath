@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./translations.js?v=1.5.1"></script>
+<script src="./translations.js?v=1.5.2"></script>
 <meta name="theme-color" content="#183d32">
 <title>KiwiPath — Our journey to New Zealand</title>
 <style>
@@ -1252,6 +1252,39 @@ h1{font-size:28px}
 .home-lifted{opacity:.2;outline:2px dashed #487359;outline-offset:-4px}
 .home-ghost{position:fixed;top:0;left:0;margin:0;z-index:1200;pointer-events:none;rotate:2deg;box-shadow:0 14px 34px #1f413b42}
 @media(prefers-reduced-motion:reduce){.home-ghost{rotate:none}}
+
+.release-notice{--release-ink:#183d32;--release-accent:#d7eac9;width:min(500px,calc(100vw - 24px));max-width:100%;max-height:calc(100dvh - 24px);padding:0;border:0;border-radius:24px;background:#fffdf7;color:#213d34;box-shadow:0 24px 80px #102b2580;overflow:auto;overscroll-behavior:contain}
+.release-notice::backdrop{background:#112b23ab}
+.release-notice[open]{animation:release-arrive .38s cubic-bezier(.16,1,.3,1) both}
+.release-notice[open]::backdrop{animation:release-dim .24s ease-out both}
+.release-hero{position:relative;padding:20px 22px;background:linear-gradient(125deg,#173b33,#31604b);color:#fff;overflow:hidden}
+.release-notice[data-theme="home"]{--release-accent:#e9e0ff}
+.release-notice[data-theme="home"] .release-hero{background:radial-gradient(ellipse at 90% 110%,#64755b,transparent 66%),linear-gradient(120deg,#193d33,#345652)}
+.release-kicker{display:inline-block;color:#e3eee2;font-size:12px;font-weight:750}
+.release-hero h2{margin:7px 35px 14px 0;color:#fff;font-size:clamp(23px,5vw,33px);line-height:1.12;letter-spacing:-.03em}
+.release-close{position:absolute;top:14px;right:14px;display:grid;place-items:center;width:44px;height:44px;border:1px solid #ffffff55;border-radius:50%;background:#ffffff1a;color:#fff;font-size:24px;cursor:pointer}
+.release-art{height:82px;display:grid;grid-template-columns:1.35fr 1fr .85fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:6px;max-width:274px}
+.release-art span{display:grid;place-items:center;border-radius:10px;background:#e5f2da;color:#244638;font-size:23px;box-shadow:0 5px 12px #11271d29}
+.release-art span:nth-child(1){grid-row:span 2;background:#d9ecfb;color:#234d73}
+.release-art span:nth-child(2){background:#fff0c6;color:#634715}
+.release-art span:nth-child(3){grid-row:span 2;background:var(--release-accent);color:#513e6e}
+.release-art span:nth-child(4){font-size:15px}
+.release-notice[open] .release-art span{animation:release-tile .44s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(90ms + var(--release-tile)*55ms)}
+.release-body{padding:16px 22px 20px}
+.release-list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.release-list li{display:grid;grid-template-columns:32px minmax(0,1fr);gap:9px;align-items:start}
+.release-list-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:#e6efe2;color:#28503f;font-size:15px}
+.release-list strong{display:block;color:var(--release-ink)}
+.release-list p{margin:2px 0 0;color:#52665e;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.release-actions{margin-top:15px;display:flex;justify-content:flex-end}
+.release-actions button{min-height:44px}
+.release-notice :focus-visible{outline:2px solid #88a883;outline-offset:3px}
+@keyframes release-arrive{from{opacity:0;transform:translateY(19px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes release-dim{from{opacity:0}to{opacity:1}}
+@keyframes release-tile{from{opacity:0;transform:translateY(11px) rotate(-5deg) scale(.91)}to{opacity:1;transform:translateY(0) rotate(0) scale(1)}}
+@media(max-width:360px){.release-hero,.release-body{padding-inline:15px}.release-art{height:65px}.release-list{gap:8px}}
+@media(prefers-reduced-motion:reduce){.release-notice[open],.release-notice[open]::backdrop,.release-notice[open] .release-art span{animation:none}}
+.home-drag svg,.release-list-icon svg{width:18px;height:18px}.release-art svg{width:24px;height:24px}.release-art span:nth-child(4) svg{width:17px;height:17px}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1362,18 +1395,18 @@ h1{font-size:28px}
     </div>
   </header>
   <div id="pageContent"></div>
-  <footer>KiwiPath v1.5.1 · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
+  <footer>KiwiPath v<span id="appVersion">1.5.2</span> · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
 </main>
 </div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./trip-guide.js?v=1.5.1"></script>
+<script src="./trip-guide.js?v=1.5.2"></script>
 <script src="./vendor/d3-7.9.0.min.js"></script>
 <script src="./vendor/topojson-client-3.1.0.min.js"></script>
 <script src="./vendor/memory-world-110m.js"></script>
-<script src="./memory-globe.js?v=1.5.1"></script>
-<script src="./flight-lookup.js?v=1.5.1"></script>
+<script src="./memory-globe.js?v=1.5.2"></script>
+<script src="./flight-lookup.js?v=1.5.2"></script>
 <script>
 (() => {
 "use strict";
@@ -1893,7 +1926,58 @@ window.addEventListener("focus",()=>{if(currentUser&&navigator.onLine)syncToClou
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&currentUser&&navigator.onLine)syncToCloud()});
 window.addEventListener("pagehide",()=>{if(currentUser&&navigator.onLine){clearTimeout(cloudSaveTimer);syncToCloud()}});
 function applyStaticLanguage(){window.KiwiI18n.setLanguage(data.language);document.querySelectorAll('[data-ui-copy]').forEach(el=>{el.textContent=window.KiwiI18n.text(el.dataset.uiCopy)});document.querySelectorAll('[data-ui-label]').forEach(el=>{el.setAttribute('aria-label',window.KiwiI18n.text(el.dataset.uiLabel))});}
-function showAuth(message=""){applyStaticLanguage();document.documentElement.lang=data.language==="en"?"en":"pt-BR";
+
+const RELEASE_NOTES={
+ '1.5.2':{
+  theme:'home',
+  art:['agenda','weather','grip','docs'],
+  pt:{title:'Uma Home com mais personalidade',items:[
+   ['links','Widgets com visual próprio','Agenda com datas em destaque, progresso dos documentos em um anel e ícones consistentes com o menu.'],
+   ['grip','Arraste e veja tudo se encaixar','Ao passar sobre outro widget, os cards abrem espaço antes de você soltar.'],
+   ['alerts','Novidades na primeira abertura','As principais mudanças de cada atualização aparecem aqui.']
+  ]},
+  en:{title:'A Home with more personality',items:[
+   ['links','A distinct look for each widget','Calendar dates stand out, documents show progress in a ring, and widget icons match the navigation.'],
+   ['grip','Drag and watch things fall into place','As you move over another widget, the cards make room before you let go.'],
+   ['alerts','What’s new on first launch','See the highlights from each update here.']
+  ]}
+ }
+};
+const openedReleaseNotices=new Set();
+function showReleaseNotice(){
+ const version=$('#appVersion')?.textContent.trim();
+ const release=RELEASE_NOTES[version],userId=currentUser?.id;
+ if(!release||!userId)return false;
+ const seenKey='kiwipath.release-seen.'+userId+'.'+version;
+ if(openedReleaseNotices.has(seenKey))return false;
+ try{if(localStorage.getItem(seenKey)==='1')return false}catch(error){}
+ const previous=$('#releaseNotice');
+ if(previous?.dataset.seenKey===seenKey)return false;
+ if(previous){previous.close();previous.remove()}
+ const pt=data.language==='pt',copy=release[pt?'pt':'en'],dialog=document.createElement('dialog');
+ if(typeof dialog.showModal!=='function')return false;
+ dialog.id='releaseNotice';dialog.className='release-notice';
+ dialog.dataset.theme=release.theme;dialog.dataset.seenKey=seenKey;
+ dialog.setAttribute('aria-labelledby','releaseNoticeTitle');
+ dialog.innerHTML=`<header class="release-hero">
+ <span class="release-kicker">${pt?'Novidades':'What’s new'} · v${esc(version)}</span>
+ <h2 id="releaseNoticeTitle">${esc(copy.title)}</h2>
+ <button type="button" class="release-close" data-release-close autofocus aria-label="${pt?'Fechar':'Close'}">×</button>
+ <div class="release-art" aria-hidden="true">${release.art.map((symbol,index)=>'<span style="--release-tile:'+index+'">'+homeWidgetIcon(symbol)+'</span>').join('')}</div>
+ </header><div class="release-body">
+ <ul class="release-list">${copy.items.map(([icon,title,description])=>'<li><span class="release-list-icon" aria-hidden="true">'+homeWidgetIcon(icon)+'</span><div><strong>'+esc(title)+'</strong><p>'+esc(description)+'</p></div></li>').join('')}</ul>
+ <div class="release-actions"><button type="button" class="btn" data-release-close>${pt?'Entendi':'Got it'}</button></div></div>`;
+ dialog.querySelectorAll('[data-release-close]').forEach(button=>button.addEventListener('click',()=>dialog.close()));
+ dialog.addEventListener('close',()=>dialog.remove(),{once:true});
+ document.body.append(dialog);
+ try{dialog.showModal()}catch(error){dialog.remove();return false}
+ openedReleaseNotices.add(seenKey);
+ try{localStorage.setItem(seenKey,'1')}catch(error){}
+ return true;
+}
+function showAuth(message=""){
+  $("#releaseNotice")?.close();
+  applyStaticLanguage();document.documentElement.lang=data.language==="en"?"en":"pt-BR";
   $("#authScreen").style.display="grid";
   $("#kiwiApp").style.visibility="hidden";
   $("#authMessage").textContent=message;
@@ -1929,6 +2013,7 @@ async function startApp(session){
           } catch(e){console.error(e);}
         }
       }).subscribe();
+    showReleaseNotice();
   } catch(error) {
     console.error("KiwiPath initialization:",error);
     const detail = error?.message || error?.details || error?.hint || window.KiwiI18n.text("Erro desconhecido");
@@ -1945,18 +2030,31 @@ function dateOnlyLocal(iso){if(!iso)return null;const [y,m,d]=iso.split("-").map
 function daysBetween(from,to){return Math.ceil((to.getTime()-from.getTime())/86400000)}
 
 const HOME_WIDGETS={
- agenda:['Próximos eventos','Upcoming events','◷'],
- alerts:['Lembretes','Reminders','✦'],
- weather:['Clima','Weather','☀'],
- docs:['Documentos','Documents','▤'],
- expiry:['Vencimentos','Expiring documents','!'],
- shopping:['Lista de compras','Shopping list','▣'],
- countdown:['Contagem regressiva','Countdown','◴'],
- trips:['Próxima viagem','Next trip','plane'],
- project:['Investimento NZ','NZ investment','wallet'],
- balance:['Saldo das contas','Account balances','wallet'],
- links:['Atalhos','Shortcuts','↗']
+ agenda:['Próximos eventos','Upcoming events', 'timeline'],
+ alerts:['Lembretes','Reminders'],
+ weather:['Clima','Weather'],
+ docs:['Documentos','Documents', 'documents'],
+ expiry:['Vencimentos','Expiring documents', 'documents'],
+ shopping:['Lista de compras','Shopping list', 'shopping'],
+ countdown:['Contagem regressiva','Countdown', 'timeline'],
+ trips:['Próxima viagem','Next trip', 'trips'],
+ project:['Investimento NZ','NZ investment', 'finances'],
+ balance:['Saldo das contas','Account balances', 'finances'],
+ links:['Atalhos','Shortcuts']
 };
+
+function homeWidgetIcon(id){
+ const menu=HOME_WIDGETS[id]?.[2];
+ if(menu)return navigationMenuIcon(menu);
+ const paths={
+  weather:'<path d="M6 18a4 4 0 0 1-.7-7.94A6 6 0 0 1 17 9.5a4.25 4.25 0 0 1 1 8.5Z"/>',
+  alerts:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21a2 2 0 0 0 4 0"/>',
+  links:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  grip:'<circle cx="9" cy="5" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="19" r="1"/>'
+ };
+ const path=paths[id];
+ return path?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+path+'</svg>':'';
+}
 const HOME_DEFAULT=['agenda','alerts','weather','docs','expiry','shopping','countdown','links'];
 const homeText=(pt,en)=>data.language==='pt'?pt:en;
 let homeEditor=null,homeEntered=false,homeGpsRequest=null,homeGpsFix=null;
@@ -2106,10 +2204,10 @@ function dashboard(){
    homeButton(homeText('Remover','Remove'),'home-remove:'+id,'btn btn-soft','aria-label="'+esc(homeText('Remover','Remove')+' '+homeTitle(id))+'"')+'</div>';
  };
  const cards=ids.map((id,index)=>{
-  const hidden=prefs.hidden.includes(id),icon=HOME_WIDGETS[id][2],label=homeTitle(id);
+  const hidden=prefs.hidden.includes(id),label=homeTitle(id);
   return '<article class="home-widget" data-home-widget="'+id+'" style="--home-index:'+index+'"><div class="home-widget-head"><span class="home-widget-icon" aria-hidden="true">'+
-   (icon.length>1?tripSvg(icon):icon)+'</span><h2 tabindex="-1">'+esc(label)+'</h2>'+
-   (editor?'<span class="home-drag" aria-hidden="true" title="'+esc(homeText('Arrastar para mover','Drag to move'))+'">⠿</span>':'')+
+   homeWidgetIcon(id)+'</span><h2 tabindex="-1">'+esc(label)+'</h2>'+
+   (editor?'<span class="home-drag" aria-hidden="true" title="'+esc(homeText('Arrastar para mover','Drag to move'))+'">'+homeWidgetIcon('grip')+'</span>':'')+
    '</div><div class="home-widget-body">'+(hidden?'<p>'+homeText('Oculto na Home','Hidden on Home')+'</p>':homeWidgetBody(id,events))+'</div>'+
    (editor?controls(id,index,hidden):'')+'</article>';
  }).join('');
@@ -2700,8 +2798,9 @@ function studyPage(){return `${pageHead(t("study"),t("studyNote"),"add-study",t(
 function dreamsPage(){return `${pageHead(t("dreams"),t("dreamDesc"),"add-dream",t("add"))}<section class="panel"><div class="panel-head"><div><h2>♡ ${t("ourJourney")}</h2><p>${data.dreams.filter(x=>x.done).length} ${t("of")} ${data.dreams.length} ${t("items")}</p></div></div>${data.dreams.length?data.dreams.map(x=>`<div class="dream-card"><div class="dream-star">${x.done?"🌿":"✧"}</div><div class="item-main"><div class="task-title">${esc(recordText(x,"title"))}</div><div class="task-meta">${esc(recordText(x,"note"))}</div><div class="dream-actions">${button(x.done?t("dreamDone"):t("markDone"),"toggle-dream:"+x.id,"btn-soft btn-small")}${button("✎ "+t("edit"),"edit-dream:"+x.id,"btn-small")}${button("×","delete-dream:"+x.id,"btn-small btn-danger")}</div></div></div>`).join(""):empty()}</section><div class="note">${t("dreamNote")}</div>`}
 
 function navigationMenuIcon(pageId){
- const icon=document.querySelector('#navigation [data-page="'+pageId+'"] .nav-icon svg')?.cloneNode(true);
- if(!icon)return '';
+ const source=document.querySelector('#navigation [data-page="'+pageId+'"] .nav-icon');
+ const icon=source?.querySelector('svg')?.cloneNode(true);
+ if(!icon)return esc(source?.textContent||'');
  icon.setAttribute('width','18');icon.setAttribute('height','18');icon.setAttribute('aria-hidden','true');
  return icon.outerHTML;
 }
