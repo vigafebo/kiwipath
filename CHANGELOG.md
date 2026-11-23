@@ -1,5 +1,10 @@
 # Release history
 
+## 1.9.1
+
+- Aligned the Documents, Calendar and Shopping headers with Finance.
+- Moved Travel History alongside trip plans.
+
 ## 1.9.0
 
 - Refreshed Documents, Calendar and Travel with distinct layouts and shared glass creation actions.
