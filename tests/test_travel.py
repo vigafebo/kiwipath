@@ -128,11 +128,12 @@ class TravelTests(unittest.TestCase):
                         "geometry":{"type":"LineString","coordinates":[ends[0],[0,45],ends[1]]}}]}),
                         content_type="application/json")
                 self.page.route("**/brouter?**", lambda route: finish_route(route) if released[0] else pending.append(route))
-                items = [dict(id="edge", title="Edge stop", location="Barcelona",
+                items = [dict(id="start", title="Madrid", date="2026-10-15", latitude="40.4168", longitude="-3.7038"),
+                         dict(id="edge", title="Edge stop", location="Barcelona",
                               date="2026-10-16", latitude="41.3874",
                               longitude="2.1686", transport="car")]
                 if clustered:
-                    items.append({**items[0], "id":"nearby", "title":"Nearby stop"})
+                    items.append({**items[1], "id":"nearby", "title":"Nearby stop"})
                 self.page.evaluate("trip=>{__travel.reset(trip);__travel.inspectDay('2026-10-15')}", {**TRIP, "itinerary":items})
                 self.page.wait_for_function("__travel.mapSession()?.markers.has('edge')")
                 self.page.wait_for_function("document.querySelector('#tripMapStatus').textContent.includes('Calculando')")
@@ -178,7 +179,8 @@ class TravelTests(unittest.TestCase):
             with self.subTest(action=action):
                 pending=[]
                 self.page.route("**/brouter?**", lambda route: pending.append(route))
-                trip={**TRIP, "itinerary":[dict(id="stop",title="Stop",date="2026-10-15",
+                trip={**TRIP, "itinerary":[dict(id="start", title="Madrid", date="2026-10-14", latitude="40.4168", longitude="-3.7038"),
+                    dict(id="stop",title="Stop",date="2026-10-15",
                     latitude="41.3874",longitude=str(2.1686+index),transport="car")]}
                 self.page.evaluate("trip=>__travel.reset(trip)",trip)
                 self.page.wait_for_function("__travel.mapSession()?.markers.has('stop')")
@@ -261,6 +263,43 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Salvar',self.page.locator('#modalBackdrop').inner_text())
         self.assertEqual(self.errors,[])
 
+    def test_trip_editor_and_first_transfer_in_both_languages(self):
+        self.page.set_viewport_size({'width': 375, 'height': 844})
+        for language, create, more, save in [
+            ('pt', 'Criar viagem', 'Mais opções', 'Salvar alterações'),
+            ('en', 'Create trip', 'More options', 'Save changes'),
+        ]:
+            with self.subTest(language=language):
+                self.page.evaluate("__travel.memories([])")
+                self.page.evaluate("lang=>__travel.language(lang)", language)
+                self.page.locator('[data-action="travel-new"]').first.click()
+                form = self.page.locator('#itemForm')
+                self.assertTrue(form.evaluate('el=>el.scrollWidth<=el.clientWidth'))
+                self.assertFalse(form.locator('details').evaluate('el=>el.open'))
+                self.assertEqual(form.locator('summary').inner_text(), more)
+                self.page.locator('#f-name').fill('Meu roteiro')
+                self.page.locator('#f-destinationSearch').fill('Barcelona')
+                self.page.locator('[data-result-index="0"]').click()
+                form.get_by_role('button', name=create, exact=True).click()
+                trip = self.page.evaluate('__travel.state().trips[0]')
+                self.assertIn('Barcelona', trip['destination'])
+                self.assertTrue(trip['latitude'])
+                self.assertEqual(self.page.evaluate('__travel.points(__travel.state().trips[0])'), [])
+                self.page.locator('[data-action^="travel-edit:"]').click()
+                self.assertEqual(self.page.locator('#f-name').input_value(), 'Meu roteiro')
+                form.get_by_role('button', name=save, exact=True).click()
+                self.page.locator('[data-action^="travel-start-transfer:"]').click()
+                self.assertEqual(self.page.locator('#f-originSource').input_value(), 'custom')
+                self.assertEqual(self.page.locator('#f-originLocationSearch').input_value(), '')
+                self.assertEqual(self.page.locator('#f-originSource option').count(), 1)
+                self.page.locator('#f-title').fill('Trem')
+                self.page.locator('#f-originLocationSearch').fill('Madrid')
+                self.page.locator('#f-itineraryLocationSearch').fill('Barcelona')
+                self.page.locator('#tripItineraryLocationResults [data-itinerary-location="0"]').click()
+                form.locator('button[type=submit]').click()
+                self.assertEqual(self.page.evaluate('__travel.state().trips[0].itinerary[0].origin'), 'Madrid')
+        self.assertEqual(self.errors, [])
+
     def test_travel_guide_exports_english_copy(self):
         self.page.evaluate("__travel.language('en')")
         self.page.get_by_role('button',name='Share PDF guide',exact=True).click()
@@ -298,15 +337,14 @@ class TravelTests(unittest.TestCase):
         self.page.locator('[data-action="finance-tab:boxes"]').first.click()
         self.assertEqual(self.page.locator('.finance-account-card').count(),2)
 
-    def test_map_connects_madrid_to_first_stop_and_ignores_empty_coordinates(self):
+    def test_map_has_no_implied_departure_and_ignores_empty_coordinates(self):
         trip = {**TRIP, "itinerary": [
             dict(title="Unselected", date="2026-10-15", latitude="", longitude=""),
             dict(title="Barcelona", location="Barcelona", date="2026-10-15", latitude="41.3874", longitude="2.1686", transport="train")]}
         self.page.evaluate("trip=>{__map.markers=[];__map.lines=[];__travel.reset(trip)}", trip)
-        self.page.wait_for_function("__map.lines.length === 1")
         result = self.page.evaluate("__map")
-        self.assertEqual(result["markers"], [[40.4168, -3.7038], [41.3874, 2.1686]])
-        self.assertEqual(result["lines"][0]["options"]["color"], "#916eab")
+        self.assertEqual(result["markers"], [[41.3874, 2.1686]])
+        self.assertEqual(result["lines"], [])
         points = self.page.evaluate("__travel.points({itinerary:[{latitude:null,longitude:0},{latitude:'91',longitude:'0'},{latitude:'0',longitude:'0'}]})")
         self.assertEqual(len(points), 1)  # Real coordinates at zero remain valid.
 
@@ -317,6 +355,7 @@ class TravelTests(unittest.TestCase):
         self.page.locator("#f-itineraryLocationSearch").fill("Barcelona")
         self.page.locator("[data-itinerary-location='0']").click()
         self.page.locator("#f-kind").select_option("travel")
+        self.page.locator("#f-originLocationSearch").fill("Madrid")
         self.page.locator("#f-transport").select_option("train")
         # A storage update follows the same state replacement as cloud refresh.
         self.page.evaluate("""() => window.dispatchEvent(new StorageEvent('storage', {
@@ -349,7 +388,7 @@ class TravelTests(unittest.TestCase):
     def test_transport_profiles_legend_and_route_cache(self):
         for mode, profile in [("train", "rail"), ("car", "car-vario"), ("bus", "car-vario"),
                               ("taxi", "car-vario"), ("walk", "shortest")]:
-            trip = {**TRIP, "itinerary": [dict(title="Stop", date="2026-10-15",
+            trip = {**TRIP, "itinerary": [dict(title="Stop", kind="travel", origin="Madrid", originLatitude="40.4168", originLongitude="-3.7038", date="2026-10-15",
                     latitude="41.3874", longitude="2.1686", transport=mode)]}
             self.page.evaluate("trip=>{__map.lines=[];__travel.reset(trip)}", trip)
             self.page.wait_for_function("__map.lines.length===1 && __map.lines[0].ll.length===3")
@@ -362,7 +401,7 @@ class TravelTests(unittest.TestCase):
 
     def test_route_failure_retains_dotted_fallback_and_retries(self):
         self.routing_failure = True
-        trip = {**TRIP, "itinerary": [dict(title="Stop", date="2026-10-15",
+        trip = {**TRIP, "itinerary": [dict(title="Stop", kind="travel", origin="Madrid", originLatitude="40.4168", originLongitude="-3.7038", date="2026-10-15",
                 latitude="41.3874", longitude="2.1686", transport="train")]}
         self.page.evaluate("trip=>{__map.lines=[];__travel.reset(trip)}", trip)
         self.page.wait_for_function("document.querySelector('#tripMapStatus').textContent.includes('sem rota disponível')")
@@ -374,7 +413,7 @@ class TravelTests(unittest.TestCase):
         self.assertEqual(len(self.route_requests), 2)
 
     def test_flights_curve_without_network_and_cross_date_line_safely(self):
-        trip = {**TRIP, "itinerary": [dict(title="Paris", date="2026-10-15",
+        trip = {**TRIP, "itinerary": [dict(title="Paris", kind="travel", origin="Madrid", originLatitude="40.4168", originLongitude="-3.7038", date="2026-10-15",
                 latitude="48.8566", longitude="2.3522", transport="flight")]}
         self.page.evaluate("trip=>{__map.lines=[];__travel.reset(trip)}", trip)
         self.page.wait_for_function("__map.lines.length===1")
@@ -801,7 +840,7 @@ class TravelTests(unittest.TestCase):
         self.assertEqual(points[1]['itineraryId'],'b')
         self.page.get_by_role('button',name='Ver viagem inteira',exact=True).click()
         self.assertEqual(self.page.locator('#tripMapDayFilter').input_value(),'all')
-        self.assertEqual(len(self.page.evaluate('__travel.points(__travel.state().trips[0])')),3)
+        self.assertEqual(len(self.page.evaluate('__travel.points(__travel.state().trips[0])')),2)
 
     def test_flight_reservation_stays_linked_and_removed_parts_stay_removed(self):
         self.page.locator('[data-action="travel-add-reservation:test-trip"]').click()
