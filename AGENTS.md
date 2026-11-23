@@ -24,3 +24,7 @@ The official version is in `VERSION`, the README and the visible app footer.
 Keep these in sync when releasing an update. Increment the service-worker cache
 when shipping changed app assets. Public main publication is authorised by the
 user for requested corrections in this project.
+
+Every official version must have a matching entry in `RELEASE_NOTES` in
+`index.html`. Give the notice a short title, a visual theme and up to three
+highlights in both Portuguese and English. Describe what changed in that release.
