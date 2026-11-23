@@ -263,6 +263,45 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Salvar',self.page.locator('#modalBackdrop').inner_text())
         self.assertEqual(self.errors,[])
 
+    def test_home_layout_adds_hides_removes_reorders_and_restores_widgets(self):
+        self.page.set_viewport_size({'width':375,'height':844})
+        self.page.locator('[data-page="home"]').click()
+        self.page.get_by_role('button', name='Personalizar Home').click()
+        self.page.locator('[data-action="home-add:trips"]').click()
+        self.page.locator('[data-action="home-up:trips"]').click()
+        self.page.locator('[data-action="home-toggle:weather"]').click()
+        self.page.locator('[data-action="home-remove:shopping"]').click()
+        self.page.locator('[data-action="home-save"]').click()
+        self.assertEqual(self.page.locator('[data-home-widget="weather"]').count(),0)
+        self.assertEqual(self.page.locator('[data-home-widget="shopping"]').count(),0)
+        self.assertEqual(self.page.locator('[data-home-widget]').evaluate_all('rows=>rows.at(-2).dataset.homeWidget'),'trips')
+        self.page.evaluate("__travel.language('en')")
+        self.page.get_by_role('button', name='Customize Home').click()
+        self.assertTrue(self.page.get_by_role('button',name='Show Weather',exact=True).is_visible())
+        self.assertTrue(self.page.get_by_role('button',name='Add Shopping list',exact=True).is_visible())
+        self.page.locator('[data-action="home-toggle:weather"]').click()
+        self.page.locator('[data-action="home-cancel"]').click()
+        self.assertEqual(self.page.locator('[data-home-widget="weather"]').count(),0)
+        self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+
+    def test_home_weather_uses_gps_without_saving_coordinates(self):
+        self.page.route('https://api.open-meteo.com/v1/forecast?**', lambda route: route.fulfill(
+            json={'current':{'temperature_2m':22.2,'apparent_temperature':23.1}}))
+        self.page.evaluate("""()=>{
+            Object.defineProperty(navigator,'geolocation',{configurable:true,value:{
+                getCurrentPosition(resolve){resolve({coords:{latitude:-23.55051,longitude:-46.63331}})}
+            }});
+        }""")
+        self.page.locator('[data-page="home"]').click()
+        with self.page.expect_request(lambda request: request.url.startswith('https://api.open-meteo.com/')) as forecast:
+            self.page.get_by_role('button',name='Usar minha localização').click()
+        coords=parse_qs(urlparse(forecast.value.url).query)
+        self.assertEqual(coords['latitude'],['-23.55'])
+        self.assertEqual(coords['longitude'],['-46.63'])
+        self.page.locator('[data-home-widget="weather"] .home-widget-value').wait_for()
+        self.assertIn('22 °C',self.page.locator('[data-home-widget="weather"]').inner_text())
+        self.assertEqual(self.page.evaluate("JSON.parse(localStorage.getItem('kiwipath.home.guest')).location"),{'mode':'gps'})
+
     def test_upcoming_calendar_scrolls_inside_card_in_both_languages(self):
         self.page.evaluate("""()=>{
             const date=__travel.today(), timeZone=__travel.zone();
