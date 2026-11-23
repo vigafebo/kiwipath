@@ -53,6 +53,7 @@ class TravelTests(unittest.TestCase):
             document.querySelector('#kiwiApp').style.visibility='visible';render(); },
           language(value) { data.language=value;render(); },
           refreshCloud:loadCloudData, redraw:render,
+          releaseNotice(userId) { currentUser=userId?{id:userId}:null;return showReleaseNotice(); },
           memoryCities:tripMemoryCities, memoryEntries:tripMemoryTrips,
           worldCountries:()=>[...TRIP_WORLD_COUNTRIES], memoryMap:()=>tripMemoryMap,
           mapSession:()=>tripMapSession, state:()=>data, open:()=>addTripItinerary(data.trips[0].id),
@@ -262,6 +263,43 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Número do voo',self.page.locator('#modalBackdrop').inner_text())
         self.assertIn('Salvar',self.page.locator('#modalBackdrop').inner_text())
         self.assertEqual(self.errors,[])
+
+    def test_release_notice_only_opens_once_per_account_and_preserves_language(self):
+        self.page.set_viewport_size({'width':320,'height':568})
+        self.assertFalse(self.page.evaluate('__travel.releaseNotice(null)'))
+        self.assertTrue(self.page.evaluate("__travel.releaseNotice('first-user')"))
+        notice=self.page.get_by_role('dialog',name='Uma Home com mais personalidade')
+        self.assertTrue(notice.is_visible())
+        version=(ROOT / "VERSION").read_text().strip()
+        self.assertIn("v"+version,notice.inner_text())
+        self.assertEqual(notice.locator('.release-list li').count(),3)
+        self.assertTrue(notice.evaluate('el=>el.scrollWidth<=el.clientWidth'))
+        self.assertFalse(self.page.evaluate("__travel.releaseNotice('first-user')"))
+        notice.get_by_role('button',name='Entendi',exact=True).click()
+        notice.wait_for(state='detached')
+        self.page.reload()
+        self.assertFalse(self.page.evaluate("__travel.releaseNotice('first-user')"))
+        self.page.evaluate("__travel.language('en')")
+        self.page.emulate_media(reduced_motion='reduce')
+        self.assertTrue(self.page.evaluate("__travel.releaseNotice('second-user')"))
+        notice=self.page.get_by_role('dialog',name='A Home with more personality')
+        self.assertTrue(notice.get_by_role('button',name='Got it',exact=True).is_visible())
+        self.assertEqual(notice.evaluate('el=>getComputedStyle(el).animationName'),'none')
+        self.page.keyboard.press('Escape')
+        notice.wait_for(state='detached')
+
+    def test_home_widget_icons_reuse_main_navigation(self):
+        self.page.locator('[data-page="home"]').click()
+        for widget, menu in [('agenda','timeline'),('docs','documents'),
+                             ('expiry','documents'),('shopping','shopping'),('countdown','timeline')]:
+            self.assertTrue(self.page.evaluate("""([widget,menu])=>{
+                const card=document.querySelector('[data-home-widget="'+widget+'"] .home-widget-icon svg');
+                const nav=document.querySelector('#navigation [data-page="'+menu+'"] .nav-icon svg');
+                return card?.innerHTML===nav?.innerHTML && !!card;
+            }""",[widget,menu]))
+        icon=self.page.locator('[data-home-widget="weather"] .home-widget-icon')
+        self.assertEqual(icon.locator('svg path').count(),1)
+        self.assertEqual(icon.inner_text().strip(),'')
 
     def test_home_drag_reorders_before_release_and_keeps_saved_order(self):
         self.page.set_viewport_size({'width':1100,'height':850})
