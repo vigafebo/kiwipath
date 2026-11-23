@@ -441,6 +441,52 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Preparation checklist',contents)
         self.assertNotIn('Roteiro dia a dia',contents)
 
+    def test_finance_hub_opens_four_sections_and_supports_edge_swipe(self):
+        self.page.set_viewport_size({'width':375,'height':844})
+        self.page.evaluate("""()=>{
+            __travel.state().accounts=[{id:'demo',name:'Minha caixinha',currency:'NZD',owner:'both'}];
+        }""")
+        self.page.locator('[data-page="finances"]').click()
+        hub=self.page.locator('.finance-hub')
+        cards=hub.locator('.finance-entry')
+        self.assertEqual(cards.count(),4)
+        self.assertEqual(self.page.locator('[data-action="add-transaction"]').count(),0)
+        self.assertTrue(hub.evaluate('el=>el.scrollWidth<=el.clientWidth'))
+
+        for action, selector in [
+            ('monthly','.finance-monthly-summary'),
+            ('statement','.finance-statement-view'),
+            ('project','.project-summary'),
+        ]:
+            hub.locator('[data-section="'+action+'"]').click()
+            self.assertTrue(self.page.locator(selector).is_visible())
+            self.page.locator('.finance-return').click()
+            self.assertTrue(hub.is_visible())
+
+        def swipe(expected):
+            self.page.evaluate("""()=>{
+                const target=document.querySelector('#pageContent');
+                const emit=(type,x)=>{
+                    const touch=new Touch({identifier:1,target,clientX:x,clientY:150});
+                    target.dispatchEvent(new TouchEvent(type,{
+                        bubbles:true,cancelable:true,touches:type==='touchend'?[]:[touch],changedTouches:[touch]
+                    }));
+                };
+                emit('touchstart',7);emit('touchmove',130);emit('touchend',130);
+            }""")
+            self.page.locator(expected).wait_for(state='visible')
+
+        hub.locator('[data-section="boxes"]').click()
+        self.page.locator('[data-action="finance-account-open:demo"]').click()
+        self.assertTrue(self.page.locator('.finance-account-statement').is_visible())
+        swipe('.finance-account-grid')
+        swipe('.finance-hub')
+        swipe('.home-dashboard')
+        self.page.evaluate("__travel.language('en')")
+        self.page.locator('[data-page="finances"]').click()
+        self.assertTrue(hub.get_by_role('button', name='Income & expenses', exact=True).is_visible())
+        self.assertFalse(self.page.locator('.finance-detail-view').count())
+
     def test_project_costs_separate_paid_and_planned_in_charts_and_rows(self):
         self.page.evaluate("""()=>__travel.state().projectCosts=[
             {id:'paid', title:'Meu visto', category:'Visa', status:'paid', amount:120, currency:'NZD', nzdAmount:120, date:'2026-10-02'},
@@ -475,9 +521,8 @@ class TravelTests(unittest.TestCase):
         self.assertEqual(self.page.locator('.finance-account-card').count(),2)
         card=self.page.locator('[data-action="finance-account-open:a"]')
         card.focus();self.page.keyboard.press('Enter')
-        self.assertEqual(self.page.locator('.finance-tabs > button').count(),4)
-        self.assertEqual(self.page.locator('.finance-tabs .finance-filters').count(),0)
-        self.assertNotIn('data-action=',self.page.locator('.finance-tabs').inner_text())
+        self.assertTrue(self.page.locator('.finance-return').is_visible())
+        self.assertEqual(self.page.locator('.finance-entry-grid').count(),0)
         self.assertIn('Movimentações · Conta A',self.page.locator('#pageContent').inner_text())
         for mode in ['day','week','month','custom']:
             self.page.locator('[data-action="finance-period:'+mode+'"]').first.click()
