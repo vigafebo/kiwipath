@@ -1,5 +1,10 @@
 # Release history
 
+## 1.9.0
+
+- Refreshed Documents, Calendar and Travel with distinct layouts and shared glass creation actions.
+- Added the glass Add button and a centred quick-action overlay to desktop Finance.
+
 ## 1.8.0
 
 - Redesigned Shopping Lists, active checklists and Other functions with distinct layouts and transitions.
