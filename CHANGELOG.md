@@ -1,5 +1,10 @@
 # Release history
 
+## 1.6.0
+
+- Added a finance hub with animated entry cards for Income & expenses, Statement, Money boxes and the NZ project.
+- Updated mobile edge-swipe navigation to return through the finance section hierarchy.
+
 ## 1.5.2
 
 - Added a bilingual animated update notice shown once per version and account in the current browser.
