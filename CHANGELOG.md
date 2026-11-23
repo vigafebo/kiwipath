@@ -1,5 +1,9 @@
 # Release history
 
+## 1.7.2
+
+- Repositioned and restyled the mobile Add button in Income & expenses.
+
 ## 1.7.1
 
 - Extended Finance card transitions to one second and made the mobile hub fill the screen.
