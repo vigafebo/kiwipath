@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./translations.js?v=1.9.1"></script>
+<script src="./translations.js?v=1.9.2"></script>
 <meta name="theme-color" content="#183d32">
 <title>KiwiPath — Our journey to New Zealand</title>
 <style>
@@ -1543,11 +1543,8 @@ h1{font-size:28px}
 .section-banner[data-banner="shopping"]{background:linear-gradient(120deg,#204b3b,#3c6850)}
 .section-banner[data-banner="shopping-tools"]{background:linear-gradient(125deg,#253d56,#476a73)}
 .kiwi-view-enter .section-banner{animation:kiwi-module-enter .32s cubic-bezier(.2,.75,.2,1) both}
-.kiwi-document-view .documents-heading,.calendar-command-bar,.kiwi-travel-view .travel-plans-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px}
-.calendar-command-bar{margin-bottom:12px}
-.calendar-command-bar .calendar-stats{flex:1;min-width:0;margin:0}
+.kiwi-document-view .documents-heading,.kiwi-travel-view .travel-plans-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px}
 .kiwi-travel-view .travel-plans-heading>[data-action="travel-history"]{display:inline-flex;align-items:center;gap:7px;min-height:44px}
-@media(max-width:570px){.calendar-command-bar .calendar-stats{flex-basis:100%}.calendar-command-bar>.glass-create{margin-inline-start:auto}}
 @media(prefers-reduced-motion:reduce){.kiwi-view-enter .section-banner{animation:none}}
 
 @media(min-width:601px){
@@ -1555,6 +1552,24 @@ h1{font-size:28px}
  :is(.finance-monthly-filter-scope,.finance-statement-view) .finance-filters{padding:9px}
  :is(.finance-monthly-filter-scope,.finance-statement-view) .finance-filter-toggle{width:100%;display:flex;align-items:center;gap:9px;padding:7px 8px;border:1px solid var(--line);border-radius:11px;background:#fffdf8;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
  :is(.finance-monthly-filter-scope,.finance-statement-view) .finance-filters.mobile-filters-open .finance-filter-controls{padding:12px 8px 6px}
+}
+
+.section-banner[data-banner="calendar"]{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.section-banner[data-banner="calendar"] .glass-create{margin-inline-start:auto;flex-shrink:0}
+@media(max-width:600px){
+ .section-banner[data-banner="calendar"]{align-items:flex-start;flex-direction:column}
+ .kiwi-travel-view .travel-plans-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
+ .kiwi-travel-view .travel-plans-heading h2{margin:0}
+ .kiwi-travel-view .travel-plans-heading p{margin:3px 0 0}
+ .kiwi-travel-view .travel-plans-heading>[data-action="travel-history"]{padding-inline:10px}
+}
+
+@media(max-width:700px){
+ .kiwi-travel-view .trip-section-head:has(>.glass-create-inline){display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:center;gap:7px}
+ .kiwi-travel-view .trip-section-head>.trip-icon-heading{min-width:0;gap:6px}
+ .kiwi-travel-view .trip-section-head>.trip-icon-heading>div{min-width:0;overflow-wrap:anywhere}
+ .kiwi-travel-view .trip-section-head>.glass-create-inline{justify-self:end;width:auto;min-width:0;min-height:44px;padding:5px 8px 5px 5px;gap:5px;white-space:nowrap;font-size:12px;line-height:1.15}
+ .kiwi-travel-view .trip-section-head>.glass-create-inline .glass-create-mark{flex-basis:24px;width:24px;height:24px;font-size:17px}
 }
 </style>
 
@@ -1670,18 +1685,18 @@ h1{font-size:28px}
     </div>
   </header>
   <div id="pageContent"></div>
-  <footer>KiwiPath v<span id="appVersion">1.9.1</span> · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
+  <footer>KiwiPath v<span id="appVersion">1.9.2</span> · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
 </main>
 </div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./trip-guide.js?v=1.9.1"></script>
+<script src="./trip-guide.js?v=1.9.2"></script>
 <script src="./vendor/d3-7.9.0.min.js"></script>
 <script src="./vendor/topojson-client-3.1.0.min.js"></script>
 <script src="./vendor/memory-world-110m.js"></script>
-<script src="./memory-globe.js?v=1.9.1"></script>
-<script src="./flight-lookup.js?v=1.9.1"></script>
+<script src="./memory-globe.js?v=1.9.2"></script>
+<script src="./flight-lookup.js?v=1.9.2"></script>
 <script>
 (() => {
 "use strict";
@@ -2209,6 +2224,11 @@ function archiveRelease(theme,art,pt,en){
  return {theme,art,pt:{title:pt[0],items:[[art[0],'',pt[1]]]},en:{title:en[0],items:[[art[0],'',en[1]]]}};
 }
 const RELEASE_NOTES={
+ '1.9.2':{
+  theme:'journey',art:['agenda','trips','links','docs'],
+  pt:{title:'Ações no lugar certo',items:[['agenda','Novo evento no cabeçalho','O botão fica junto ao título do Cronograma.'],['trips','Viagens mais limpa','O topo fica só com o título. No celular, Histórico e os botões internos ficam alinhados às suas seções.']]},
+  en:{title:'Actions in the right place',items:[['agenda','New event in the header','The button sits with the Calendar title.'],['trips','A cleaner Trips page','The redundant label is gone. On mobile, History and the actions inside trips line up with their sections.']]}
+ },
  '1.9.1':{
   theme:'journey',art:['docs','agenda','shopping','trips'],
   pt:{title:'Cabeçalhos mais limpos',items:[['links','Um topo mais leve','Documentos, Cronograma e Lista de compras adotam o formato de Finanças. Em Viagens, Histórico fica junto aos planos. Os filtros de Gastos e Entradas e Extrato começam recolhidos no desktop.']]},
@@ -2875,8 +2895,8 @@ function kiwiModuleClass(view){
 function glassCreate(label,action){
  return '<button type="button" class="btn glass-create" data-action="'+esc(action)+'"><span class="glass-create-mark" aria-hidden="true">+</span>'+esc(label)+'</button>';
 }
-function sectionBanner(theme,title,description){
- return '<header class="section-banner" data-banner="'+esc(theme)+'"><h1>'+esc(title)+'</h1><p>'+esc(description)+'</p></header>';
+function sectionBanner(theme,title,description,action=''){
+ return '<header class="section-banner" data-banner="'+esc(theme)+'"><div><h1>'+esc(title)+'</h1><p>'+esc(description)+'</p></div>'+action+'</header>';
 }
 function documentPage(){
  const list=data.documents||[],pt=data.language==="pt",infos=list.map(x=>documentExpiryInfo(x));
@@ -3667,7 +3687,7 @@ function tripsOverview(){
   const linked=tripTransactions(trip),plannedCost=tripBudgetSummary(trip).planned,accent=trip.accent||"#47785c";
   return '<article class="trip-card" style="--trip-accent:'+esc(accent)+'" data-action="travel-open:'+esc(trip.id)+'" tabindex="0" role="button"><div class="trip-card-head">'+tripFlag(trip,"trip-card-flag")+'<div><h3>'+esc(trip.name||window.KiwiI18n.text("Viagem sem nome"))+'</h3><p>'+tripSvg("pin")+esc(trip.destination||window.KiwiI18n.text("Destino a definir"))+'</p></div></div><div class="trip-card-meta"><span class="trip-chip">'+esc(tripDates(trip))+'</span><span class="trip-chip">'+(trip.reservations||[]).length+' reservas</span><span class="trip-chip">'+tripMoney(plannedCost,trip.currency)+'</span></div></article>';
  }).join("");
- return window.KiwiI18n.text('<section class="travel-hero"><div class="travel-hero-copy"><div class="eyebrow">KIWIPATH / VIAGENS</div><h1>Viagens</h1><p class="subtitle">Planejem cada detalhe — do primeiro bilhete até a volta para casa.</p></div><div class="trip-history-actions">')+glassCreate(window.KiwiI18n.text('Nova viagem'),'travel-new')+window.KiwiI18n.text('</div></section><section class="panel"><div class="section-head travel-plans-heading"><div><h2>Seus planos</h2><p>')+planned+' viagem(ns) em planejamento</p></div><button type="button" class="btn btn-soft" data-action="travel-history">'+navigationMenuIcon('timeline')+window.KiwiI18n.text('Histórico')+'</button></div>'+(cards?'<div class="travel-list">'+cards+'</div>':'<div class="trip-empty"><div class="trip-card-icon" style="margin:0 auto 12px">'+tripSvg("plane")+window.KiwiI18n.text('</div><h2>Para onde vamos?</h2><p class="subtitle">Crie uma viagem para organizar destino, reservas, roteiro, orçamento e tudo que precisa acompanhar.</p>')+glassCreate(window.KiwiI18n.text('Criar primeira viagem'),'travel-new')+window.KiwiI18n.text('</div>'))+'</section>';
+ return window.KiwiI18n.text('<section class="travel-hero"><div class="travel-hero-copy"><h1>Viagens</h1><p class="subtitle">Planejem cada detalhe — do primeiro bilhete até a volta para casa.</p></div><div class="trip-history-actions">')+glassCreate(window.KiwiI18n.text('Nova viagem'),'travel-new')+window.KiwiI18n.text('</div></section><section class="panel"><div class="section-head travel-plans-heading"><div><h2>Seus planos</h2><p>')+planned+' viagem(ns) em planejamento</p></div><button type="button" class="btn btn-soft" data-action="travel-history">'+navigationMenuIcon('timeline')+window.KiwiI18n.text('Histórico')+'</button></div>'+(cards?'<div class="travel-list">'+cards+'</div>':'<div class="trip-empty"><div class="trip-card-icon" style="margin:0 auto 12px">'+tripSvg("plane")+window.KiwiI18n.text('</div><h2>Para onde vamos?</h2><p class="subtitle">Crie uma viagem para organizar destino, reservas, roteiro, orçamento e tudo que precisa acompanhar.</p>')+glassCreate(window.KiwiI18n.text('Criar primeira viagem'),'travel-new')+window.KiwiI18n.text('</div>'))+'</section>';
 }
 const tripSelectedDays=new Map();
 const tripMapDays=new Map();
@@ -4707,9 +4727,9 @@ function timelinePage(){
  const list=calendarFilter==="upcoming"&&items.length
   ? `<div class="calendar-upcoming-list" tabindex="0" role="region" aria-labelledby="calendar-events-heading">${items.map(card).join("")}</div>`
   : items.slice(0,12).map(card).join("");
- return `<div class="kiwi-module kiwi-calendar-view${kiwiModuleClass('timeline')}">${sectionBanner('calendar',pt?'Agenda compartilhada':'Shared calendar',pt?'Eventos, feriados e vencimentos no mesmo calendário.':'Events, holidays and expiry dates in one calendar.')}
+ return `<div class="kiwi-module kiwi-calendar-view${kiwiModuleClass('timeline')}">${sectionBanner('calendar',pt?'Agenda compartilhada':'Shared calendar',pt?'Eventos, feriados e vencimentos no mesmo calendário.':'Events, holidays and expiry dates in one calendar.',glassCreate(pt?'Novo evento':'New event','add-event'))}
 
- <div class="calendar-command-bar"><div class="calendar-stats"><button class="calendar-stat ${calendarFilter==="today"?"active":""}" data-action="calendar-filter:today" aria-pressed="${calendarFilter==='today'}"><strong>${todayEvents.length}</strong><span>${pt?window.KiwiI18n.text("Hoje"):"Today"}</span></button><button class="calendar-stat ${calendarFilter==="upcoming"?"active":""}" data-action="calendar-filter:upcoming" aria-pressed="${calendarFilter==='upcoming'}"><strong>${upcoming.length}</strong><span>${pt?window.KiwiI18n.text("Próximos"):"Upcoming"}</span></button><button class="calendar-stat ${calendarFilter==="past"?"active":""}" data-action="calendar-filter:past" aria-pressed="${calendarFilter==='past'}"><strong>${past.length}</strong><span>${pt?window.KiwiI18n.text("Passados"):"Past"}</span></button></div>${glassCreate(pt?'Novo evento':'New event','add-event')}</div>
+ <div class="calendar-stats"><button class="calendar-stat ${calendarFilter==="today"?"active":""}" data-action="calendar-filter:today" aria-pressed="${calendarFilter==='today'}"><strong>${todayEvents.length}</strong><span>${pt?window.KiwiI18n.text("Hoje"):"Today"}</span></button><button class="calendar-stat ${calendarFilter==="upcoming"?"active":""}" data-action="calendar-filter:upcoming" aria-pressed="${calendarFilter==='upcoming'}"><strong>${upcoming.length}</strong><span>${pt?window.KiwiI18n.text("Próximos"):"Upcoming"}</span></button><button class="calendar-stat ${calendarFilter==="past"?"active":""}" data-action="calendar-filter:past" aria-pressed="${calendarFilter==='past'}"><strong>${past.length}</strong><span>${pt?window.KiwiI18n.text("Passados"):"Past"}</span></button></div>
  <div class="calendar-layout"><section class="panel"><div class="calendar-toolbar"><button type="button" class="btn btn-soft btn-small" aria-label="${pt?'Mês anterior':'Previous month'}" data-action="calendar-prev">‹</button><strong class="calendar-month">${esc(label)}</strong><div style="display:flex;gap:6px"><button class="btn btn-soft btn-small" data-action="calendar-today">${pt?window.KiwiI18n.text("Hoje"):"Today"}</button><button type="button" class="btn btn-soft btn-small" aria-label="${pt?'Próximo mês':'Next month'}" data-action="calendar-next">›</button></div></div><div class="calendar-weekdays">${weekdays.map(d=>`<span>${d}</span>`).join("")}</div><div class="calendar-grid">${cells}</div><div class="calendar-legend"><span><i class="legend-dot"></i>${pt?window.KiwiI18n.text("Eventos"):"Events"}</span><span><i class="legend-dot holiday"></i>${pt?window.KiwiI18n.text("Feriados NZ"):"NZ holidays"}</span><span><i class="legend-dot document"></i>${pt?window.KiwiI18n.text("Validade de documentos"):"Document expiry"}</span></div><p class="file-hint" style="margin-top:12px">${pt?window.KiwiI18n.text("Selecione um dia para ver eventos, feriados e vencimentos. Fuso do dispositivo."):"Select a day to view events, holidays and document expiries. Device time zone."} ${esc(DEVICE_TIMEZONE)}</p></section><section class="panel"><div class="panel-head"><div><h2 id="calendar-events-heading">${heading}</h2><p>${calendarFilter==="selected"?esc(fmtDate(calendarSelectedDate)):(pt?window.KiwiI18n.text("Agenda compartilhada"):"Shared calendar")}</p></div>${button(pt?window.KiwiI18n.text("Feriados"):"Holidays","calendar-filter:holidays","btn-soft btn-small")}</div>${list||empty(calendarFilter==="today"?(pt?window.KiwiI18n.text("Nenhum evento para hoje."):"No events today."):calendarFilter==="past"?(pt?window.KiwiI18n.text("Nenhum evento passado."):"No past events."):(pt?window.KiwiI18n.text("Nenhum item nesta lista."):"No items in this list."))}</section></div><div class="note">${pt?window.KiwiI18n.text("Feriados nacionais e vencimentos de documentos aparecem automaticamente. Os lembretes dos eventos são agendados para 24 horas e 3 horas antes."):"National holidays and document expiries appear automatically. Event reminders are scheduled 24 hours and 3 hours beforehand."}</div></div>`;
 }
 function editTransaction(){modal(t("addTransaction"),field("title",t("transactionTitle"),"","text","full")+selectField("type",t("type"),[["expense",t("expense")],["income",t("income")]],"expense")+field("amount",t("amount"),"","number")+field("date",t("date"),today(),"date")+selectField("createdBy",data.language==='pt'?window.KiwiI18n.text('Lançado por'):'Entered by',[['vitor','Vitor'],['zack','Zack']],currentMemberKey()),v=>{const amount=parseAmount(v.amount);if(!v.title.trim()||!Number.isFinite(amount)||amount<=0)return notify(t("amount"));data.transactions.push({id:uid(),title:v.title.trim(),type:v.type,amount,date:v.date,createdBy:v.createdBy})})}

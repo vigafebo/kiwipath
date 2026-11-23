@@ -1,5 +1,11 @@
 # Release history
 
+## 1.9.2
+
+- Removed the redundant Trips banner label and aligned History with Your plans on mobile.
+- Moved New event into the Calendar header.
+- Aligned booking, saved place, checklist and document actions inside trips on mobile.
+
 ## 1.9.1
 
 - Aligned the Documents, Calendar and Shopping headers with Finance.

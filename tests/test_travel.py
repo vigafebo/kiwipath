@@ -538,6 +538,16 @@ class TravelTests(unittest.TestCase):
             toggle.click()
             self.assertFalse(controls.is_visible())
 
+    def test_trip_creation_buttons_fit_mobile_section_headers(self):
+        self.page.set_viewport_size({'width':320,'height':844})
+        for action in ['travel-add-reservation','travel-place-new','travel-add-check','travel-add-document']:
+            button=self.page.locator('.trip-section-head [data-action^="'+action+':"]')
+            self.assertTrue(button.evaluate("""el=>{
+                const button=el.getBoundingClientRect(), header=el.parentElement.getBoundingClientRect();
+                return button.height>=44 && button.right<=header.right+1 &&
+                    getComputedStyle(el.parentElement).display==='grid';
+            }"""))
+
     def test_section_banners_match_finance_and_history_sits_with_plans(self):
         self.page.set_viewport_size({'width':375,'height':844})
         self.page.locator('[data-page="finances"]').click()
@@ -548,11 +558,15 @@ class TravelTests(unittest.TestCase):
             for page in ['documents','timeline','shopping']:
                 self.page.locator('[data-page="'+page+'"]').click()
                 banner=self.page.locator('.section-banner')
-                self.assertEqual(banner.locator('svg,button').count(),0)
+                self.assertEqual(banner.locator('svg').count(),0)
+                self.assertEqual(banner.locator('button[data-action="add-event"]').count(),int(page=='timeline'))
                 self.assertEqual(banner.evaluate("el=>getComputedStyle(el.querySelector('h1')).fontSize"),size)
         self.page.locator('[data-page="trips"]').click()
         self.page.locator('[data-action="travel-back"]').click()
         self.assertEqual(self.page.locator('.travel-hero [data-action="travel-history"]').count(),0)
+        self.assertEqual(self.page.locator('.travel-hero .eyebrow').count(),0)
+        self.assertEqual(self.page.locator('.travel-plans-heading').evaluate(
+            'el=>getComputedStyle(el).display'),'grid')
         self.page.locator('.travel-plans-heading [data-action="travel-history"]').click()
         self.assertTrue(self.page.locator('.memory-hero').is_visible())
 
