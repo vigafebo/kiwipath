@@ -3,7 +3,15 @@ Our journey to New Zealand — immigration, study, finances and dreams.
 
 ## Version
 
-Current official version: **v1.4.0**. Version numbering began with v1.0.0. The app displays the version in its footer.
+Current official version: **v1.5.0**. Version numbering began with v1.0.0. The app displays the version in its footer.
+
+## Home widgets
+
+Customize Home to add, hide, remove or reorder widgets. Layout and weather
+choices are saved per account in the current browser. The weather widget uses
+[Open-Meteo](https://open-meteo.com/) and can use a manually selected city or
+the browser’s location permission. GPS coordinates are rounded for requests and
+kept only in memory.
 
 ## Local development
 
