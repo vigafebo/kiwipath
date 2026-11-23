@@ -1,5 +1,10 @@
 # Release history
 
+## 1.10.1
+
+- Connected access requests to an optional Google Apps Script mail relay via Supabase.
+- Added confirmation after accepted delivery and retained a draft fallback before setup.
+
 ## 1.10.0
 
 - Redesigned the sign-in screen and added a password recovery flow.
