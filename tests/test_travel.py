@@ -289,7 +289,7 @@ class TravelTests(unittest.TestCase):
         self.page.get_by_role('button',name='What’s new',exact=True).click()
         self.assertTrue(self.page.get_by_role('dialog',name='What’s new').is_visible())
 
-    def test_mobile_finance_add_expands_shortcuts_and_desktop_keeps_direct_actions(self):
+    def test_finance_add_opens_glass_shortcuts_on_mobile_and_desktop(self):
         self.page.set_viewport_size({'width':375,'height':844})
         self.page.evaluate("""()=>__travel.state().accounts=[
             {id:'a',name:'Conta',currency:'NZD',owner:'both'}]""")
@@ -326,8 +326,11 @@ class TravelTests(unittest.TestCase):
             return Math.abs(el.getBoundingClientRect().right-heading.getBoundingClientRect().right)<2;
         }"""))
         self.page.set_viewport_size({'width':1100,'height':844})
-        self.assertFalse(toggle.is_visible())
-        self.assertTrue(shortcuts.get_by_role('button',name='Add',exact=True).is_visible())
+        self.assertTrue(toggle.is_visible())
+        self.assertFalse(shortcuts.is_visible())
+        toggle.click()
+        self.assertTrue(self.page.get_by_role('dialog',name='Add').is_visible())
+        self.assertTrue(shortcuts.get_by_role('button',name='Other',exact=True).is_visible())
 
     def test_finance_cards_have_distinct_motion_and_compact_mobile_footer(self):
         self.page.set_viewport_size({'width':375,'height':844})
@@ -518,6 +521,27 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Reservations and tickets',contents)
         self.assertIn('Preparation checklist',contents)
         self.assertNotIn('Roteiro dia a dia',contents)
+
+    def test_refreshed_documents_calendar_and_travel_share_creation_controls(self):
+        self.page.set_viewport_size({'width':375,'height':844})
+        for locale, doc, event in [
+            ('pt','Novo documento','Novo evento'),('en','New document','New event')
+        ]:
+            self.page.evaluate("lang=>__travel.language(lang)",locale)
+            for page, action, label in [
+                ('documents','add-document',doc),('timeline','add-event',event)
+            ]:
+                self.page.locator('[data-page="'+page+'"]').click()
+                trigger=self.page.locator('.glass-create[data-action="'+action+'"]')
+                self.assertEqual(trigger.inner_text().replace('+','').strip(),label)
+                trigger.click()
+                self.assertTrue(self.page.locator('#itemForm').is_visible())
+                self.page.locator('#cancelModal').click()
+                self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+        self.page.locator('[data-page="trips"]').click()
+        self.page.locator('[data-action="travel-back"]').click()
+        self.page.locator('.travel-hero .glass-create[data-action="travel-new"]').click()
+        self.assertTrue(self.page.locator('#itemForm').is_visible())
 
     def test_shopping_redesign_keeps_list_progress_and_tools(self):
         self.page.set_viewport_size({'width':375,'height':844})
