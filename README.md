@@ -3,7 +3,7 @@ Our journey to New Zealand — immigration, study, finances and dreams.
 
 ## Version
 
-Current official version: **v1.1.0**. Version numbering began with v1.0.0. The app displays the version in its footer.
+Current official version: **v1.2.0**. Version numbering began with v1.0.0. The app displays the version in its footer.
 
 ## Local development
 
@@ -27,6 +27,10 @@ Tests require Python Playwright and `/usr/bin/chromium`; external services are
 stubbed, so they never authenticate or modify shared data.
 
 ## Travel planning
+
+A new trip can start with just a name. Destination and dates can be added now or
+later. The trip destination is a planning reference. Specify a departure point in
+the first transfer, and use an earlier itinerary stop for later transfers.
 
 The travel dashboard groups activities and transfers by day. Items can be edited,
 duplicated, or moved while keeping their linked calendar event. Transfers store
