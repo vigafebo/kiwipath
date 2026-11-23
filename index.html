@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./translations.js?v=1.9.2"></script>
+<script src="./translations.js?v=1.10.0"></script>
 <meta name="theme-color" content="#183d32">
 <title>KiwiPath — Our journey to New Zealand</title>
 <style>
@@ -1571,6 +1571,19 @@ h1{font-size:28px}
  .kiwi-travel-view .trip-section-head>.glass-create-inline{justify-self:end;width:auto;min-width:0;min-height:44px;padding:5px 8px 5px 5px;gap:5px;white-space:nowrap;font-size:12px;line-height:1.15}
  .kiwi-travel-view .trip-section-head>.glass-create-inline .glass-create-mark{flex-basis:24px;width:24px;height:24px;font-size:17px}
 }
+
+.auth-screen{overflow:auto;place-items:safe center}
+.auth-card{width:min(470px,100%);padding:clamp(18px,5vw,31px);background:linear-gradient(150deg,#fffef8,#f2f7ef)}
+.auth-card h1{margin:8px 0;font-size:clamp(26px,6vw,38px);line-height:1.1}
+.auth-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.auth-actions>*{flex:1 1 130px}
+.auth-card .btn{min-height:44px;text-align:center}
+.auth-card .btn-soft{border:1px solid #bfd2c2;background:linear-gradient(145deg,#f8fff5,#e0eee3);color:#214b37}
+.auth-view[hidden]{display:none}
+.auth-features{padding-inline-start:20px;font-size:14px;line-height:1.55}
+.auth-features li{padding:4px 0}
+.auth-message:empty{display:none}
+.auth-form input{box-sizing:border-box;min-width:0;min-height:44px;font-size:16px}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1599,16 +1612,23 @@ h1{font-size:28px}
         </g>
       </svg>
     </div>
-    <div class="eyebrow">KIWIPATH · OUR JOURNEY</div>
-    <h1 data-ui-copy="Bem-vindos de volta.">Bem-vindos de volta.</h1>
-    <p data-ui-copy="Entre na sua conta para acessar o espaço compartilhado de vocês.">Entre na sua conta para acessar o espaço compartilhado de vocês.</p>
+    <div class="eyebrow">KIWIPATH</div>
+    <section class="auth-view" data-auth-panel="login">
+    <h1 data-auth-pt="Entre no KiwiPath" data-auth-en="Sign in to KiwiPath">Entre no KiwiPath</h1>
+    <p data-auth-pt="Organize sua jornada em um só lugar." data-auth-en="Organise your journey in one place.">Organize sua jornada em um só lugar.</p>
     <form id="authForm" class="auth-form">
-      <label>E-mail<input id="authEmail" type="email" autocomplete="username" required></label>
-      <label><span data-ui-copy="Senha">Senha</span><input id="authPassword" type="password" autocomplete="current-password" required minlength="6"></label>
+      <label><span data-auth-pt="E-mail" data-auth-en="Email">E-mail</span><input id="authEmail" type="email" autocomplete="username" required></label>
+      <label><span data-auth-pt="Senha" data-auth-en="Password">Senha</span><input id="authPassword" type="password" autocomplete="current-password" required minlength="6"></label>
       <button class="btn" id="authSubmit" type="submit" data-ui-copy="Entrar no KiwiPath">Entrar no KiwiPath</button>
       <div id="authMessage" class="auth-message" role="status" aria-live="polite"></div>
-    </form>
-    <p style="font-size:11px" data-ui-copy="Use o e-mail e a senha criados no Supabase. Seus dados serão compartilhados apenas com membros autorizados.">Use o e-mail e a senha criados no Supabase. Seus dados serão compartilhados apenas com membros autorizados.</p>
+    </form><div class="auth-actions"><button type="button" class="btn btn-soft" data-auth-view="forgot"><span data-auth-pt="Recuperar senha" data-auth-en="Reset password">Recuperar senha</span></button><button type="button" class="btn btn-soft" data-auth-view="about"><span data-auth-pt="Inscrever-se" data-auth-en="Sign up">Inscrever-se</span></button></div>
+    </section>
+    <section class="auth-view" data-auth-panel="forgot" hidden><h1 data-auth-pt="Recuperar senha" data-auth-en="Reset password">Recuperar senha</h1><p data-auth-pt="Informe o e-mail da sua conta para receber o link de recuperação." data-auth-en="Enter your account email to receive a password reset link.">Informe o e-mail da sua conta para receber o link de recuperação.</p><form id="authForgotForm" class="auth-form"><label><span data-auth-pt="E-mail" data-auth-en="Email">E-mail</span><input id="authResetEmail" type="email" required autocomplete="email" maxlength="254"></label><button class="btn" type="submit"><span data-auth-pt="Enviar link" data-auth-en="Send reset link">Enviar link</span></button><p class="auth-message" role="status" aria-live="polite"></p></form><button type="button" class="btn btn-soft" data-auth-view="login"><span data-auth-pt="Voltar ao login" data-auth-en="Back to sign in">Voltar ao login</span></button></section>
+    <section class="auth-view" data-auth-panel="reset" hidden><h1 data-auth-pt="Crie uma nova senha" data-auth-en="Create a new password">Crie uma nova senha</h1><form id="authResetForm" class="auth-form"><label><span data-auth-pt="Nova senha" data-auth-en="New password">Nova senha</span><input id="authNewPassword" type="password" autocomplete="new-password" minlength="8" required></label><label><span data-auth-pt="Confirme a nova senha" data-auth-en="Confirm new password">Confirme a nova senha</span><input id="authConfirmPassword" type="password" autocomplete="new-password" minlength="8" required></label><button class="btn" type="submit"><span data-auth-pt="Salvar senha" data-auth-en="Save password">Salvar senha</span></button><p class="auth-message" role="status" aria-live="polite"></p></form></section>
+    <section class="auth-view" data-auth-panel="expired" hidden><h1 data-auth-pt="Link indisponível" data-auth-en="Link unavailable">Link indisponível</h1><p data-auth-pt="Solicite um novo link para recuperar sua senha." data-auth-en="Request a new link to reset your password.">Solicite um novo link para recuperar sua senha.</p><button type="button" class="btn btn-soft" data-auth-view="forgot"><span data-auth-pt="Solicitar novo link" data-auth-en="Request a new link">Solicitar novo link</span></button><button type="button" class="btn btn-soft" data-auth-view="login"><span data-auth-pt="Voltar ao login" data-auth-en="Back to sign in">Voltar ao login</span></button></section>
+    <section class="auth-view" data-auth-panel="about" hidden><h1 data-auth-pt="Conheça o KiwiPath" data-auth-en="Get to know KiwiPath">Conheça o KiwiPath</h1><ul class="auth-features"><li><span data-auth-pt="Planeje viagens e organize seu cronograma." data-auth-en="Plan trips and organise your calendar.">Planeje viagens e organize seu cronograma.</span></li><li><span data-auth-pt="Acompanhe gastos, documentos e listas de compras." data-auth-en="Track expenses, documents and shopping lists.">Acompanhe gastos, documentos e listas de compras.</span></li><li><span data-auth-pt="Monte uma Home com os widgets que usa no dia a dia." data-auth-en="Customise Home with the widgets you use every day.">Monte uma Home com os widgets que usa no dia a dia.</span></li></ul><p data-auth-pt="O acesso é liberado após a análise da solicitação de cadastro." data-auth-en="Access is granted after your application is reviewed.">O acesso é liberado após a análise da solicitação de cadastro.</p><div class="auth-actions"><button type="button" class="btn btn-soft" data-auth-view="request"><span data-auth-pt="Solicitar cadastro" data-auth-en="Request access">Solicitar cadastro</span></button><button type="button" class="btn btn-soft" data-auth-view="login"><span data-auth-pt="Voltar ao login" data-auth-en="Back to sign in">Voltar ao login</span></button></div></section>
+    <section class="auth-view" data-auth-panel="request" hidden><h1 data-auth-pt="Solicitar cadastro" data-auth-en="Request access">Solicitar cadastro</h1><p data-auth-pt="Usaremos seus dados para analisar o pedido e responder por e-mail." data-auth-en="We’ll use your details to review and respond to your request.">Usaremos seus dados para analisar o pedido e responder por e-mail.</p><form id="authRequestForm" class="auth-form"><label><span data-auth-pt="Qual e-mail você quer usar?" data-auth-en="Which email would you like to use?">Qual e-mail você quer usar?</span><input id="requestEmail" type="email" required autocomplete="email" maxlength="254"></label><label><span data-auth-pt="Qual é seu nome?" data-auth-en="What’s your name?">Qual é seu nome?</span><input id="requestName" type="text" required autocomplete="name" maxlength="120"></label><label><span data-auth-pt="Qual é sua data de nascimento?" data-auth-en="What’s your date of birth?">Qual é sua data de nascimento?</span><input id="requestBirth" type="date" required autocomplete="bday"></label><button class="btn" type="submit"><span data-auth-pt="Enviar" data-auth-en="Send">Enviar</span></button><p class="auth-message" role="status" aria-live="polite"></p></form><div class="auth-actions"><button type="button" class="btn btn-soft" data-auth-view="about"><span data-auth-pt="Voltar" data-auth-en="Back">Voltar</span></button></div></section>
+    <section class="auth-view" data-auth-panel="request-ready" hidden><h1 data-auth-pt="Finalize o envio pelo seu e-mail" data-auth-en="Finish sending from your email app">Finalize o envio pelo seu e-mail</h1><p data-auth-pt="Abra a mensagem preenchida e toque em Enviar para encaminhar o pedido ao KiwiPath." data-auth-en="Open the drafted message and tap Send to submit your request to KiwiPath.">Abra a mensagem preenchida e toque em Enviar para encaminhar o pedido ao KiwiPath.</p><p><a id="authRequestDraft" class="btn btn-soft"><span data-auth-pt="Abrir mensagem pronta" data-auth-en="Open email draft">Abrir mensagem pronta</span></a></p><p data-auth-pt="Depois de enviar, você deverá receber um e-mail de confirmação do cadastro. Se aprovado, você receberá uma senha temporária e deverá trocá-la no primeiro acesso." data-auth-en="Once sent, you should receive an email about your application. If approved, you’ll receive a temporary password to change on your first sign-in.">Depois de enviar, você deverá receber um e-mail de confirmação do cadastro. Se aprovado, você receberá uma senha temporária e deverá trocá-la no primeiro acesso.</p><button type="button" class="btn btn-soft" data-auth-view="login"><span data-auth-pt="Voltar ao login" data-auth-en="Back to sign in">Voltar ao login</span></button></section>
   </section>
 </div>
 <div class="app" id="kiwiApp" style="visibility:hidden">
@@ -1685,18 +1705,18 @@ h1{font-size:28px}
     </div>
   </header>
   <div id="pageContent"></div>
-  <footer>KiwiPath v<span id="appVersion">1.9.2</span> · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
+  <footer>KiwiPath v<span id="appVersion">1.10.0</span> · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
 </main>
 </div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./trip-guide.js?v=1.9.2"></script>
+<script src="./trip-guide.js?v=1.10.0"></script>
 <script src="./vendor/d3-7.9.0.min.js"></script>
 <script src="./vendor/topojson-client-3.1.0.min.js"></script>
 <script src="./vendor/memory-world-110m.js"></script>
-<script src="./memory-globe.js?v=1.9.2"></script>
-<script src="./flight-lookup.js?v=1.9.2"></script>
+<script src="./memory-globe.js?v=1.10.0"></script>
+<script src="./flight-lookup.js?v=1.10.0"></script>
 <script>
 (() => {
 "use strict";
@@ -1706,6 +1726,9 @@ const STORE = "kiwipath.v1";
 // Configure these two values with the Project URL and Publishable key from Supabase.
 const SUPABASE_URL = "https://niexrojauhhhtyjzkpkx.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_BWXwh-mYTGw_TRbi0INa_A_gtDPt6_a";
+const passwordRecoveryUrl=new URL(location.href);
+const passwordRecoveryRoute=passwordRecoveryUrl.searchParams.get('recover')==='1'||new URLSearchParams(passwordRecoveryUrl.hash.slice(1)).get('type')==='recovery';
+let passwordRecoverySession=false;
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 let currentUser = null;
 let cloudRecordId = null;
@@ -2224,6 +2247,11 @@ function archiveRelease(theme,art,pt,en){
  return {theme,art,pt:{title:pt[0],items:[[art[0],'',pt[1]]]},en:{title:en[0],items:[[art[0],'',en[1]]]}};
 }
 const RELEASE_NOTES={
+ '1.10.0':{
+  theme:'account',art:['links','alerts','docs','trips'],
+  pt:{title:'Uma nova entrada para o KiwiPath',items:[['links','Login renovado','A entrada apresenta o KiwiPath sem presumir uma conta compartilhada.'],['alerts','Recuperação e cadastro','Recupere a senha por e-mail ou prepare uma solicitação de acesso.']]},
+  en:{title:'A new way into KiwiPath',items:[['links','A refreshed sign-in','The welcome screen introduces KiwiPath without assuming a shared account.'],['alerts','Reset and request access','Reset your password by email or prepare an access request.']]}
+ },
  '1.9.2':{
   theme:'journey',art:['agenda','trips','links','docs'],
   pt:{title:'Ações no lugar certo',items:[['agenda','Novo evento no cabeçalho','O botão fica junto ao título do Cronograma.'],['trips','Viagens mais limpa','O topo fica só com o título. No celular, Histórico e os botões internos ficam alinhados às suas seções.']]},
@@ -2373,6 +2401,7 @@ function showAuth(message=""){
   applyStaticLanguage();document.documentElement.lang=data.language==="en"?"en":"pt-BR";
   $("#authScreen").style.display="grid";
   $("#kiwiApp").style.visibility="hidden";
+  setAuthView("login");
   $("#authMessage").textContent=message;
 }
 async function startApp(session){
@@ -5015,6 +5044,65 @@ document.addEventListener("blur",e=>{
   if(Number.isFinite(n) && n>=0) el.value=n.toFixed(el.name==='rate'?4:2);
 },true);
 
+
+const authText=(pt,en)=>data.language==='en'?en:pt;
+function setAuthView(view){
+ $$('#authScreen [data-auth-pt]').forEach(node=>{node.textContent=data.language==='en'?node.dataset.authEn:node.dataset.authPt});
+ $$('#authScreen [data-auth-panel]').forEach(panel=>{panel.hidden=panel.dataset.authPanel!==view});
+}
+$('#authScreen').addEventListener('click',event=>{
+ const button=event.target.closest('[data-auth-view]');if(!button)return;
+ if(button.dataset.authView==='forgot')$('#authResetEmail').value=$('#authEmail').value;
+ if(button.dataset.authView==='login'&&passwordRecoveryRoute&&!passwordRecoverySession){
+  const clean=new URL(location.href);clean.searchParams.delete('recover');clean.hash='';
+  history.replaceState(null,'',clean);
+ }
+ setAuthView(button.dataset.authView);
+});
+function authStatus(form,message){form.querySelector('[role="status"]').textContent=message}
+$('#authForgotForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ const form=event.currentTarget,button=form.querySelector('[type="submit"]');
+ button.disabled=true;authStatus(form,'');
+ try{
+  const redirect=new URL(location.href);redirect.search='?recover=1';redirect.hash='';
+  const {error}=await supabaseClient.auth.resetPasswordForEmail($('#authResetEmail').value.trim(),{redirectTo:redirect.href});
+  if(error)throw error;
+  authStatus(form,authText('Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.','If the email is registered, you’ll receive a password reset link.'));
+ }catch(error){authStatus(form,authText('Não foi possível enviar o link agora. Tente novamente em instantes.','Could not send the link right now. Try again shortly.'))}
+ finally{button.disabled=false}
+});
+$('#authResetForm').addEventListener('submit',async event=>{
+ event.preventDefault();
+ const form=event.currentTarget,button=form.querySelector('[type="submit"]'),password=$('#authNewPassword').value;
+ if(!passwordRecoverySession)return;
+ if(password!==$('#authConfirmPassword').value){
+  authStatus(form,authText('As senhas não coincidem.','The passwords don’t match.'));return;
+ }
+ button.disabled=true;
+ try{
+  const {error}=await supabaseClient.auth.updateUser({password});if(error)throw error;
+  passwordRecoverySession=false;form.reset();
+  const clean=new URL(location.href);clean.searchParams.delete('recover');clean.hash='';
+  history.replaceState(null,'',clean);
+  await supabaseClient.auth.signOut({scope:'local'});
+  showAuth(authText('Senha atualizada. Entre com sua nova senha.','Password updated. Sign in with your new password.'));
+ }catch(error){authStatus(form,authText('Não foi possível salvar a senha. Confira o link ou tente uma senha diferente.','Could not save the password. Check your link or try a different password.'))}
+ finally{button.disabled=false}
+});
+$('#requestBirth').max=today();
+$('#authRequestForm').addEventListener('submit',event=>{
+ event.preventDefault();
+ const name=$('#requestName').value.trim(),email=$('#requestEmail').value.trim(),birth=$('#requestBirth').value;
+ if(!name||!birth||birth>today()){
+  authStatus(event.currentTarget,authText('Confira seu nome e sua data de nascimento.','Check your name and date of birth.'));return;
+ }
+ const subject='Solicitação de cadastro no KiwiPath';
+ const body=['Nome: '+name,'E-mail: '+email,'Data de nascimento: '+birth].join('\r\n');
+ $('#authRequestDraft').href='mailto:info.kiwipath@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+ setAuthView('request-ready');
+ $('#authRequestDraft').click();
+});
 $("#authForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const email=$("#authEmail").value.trim();
@@ -5172,9 +5260,15 @@ window.addEventListener('focus',refreshDeviceTimeContext);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDeviceTimeContext()});
 supabaseClient.auth.getSession().then(({data:sessionData,error})=>{
   if(error){showAuth(window.KiwiI18n.text("Erro ao verificar a sessão."));return;}
+  if(passwordRecoveryRoute||passwordRecoverySession){
+    showAuth();setAuthView(passwordRecoverySession?'reset':'expired');return;
+  }
   startApp(sessionData.session);
 });
 supabaseClient.auth.onAuthStateChange((event,session)=>{
+  if(event==="PASSWORD_RECOVERY"&&session){
+    passwordRecoverySession=true;showAuth();setAuthView('reset');return;
+  }
   if(event==="SIGNED_OUT"){currentUser=null;cloudRecordId=null;homeEditor=null;homeGpsRequest=null;homeGpsFix=null;homeWeatherRead=null;homeAlertsRead=null;homeAlertsLoad=null;customAlerts=[];$("#homeCityDialog")?.close();showAuth();}
   else if(event==="SIGNED_IN" && session?.user){currentUser=session.user;updateProfile();}
 });
