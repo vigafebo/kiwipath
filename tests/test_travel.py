@@ -54,6 +54,7 @@ class TravelTests(unittest.TestCase):
           language(value) { data.language=value;render(); },
           refreshCloud:loadCloudData, redraw:render,
           releaseNotice(userId) { currentUser=userId?{id:userId}:null;return showReleaseNotice(); },
+          releaseNotes:()=>RELEASE_NOTES[document.getElementById('appVersion').textContent.trim()],
           memoryCities:tripMemoryCities, memoryEntries:tripMemoryTrips,
           worldCountries:()=>[...TRIP_WORLD_COUNTRIES], memoryMap:()=>tripMemoryMap,
           mapSession:()=>tripMapSession, state:()=>data, open:()=>addTripItinerary(data.trips[0].id),
@@ -267,12 +268,15 @@ class TravelTests(unittest.TestCase):
     def test_release_notice_only_opens_once_per_account_and_preserves_language(self):
         self.page.set_viewport_size({'width':320,'height':568})
         self.assertFalse(self.page.evaluate('__travel.releaseNotice(null)'))
+        release=self.page.evaluate('__travel.releaseNotes()')
+        self.assertIsNotNone(release)
         self.assertTrue(self.page.evaluate("__travel.releaseNotice('first-user')"))
-        notice=self.page.get_by_role('dialog',name='Uma Home com mais personalidade')
+        notice=self.page.get_by_role('dialog',name=release['pt']['title'])
         self.assertTrue(notice.is_visible())
         version=(ROOT / "VERSION").read_text().strip()
         self.assertIn("v"+version,notice.inner_text())
-        self.assertEqual(notice.locator('.release-list li').count(),3)
+        self.assertGreater(len(release['pt']['items']),0)
+        self.assertEqual(notice.locator('.release-list li').count(),len(release['pt']['items']))
         self.assertTrue(notice.evaluate('el=>el.scrollWidth<=el.clientWidth'))
         self.assertFalse(self.page.evaluate("__travel.releaseNotice('first-user')"))
         notice.get_by_role('button',name='Entendi',exact=True).click()
@@ -282,7 +286,7 @@ class TravelTests(unittest.TestCase):
         self.page.evaluate("__travel.language('en')")
         self.page.emulate_media(reduced_motion='reduce')
         self.assertTrue(self.page.evaluate("__travel.releaseNotice('second-user')"))
-        notice=self.page.get_by_role('dialog',name='A Home with more personality')
+        notice=self.page.get_by_role('dialog',name=release['en']['title'])
         self.assertTrue(notice.get_by_role('button',name='Got it',exact=True).is_visible())
         self.assertEqual(notice.evaluate('el=>getComputedStyle(el).animationName'),'none')
         self.page.keyboard.press('Escape')
