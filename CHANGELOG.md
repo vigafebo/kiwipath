@@ -1,5 +1,12 @@
 # Release history
 
+## 1.2.0
+
+- Redesigned trip creation and editing, with optional settings tucked away.
+- Added shortcuts to start a new itinerary, transfer, booking or checklist.
+- Separated the trip destination from departure points on routes.
+- Added mobile and bilingual regression coverage for the trip editor.
+
 ## 1.1.0
 
 - Expanded Portuguese and English coverage across navigation, travel forms,
