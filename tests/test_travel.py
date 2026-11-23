@@ -298,6 +298,7 @@ class TravelTests(unittest.TestCase):
         toggle=self.page.locator('.finance-quick-toggle')
         shortcuts=self.page.locator('#financeQuickList')
         self.assertTrue(toggle.is_visible())
+        self.assertEqual(toggle.evaluate("el=>getComputedStyle(el).borderRadius"),'999px')
         self.assertFalse(shortcuts.is_visible())
         toggle.click()
         self.assertEqual(toggle.get_attribute('aria-expanded'),'true')
@@ -318,6 +319,12 @@ class TravelTests(unittest.TestCase):
         self.page.evaluate("__travel.language('en')")
         toggle.click()
         self.assertTrue(shortcuts.get_by_role('button',name='Other',exact=True).is_visible())
+        self.page.keyboard.press('Escape')
+        self.page.locator('#financeQuickDialog').wait_for(state='detached')
+        self.assertTrue(toggle.evaluate("""el=>{
+            const heading=el.closest('.section-head');
+            return Math.abs(el.getBoundingClientRect().right-heading.getBoundingClientRect().right)<2;
+        }"""))
         self.page.set_viewport_size({'width':1100,'height':844})
         self.assertFalse(toggle.is_visible())
         self.assertTrue(shortcuts.get_by_role('button',name='Add',exact=True).is_visible())
