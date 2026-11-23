@@ -519,6 +519,28 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Preparation checklist',contents)
         self.assertNotIn('Roteiro dia a dia',contents)
 
+    def test_shopping_redesign_keeps_list_progress_and_tools(self):
+        self.page.set_viewport_size({'width':375,'height':844})
+        self.page.evaluate("""()=>__travel.state().shoppingLists=[
+            {id:'week',name:'Mercado da semana',items:[
+                {id:'milk',name:'Leite',quantity:2,unit:'un.',unitPrice:3,checked:false}
+            ]}]""")
+        self.page.locator('[data-page="shopping"]').click()
+        receipt=self.page.locator('.shop-receipts [data-action="shopping-open:week"]')
+        self.assertEqual(receipt.locator('progress').get_attribute('value'),'0')
+        receipt.click()
+        self.page.get_by_role('checkbox',name='Leite').check()
+        self.assertEqual(self.page.locator('.shop-list-hero progress').get_attribute('value'),'1')
+        self.assertIn('NZ$ 6.00',self.page.locator('.shopping-total-footer').inner_text())
+        self.page.locator('[data-action="shopping-back"]').click()
+        self.assertEqual(receipt.locator('progress').get_attribute('value'),'1')
+        self.page.locator('[data-action="shopping-tab:functions"]').click()
+        self.assertEqual(self.page.locator('.shopping-management-card').count(),6)
+        self.page.evaluate("__travel.language('en')")
+        self.page.get_by_role('button',name='Price History',exact=False).click()
+        self.assertTrue(self.page.locator('.history-filters').is_visible())
+        self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+
     def test_finance_hub_opens_four_sections_and_supports_edge_swipe(self):
         self.page.set_viewport_size({'width':375,'height':844})
         self.page.evaluate("""()=>{

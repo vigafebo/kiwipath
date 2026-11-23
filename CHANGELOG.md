@@ -1,5 +1,10 @@
 # Release history
 
+## 1.8.0
+
+- Redesigned Shopping Lists, active checklists and Other functions with distinct layouts and transitions.
+- Added checklist progress to list receipts and the open list.
+
 ## 1.7.2
 
 - Repositioned and restyled the mobile Add button in Income & expenses.
