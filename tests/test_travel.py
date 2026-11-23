@@ -548,11 +548,15 @@ class TravelTests(unittest.TestCase):
             for page in ['documents','timeline','shopping']:
                 self.page.locator('[data-page="'+page+'"]').click()
                 banner=self.page.locator('.section-banner')
-                self.assertEqual(banner.locator('svg,button').count(),0)
+                self.assertEqual(banner.locator('svg').count(),0)
+                self.assertEqual(banner.locator('button[data-action="add-event"]').count(),int(page=='timeline'))
                 self.assertEqual(banner.evaluate("el=>getComputedStyle(el.querySelector('h1')).fontSize"),size)
         self.page.locator('[data-page="trips"]').click()
         self.page.locator('[data-action="travel-back"]').click()
         self.assertEqual(self.page.locator('.travel-hero [data-action="travel-history"]').count(),0)
+        self.assertEqual(self.page.locator('.travel-hero .eyebrow').count(),0)
+        self.assertEqual(self.page.locator('.travel-plans-heading').evaluate(
+            'el=>getComputedStyle(el).display'),'grid')
         self.page.locator('.travel-plans-heading [data-action="travel-history"]').click()
         self.assertTrue(self.page.locator('.memory-hero').is_visible())
 
