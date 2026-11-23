@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./translations.js?v=1.4.0"></script>
+<script src="./translations.js?v=1.5.0"></script>
 <meta name="theme-color" content="#183d32">
 <title>KiwiPath — Our journey to New Zealand</title>
 <style>
@@ -1139,6 +1139,57 @@ h1{font-size:28px}
 .project-cost-row .item-actions{grid-column:1/-1;justify-content:flex-end}
 .project-status{display:inline-block;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:750;margin-bottom:4px}
 .project-chart-list:focus-visible{outline:2px solid var(--green);border-radius:8px}
+.home-hero{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:18px;padding:clamp(20px,4vw,38px);margin-bottom:18px;overflow:hidden;border-radius:24px;background:radial-gradient(ellipse at 94% 0%,#4f7558 0%,transparent 53%),linear-gradient(125deg,#15392f,#234e3e);color:#fff}
+.home-hero::after{content:"";pointer-events:none;position:absolute;inset:-55% -8% auto auto;width:320px;height:320px;border:1px solid #e0efe236;border-radius:50%;box-shadow:0 0 0 30px #e0efe211,0 0 0 62px #e0efe20b}
+.home-hero>*{position:relative;z-index:1}
+.home-hero time{font-size:13px;color:#ddecdf}
+.home-hero h1{margin:5px 0 0;color:#fff;font-size:clamp(27px,5vw,51px);letter-spacing:-.035em;line-height:1.08}
+.home-hero .btn{background:#f1f6e9;color:#193e32;min-height:44px}
+.home-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
+.home-widget{--widget-bg:#e4efe2;--widget-ink:#23513a;min-width:0;display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--paper);box-shadow:0 2px 6px #183d3208;transition:border-color .18s,box-shadow .18s;overflow-wrap:anywhere}
+.home-widget:hover{border-color:#a8c0a6;box-shadow:0 5px 17px #183d3210}
+.home-widget[data-home-widget="weather"]{--widget-bg:#dcebf6;--widget-ink:#264e68;background:linear-gradient(145deg,#f2f8ff,var(--paper) 85%)}
+.home-widget[data-home-widget="alerts"],.home-widget[data-home-widget="expiry"]{--widget-bg:#fbebcf;--widget-ink:#714514}
+.home-widget[data-home-widget="trips"],.home-widget[data-home-widget="countdown"]{--widget-bg:#eae3f1;--widget-ink:#5d407a}
+.home-widget-head{display:flex;align-items:center;gap:10px;min-width:0}
+.home-widget-head h2{margin:0;font-size:16px;line-height:1.2}
+.home-widget-icon{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:11px;background:var(--widget-bg);color:var(--widget-ink)}
+.home-widget-icon svg{width:19px;height:19px}
+.home-widget-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.home-widget-body p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+.home-widget-value{display:block;font-size:clamp(24px,4vw,34px);line-height:1.1;color:var(--forest);font-weight:760}
+.home-widget-link{align-self:flex-start;margin-top:auto;min-height:38px}
+.home-widget-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.home-widget-list li{display:grid;gap:2px;padding:6px 0;border-bottom:1px solid var(--line)}
+.home-widget-list li:last-child{border-bottom:0}
+.home-widget-list small,.home-weather-source{color:var(--muted);font-size:11px}
+.home-weather-source{align-self:flex-start}
+.home-widget-actions,.home-edit-actions,.home-widget-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.home-widget-actions .btn,.home-widget-controls button,.home-gallery button,.home-edit-actions button{min-height:40px}
+.home-editor{margin-bottom:14px;padding:14px;border:1px solid #bcd1b8;background:#edf5e9;border-radius:16px}
+.home-editor-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.home-editor-head h2{font-size:17px;margin:0}
+.home-gallery{margin-top:10px}
+.home-gallery summary{padding:8px 0;cursor:pointer;font-weight:700}
+.home-gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:6px}
+.home-gallery-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border-radius:9px;background:var(--paper)}
+.home-widget-controls{padding-top:8px;border-top:1px solid var(--line)}
+.home-widget-controls button:disabled{opacity:.4;cursor:default}
+.home-drag{margin-left:auto;cursor:grab;color:var(--muted);font-size:20px;padding:4px 7px;line-height:1}
+.home-widget[data-home-target]{border-color:#47785c;outline:2px dashed #47785c;outline-offset:-4px}
+.home-empty{grid-column:1/-1}
+.home-location{width:min(460px,calc(100vw - 22px));max-height:calc(100dvh - 24px);border:1px solid var(--line);border-radius:18px;padding:18px;background:var(--paper);color:var(--ink)}
+.home-location::backdrop{background:#112c24a0}
+.home-location h2{margin:0 0 12px}
+.home-location form{display:grid;gap:8px}
+.home-location input{width:100%;min-height:44px;font-size:16px}
+.home-location-results{display:grid;gap:5px;margin:10px 0}
+.home-location-results button{text-align:left;min-height:44px}
+.home-enter .home-widget{animation:home-arrive .34s ease-out both;animation-delay:calc(var(--home-index)*32ms)}
+@keyframes home-arrive{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1050px){.home-board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){.home-board,.home-hero{grid-template-columns:minmax(0,1fr)}.home-hero .btn{justify-self:start}.home-drag{display:none}.home-widget-controls button{min-height:44px}}
+@media(prefers-reduced-motion:reduce){.home-enter .home-widget{animation:none}.home-widget{transition:none}}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1249,18 +1300,18 @@ h1{font-size:28px}
     </div>
   </header>
   <div id="pageContent"></div>
-  <footer>KiwiPath v1.4.0 · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
+  <footer>KiwiPath v1.5.0 · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
 </main>
 </div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./trip-guide.js?v=1.4.0"></script>
+<script src="./trip-guide.js?v=1.5.0"></script>
 <script src="./vendor/d3-7.9.0.min.js"></script>
 <script src="./vendor/topojson-client-3.1.0.min.js"></script>
 <script src="./vendor/memory-world-110m.js"></script>
-<script src="./memory-globe.js?v=1.4.0"></script>
-<script src="./flight-lookup.js?v=1.4.0"></script>
+<script src="./memory-globe.js?v=1.5.0"></script>
+<script src="./flight-lookup.js?v=1.5.0"></script>
 <script>
 (() => {
 "use strict";
@@ -1368,12 +1419,15 @@ async function sendPushTest(){
   notify(result.message||(data.language==="pt"?"Solicitação de teste enviada.":"Test request sent."));
 }
 async function loadCustomAlerts(){
-   if(!currentUser){customAlerts=[];return}
-   const {data:archiveRows,error:archiveError}=await supabaseClient.from("kiwipath_custom_alerts").select("id,status,sent_at,updated_at,created_at").eq("user_id",currentUser.id).in("status",["sent","cancelled","deleted"]);
+   const userId=currentUser?.id;
+   if(!userId){customAlerts=[];homeAlertsRead=null;return}
+   const {data:archiveRows,error:archiveError}=await supabaseClient.from("kiwipath_custom_alerts").select("id,status,sent_at,updated_at,created_at").eq("user_id",userId).in("status",["sent","cancelled","deleted"]);
    if(archiveError) throw archiveError;
    // Keep archived alerts in the cloud; do not silently purge history by age.
-   const {data:rows,error}=await supabaseClient.from("kiwipath_custom_alerts").select("id,title,message,scheduled_at,timezone,status,sent_at,created_at,updated_at,recurrence,recurrence_end,linked_type,linked_id,source_key").eq("user_id",currentUser.id).order("scheduled_at",{ascending:true});
-   if(error)throw error;customAlerts=rows||[];
+   const {data:rows,error}=await supabaseClient.from("kiwipath_custom_alerts").select("id,title,message,scheduled_at,timezone,status,sent_at,created_at,updated_at,recurrence,recurrence_end,linked_type,linked_id,source_key").eq("user_id",userId).order("scheduled_at",{ascending:true});
+   if(error)throw error;
+   if(currentUser?.id!==userId)return;
+   customAlerts=rows||[];homeAlertsRead={userId,at:Date.now()};
  }
  
 // Legacy/canonical calendar zone and NZ reference clock; new UI scheduling defaults to DEVICE_TIMEZONE.
@@ -1827,30 +1881,355 @@ function taskHTML(x){return `<div class="task ${x.status==="done"?"done":""}"><i
 function eventHTML(x){return `<div class="milestone"><div class="milestone-dot">${x.date&&x.date<today()?"✓":"✦"}</div><div><div class="milestone-date">${esc(fmtDate(x.date))}</div><div class="milestone-title">${esc(recordText(x,"title"))}</div><div class="milestone-desc">${esc(recordText(x,"note"))}</div></div></div>`}
 function dateOnlyLocal(iso){if(!iso)return null;const [y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d)}
 function daysBetween(from,to){return Math.ceil((to.getTime()-from.getTime())/86400000)}
-function dashboard(){
- const pending=data.documents.filter(x=>x.status!=="done");
- const todayDate=dateOnlyLocal(today());
- const upcoming=data.events.map(eventInDeviceZone).filter(x=>x.date&&dateOnlyLocal(x.date)>=todayDate).sort((a,b)=>a.date.localeCompare(b.date));
- const nextEvent=upcoming[0]||null;
- const daysToEvent=nextEvent?Math.max(0,daysBetween(todayDate,dateOnlyLocal(nextEvent.date))):null;
- const countdownPct=daysToEvent===null?0:Math.max(4,Math.min(100,100-(daysToEvent/180*100)));
- const countdownMessage=daysToEvent===null?"":daysToEvent===0?(data.language==="pt"?window.KiwiI18n.text("É HOJE! Respira fundo — chegou o grande dia!"):"IT'S TODAY! Take a deep breath — the big day is here!"):daysToEvent===1?(data.language==="pt"?window.KiwiI18n.text("É AMANHÃ! Meu Deus, tá bem aí!"):"IT'S TOMORROW! Oh my gosh, it's here!"):daysToEvent<=3?(data.language==="pt"?window.KiwiI18n.text("MEU DEUS, TÁ BEM AÍ! Últimos preparativos!"):"OH WOW, IT'S SO CLOSE! Final preparations!"):daysToEvent<=10?(data.language==="pt"?window.KiwiI18n.text("CONTAGEM REGRESSIVAAAA! Já dá pra sentir a emoção!"):"COUNTDOWN MODE: ON! The excitement is real!"):daysToEvent<=30?(data.language==="pt"?window.KiwiI18n.text("Modo reta final ativado. A aventura tá chegando!"):"Final stretch activated. The adventure is getting close!"):daysToEvent<=50?(data.language==="pt"?window.KiwiI18n.text("Agora ficou real! Comecem a preparar o coração!"):"It's getting REAL! Start getting excited!"):daysToEvent<=100?(data.language==="pt"?window.KiwiI18n.text("Tá chegando... hora de alinhar os últimos detalhes!"):"It's getting closer... time to line up the details!"):(data.language==="pt"?window.KiwiI18n.text("Suck it up, buttercup! Cada dia conta. 💪"):"Suck it up, buttercup! Every day counts. 💪");
- const cutoff=new Date(todayDate);cutoff.setMonth(cutoff.getMonth()+3);
- const expiring=(data.documents||[]).filter(x=>{const d=x.expiryDate||((x.hasExpiry&&x.due)?x.due:"");if(!x.hasExpiry&&!x.expiryDate)return false;const date=dateOnlyLocal(d);return date&&date>=todayDate&&date<=cutoff;}).sort((a,b)=>(a.expiryDate||a.due).localeCompare(b.expiryDate||b.due));
- return `<div class="hero"><div class="hero-copy"><div class="eyebrow">${t("welcome")}</div><h2>${t("hero")}</h2><p>${t("heroText")}</p></div><div class="hero-art"></div><div class="hero-fern" aria-hidden="true"><svg viewBox="0 0 120 150" width="120" height="150" fill="none" stroke="#d5e5ca" stroke-width="3" stroke-linecap="round"><path d="M20 140Q70 75 94 12"/><path d="M31 122L10 99L43 111M43 104L21 78L55 94M55 85L36 58L68 77M66 65L53 37L79 57M78 42L73 17L94 33M38 114L66 119M51 94L78 100M64 73L88 80M76 53L99 59"/></svg></div></div>
- <div class="stats">
- <div class="stat"><div class="stat-top"><span class="stat-label">${data.language==="pt"?window.KiwiI18n.text("Documentos vencendo em até 90 dias"):"Documents expiring within 90 days"}</span><span class="stat-icon">▤</span></div><div class="stat-value">${(data.documents||[]).filter(x=>{const raw=x.expiryDate||((x.hasExpiry&&x.due)?x.due:"");if(x.status==="done"||!raw)return false;const d=dateOnlyLocal(raw),now=dateOnlyLocal(today()),limit=new Date(now);limit.setDate(limit.getDate()+90);return d&&d>=now&&d<=limit}).length}</div><div class="stat-note">${data.language==="pt"?window.KiwiI18n.text("Requerem atenção"):"Need attention"}</div></div>
- <div class="stat"><div class="stat-top"><span class="stat-label">${data.language==="pt"?window.KiwiI18n.text("Saldo financeiro"):"Financial balance"}</span><span class="stat-icon">✓</span></div><div class="stat-value">${money((data.transactions||[]).reduce((sum,x)=>sum+(x.type==="income"?Number(x.amount||0):-Number(x.amount||0)),0))}</div><div class="stat-note">${data.language==="pt"?window.KiwiI18n.text("Movimentações registradas"):"Recorded transactions"}</div></div>
- <div class="stat"><div class="stat-top"><span class="stat-label">${data.language==="pt"?window.KiwiI18n.text("Próximo evento do cronograma"):"Next timeline event"}</span><span class="stat-icon">◷</span></div><div class="stat-value stat-event-title">${nextEvent?esc(nextEvent.title):"—"}</div><div class="stat-note">${nextEvent?fmtDate(nextEvent.date):t("noEvents")}</div></div>
- <div class="stat"><div class="stat-top"><span class="stat-label">${data.language==="pt"?window.KiwiI18n.text("Itens na lista de compras"):"Shopping list items"}</span><span class="stat-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></span></div><div class="stat-value">${(data.shoppingLists||[]).reduce((sum,l)=>sum+(l.items||[]).filter(x=>!x.checked).length,0)}</div><div class="stat-note">${data.language==="pt"?window.KiwiI18n.text("Itens ainda não concluídos"):"Items still to get"}</div></div></div>
- <div class="dashboard-grid"><section class="panel"><div class="panel-head"><div><h2>${t("quickTasks")}</h2><p style="font-size:11px;color:var(--muted);margin:3px 0">${t("progress")}</p></div>${button(t("viewAll")+" ↗","go-documents","text-btn")}</div><div class="progress-track"><div class="progress-fill" style="width:${progress()}%"></div></div><div class="progress-meta"><span>${progress()}% ${t("completed").toLowerCase()}</span><span>${data.documents.length} ${t("items")}</span></div><div class="task-list">${pending.length?pending.slice(0,5).map(taskHTML).join(""):empty(t("noTasks"))}</div></section>
- <section class="panel"><div class="panel-head"><div><h2>${t("milestones")}</h2><p style="font-size:11px;color:var(--muted);margin:3px 0">${t("timeline")}</p></div>${button("＋","add-event","text-btn")}</div>${upcoming.length?upcoming.slice(0,3).map(eventHTML).join(""):empty(t("noEvents"))}</section></div>
- <section class="panel countdown-panel" style="margin-top:18px"><div class="panel-head"><div><h2>${t("daysUntilEvent")}</h2><p style="font-size:12px;color:var(--muted);margin:3px 0">${nextEvent?esc(nextEvent.title)+" · "+fmtDate(nextEvent.date):t("pastEvent")}</p></div>${nextEvent?`<strong class="countdown-number">${daysToEvent===0?t("todayEvent"):daysToEvent+" "+t("daysLeft")}</strong>`:""}</div>${nextEvent?`<div class="progress-track countdown-track" aria-label="${t("daysUntilEvent")}"><div class="progress-fill countdown-fill" style="width:${countdownPct}%"></div></div><p class="countdown-message" aria-live="polite">${esc(countdownMessage)}</p>`:""}</section>
- <section class="panel" style="margin-top:18px"><div class="panel-head"><div><h2>${t("expiringDocs")}</h2><p style="font-size:12px;color:var(--muted);margin:3px 0">${expiring.length} ${t("documentCount")}</p></div>${button(t("viewAll")+" ↗","go-documents","text-btn")}</div>${expiring.length?expiring.map(x=>`<div class="item-row"><div class="item-main"><strong>${esc(recordText(x,"title"))}</strong><p>${t("expiryDate")}: ${fmtDate(x.expiryDate||x.due)}</p></div><span class="tag gold">${Math.max(0,daysBetween(todayDate,dateOnlyLocal(x.expiryDate||x.due)))} ${t("daysLeft")}</span></div>`).join(""):empty(t("noExpiringDocs"))}</section>
- <div style="margin:26px 0 14px"><div class="section-head"><div><h2>${t("modules")}</h2><p>${t("moduleText")}</p></div></div></div>${moduleCards()}`;
+
+const HOME_WIDGETS={
+ agenda:['Próximos eventos','Upcoming events','◷'],
+ alerts:['Lembretes','Reminders','✦'],
+ weather:['Clima','Weather','☀'],
+ docs:['Documentos','Documents','▤'],
+ expiry:['Vencimentos','Expiring documents','!'],
+ shopping:['Lista de compras','Shopping list','▣'],
+ countdown:['Contagem regressiva','Countdown','◴'],
+ trips:['Próxima viagem','Next trip','plane'],
+ project:['Investimento NZ','NZ investment','wallet'],
+ balance:['Saldo das contas','Account balances','wallet'],
+ links:['Atalhos','Shortcuts','↗']
+};
+const HOME_DEFAULT=['agenda','alerts','weather','docs','expiry','shopping','countdown','links'];
+const homeText=(pt,en)=>data.language==='pt'?pt:en;
+let homeEditor=null,homeEntered=false,homeDragId='',homeGpsRequest=null,homeGpsFix=null;
+let homeWeatherRead=null,homeAlertsRead=null,homeAlertsLoad=null;
+function homeKey(){return 'kiwipath.home.'+(currentUser?.id||'guest')}
+function homePrefs(){
+ const defaults={order:HOME_DEFAULT.slice(),hidden:[],location:null};
+ let saved;
+ try{saved=JSON.parse(localStorage.getItem(homeKey()))}catch(error){return defaults}
+ if(!saved||!Array.isArray(saved.order))return defaults;
+ const order=[...new Set(saved.order.filter(id=>typeof id==='string'&&Object.hasOwn(HOME_WIDGETS,id)))];
+ const hidden=Array.isArray(saved.hidden)?order.filter(id=>saved.hidden.includes(id)):[];
+ const place=saved.location;
+ const city=place?.mode==='city'&&typeof place.name==='string'&&Number.isFinite(place.latitude)&&Number.isFinite(place.longitude)&&Math.abs(place.latitude)<=90&&Math.abs(place.longitude)<=180;
+ return {order,hidden,location:city?place:place?.mode==='gps'?{mode:'gps'}:null};
 }
-const moduleInfo=[["documents","▤","docDesc","documents","documents"],["timeline","◷","timeDesc","timeline","events"],["finances","＄","finDesc","finances","transactions"],["shopping","▣","shoppingDesc","shopping","shoppingLists"],["study","⌑","studyDesc","study","study"],["dreams","♡","dreamDesc","dreams","dreams"]];
-function moduleCards(){return `<div class="module-grid">${moduleInfo.map(([p,ic,desc,title,key])=>`<div class="module-card"><div class="module-icon">${p==="shopping"?'<svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>':ic}</div><h3>${t(title)}</h3><p>${t(desc)}</p><div class="module-card-foot"><span>${data[key].length} ${t(key==="documents"?"documentCount":key==="transactions"?"transactionCount":key==="study"?"studyCount":key==="dreams"?"dreamCount":"items")}</span>${button("↗","go-"+p,"text-btn")}</div></div>`).join("")}</div>`}
+function saveHomePrefs(prefs){
+ try{localStorage.setItem(homeKey(),JSON.stringify(prefs));return true}
+ catch(error){notify(homeText('Não foi possível salvar a Home neste dispositivo.','Could not save Home on this device.'));return false}
+}
+function activeHomeEditor(){return homeEditor?.key===homeKey()?homeEditor:null}
+function homeTitle(id){return HOME_WIDGETS[id][data.language==='pt'?0:1]}
+function homeButton(label,action,cls='btn btn-soft',extra=''){
+ return '<button type="button" class="'+cls+'" data-action="'+action+'" '+extra+'>'+esc(label)+'</button>';
+}
+function homeList(rows,emptyText){
+ return rows.length?'<ul class="home-widget-list">'+rows.map(([label,detail])=>'<li><strong>'+esc(label)+'</strong><small>'+esc(detail)+'</small></li>').join('')+'</ul>':'<p>'+esc(emptyText)+'</p>';
+}
+function homeWeatherPlace(){
+ const location=homePrefs().location;
+ if(location?.mode==='city')return location;
+ if(location?.mode==='gps'&&homeGpsFix?.key===homeKey())return homeGpsFix;
+ return null;
+}
+function homeWeatherBody(){
+ const location=homePrefs().location,place=homeWeatherPlace();
+ const label=place?.mode==='city'?place.name:location?.mode==='gps'?homeText('Localização atual','Current location'):'';
+ const weather=homeWeatherRead?.key===homeKey()&&homeWeatherRead?.coordinates===homeWeatherCoordinates(place)?homeWeatherRead:null;
+ const gpsBusy=homeGpsRequest?.key===homeKey();
+ const status=gpsBusy?homeText('Obtendo sua localização…','Getting your location…'):
+  weather?.failed?homeText('Clima indisponível no momento.','Weather is currently unavailable.'):
+  weather?.data?null:place?homeText('Consultando o clima…','Checking the weather…'):
+  location?.mode==='gps'?homeText('Atualize sua localização para consultar o clima.','Refresh your location to check the weather.'):
+  homeText('Use sua localização ou escolha uma cidade.','Use your location or choose a city.');
+ const readings=weather?.data;
+ const values=readings?'<strong class="home-widget-value">'+Math.round(readings.temperature_2m)+' °C</strong><p>'+
+  esc(homeText('Sensação de ','Feels like ')+Math.round(readings.apparent_temperature)+' °C')+'</p>':'';
+ return (label?'<strong>'+esc(label)+'</strong>':'')+values+(status?'<p role="status">'+esc(status)+'</p>':'')+
+  '<div class="home-widget-actions">'+homeButton(location?.mode==='gps'?homeText('Atualizar GPS','Refresh GPS'):homeText('Usar minha localização','Use my location'),'home-gps','btn btn-soft',gpsBusy?'disabled':'')+
+  homeButton(homeText('Escolher cidade','Choose city'),'home-city','btn btn-soft')+
+  (weather?.failed&&place&&location?.mode!=='gps'?homeButton(homeText('Tentar de novo','Retry'),'home-weather-retry'):'')+'</div>'+
+  '<a class="home-weather-source" href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>';
+}
+function homeRemindersBody(){
+ const own=!!currentUser&&homeAlertsRead?.userId===currentUser.id;
+ const rows=own?customAlerts.filter(alert=>['pending','processing'].includes(alert.status)&&Number.isFinite(Date.parse(alert.scheduled_at)))
+  .slice().sort((a,b)=>Date.parse(a.scheduled_at)-Date.parse(b.scheduled_at)).slice(0,3).map(alert=>[alert.title||homeTitle('alerts'),displayAlertDate(alert.scheduled_at)]):[];
+ const message=own?homeText('Nenhum lembrete pendente.','No pending reminders.'):
+  homeAlertsLoad?.userId===currentUser?.id&&homeAlertsLoad?.failed?homeText('Não foi possível carregar os lembretes.','Could not load reminders.'):
+  currentUser?homeText('Carregando lembretes…','Loading reminders…'):homeText('Nenhum lembrete pendente.','No pending reminders.');
+ return homeList(rows,message)+homeButton(homeText('Abrir lembretes','Open reminders'),'home-alerts','btn btn-soft home-widget-link');
+}
+function homeWidgetBody(id,events){
+ const link=(label,action)=>homeButton(label,action,'btn btn-soft home-widget-link');
+ const metric=(value,description)=>'<strong class="home-widget-value">'+esc(value)+'</strong><p>'+esc(description)+'</p>';
+ switch(id){
+  case 'weather':return homeWeatherBody();
+  case 'alerts':return homeRemindersBody();
+  case 'agenda':return homeList(events.slice(0,3).map(event=>[recordText(event,'title'),fmtDate(event.date)+(event.time?' · '+event.time:'')]),t('noEvents'))+link(homeText('Abrir cronograma','Open calendar'),'go-timeline');
+  case 'docs':{
+   const pending=data.documents.filter(doc=>doc.status!=='done');
+   return metric(progress()+'%',t('progress'))+'<div class="progress-track" aria-hidden="true"><div class="progress-fill" style="width:'+progress()+'%"></div></div>'+
+    (pending.length?pending.slice(0,2).map(taskHTML).join(''):'<p>'+esc(t('noTasks'))+'</p>')+link(t('viewAll'),'go-documents');
+  }
+  case 'expiry':{
+   const expiring=data.documents.map(doc=>({doc,...documentExpiryInfo(doc)})).filter(item=>item.days!==null&&item.days>=0&&item.days<=90).sort((a,b)=>a.days-b.days);
+   return homeList(expiring.slice(0,3).map(item=>[recordText(item.doc,'title'),fmtDate(item.date)]),t('noExpiringDocs'))+link(t('viewAll'),'go-documents');
+  }
+  case 'shopping':{
+   const count=(data.shoppingLists||[]).reduce((total,list)=>total+(list.items||[]).filter(item=>!item.checked).length,0);
+   return metric(count,homeText('Itens ainda não concluídos','Items still to get'))+link(homeText('Abrir lista','Open shopping list'),'go-shopping');
+  }
+  case 'countdown':{
+   const next=events[0];if(!next)return '<p>'+esc(t('pastEvent'))+'</p>';
+   const days=Math.max(0,daysBetween(dateOnlyLocal(today()),dateOnlyLocal(next.date)));
+   return metric(days===0?homeText('É hoje','It’s today'):days+' '+(days===1?homeText('dia','day'):homeText('dias','days')),recordText(next,'title'))+
+    '<p>'+esc(fmtDate(next.date))+'</p>'+link(homeText('Abrir cronograma','Open calendar'),'go-timeline');
+  }
+  case 'trips':{
+   const next=(data.trips||[]).filter(trip=>trip.status!=='done'&&trip.startDate&&((trip.endDate||trip.startDate)>=today())).sort((a,b)=>a.startDate.localeCompare(b.startDate))[0];
+   return (next?homeList([[next.name,tripDates(next)]],''):'<p>'+homeText('Nenhuma viagem com data futura.','No upcoming trip with a date.')+'</p>')+
+    link(homeText('Abrir viagens','Open trips'),'go-trips');
+  }
+  case 'project':{
+   const paid=(data.projectCosts||[]).filter(item=>item.status!=='planned').reduce((sum,item)=>{
+    const nzd=Number(item.nzdAmount??(item.currency==='BRL'?Number(item.amount)/Number(item.rate):item.amount));
+    return sum+(Number.isFinite(nzd)?nzd:0);
+   },0);
+   return metric(money(paid),homeText('Já investido na mudança','Already invested in the move'))+link(homeText('Abrir projeto NZ','Open NZ project'),'home-project');
+  }
+  case 'balance':{
+   const balances=new Map();
+   for(const account of data.accounts||[]){
+    if(account.owner&&account.owner!=='both'&&account.owner!==currentMemberKey())continue;
+    const currency=account.currency==='BRL'?'BRL':'NZD';
+    balances.set(currency,(balances.get(currency)||0)+accountBalance(account));
+   }
+   return homeList([...balances].map(([currency,amount])=>[accountMoney({currency},amount),currency]),homeText('Nenhuma conta cadastrada.','No accounts yet.'))+link(t('finances'),'go-finances');
+  }
+  case 'links':return '<div class="home-widget-actions">'+['trips','finances','timeline','documents','shopping','study','dreams'].map(key=>homeButton(t(key),'go-'+key)).join('')+'</div>';
+ }
+ return '';
+}
+function dashboard(){
+ const editor=activeHomeEditor(),prefs=editor?.layout||homePrefs();
+ const ids=editor?prefs.order:prefs.order.filter(id=>!prefs.hidden.includes(id));
+ const events=data.events.map(eventInDeviceZone).filter(event=>event.date>=today()).sort((a,b)=>(a.date+(a.time||'23:59')).localeCompare(b.date+(b.time||'23:59')));
+ const date=new Intl.DateTimeFormat(data.language==='pt'?'pt-BR':'en-NZ',{dateStyle:'full',timeZone:DEVICE_TIMEZONE}).format(new Date());
+ const controls=(id,index,hidden)=>{
+  const move=(direction,sign,label,disabled)=>homeButton(sign,'home-'+direction+':'+id,'btn btn-soft','aria-label="'+esc(label+' '+homeTitle(id))+'" '+(disabled?'disabled':''));
+  return '<div class="home-widget-controls">'+move('up','↑',homeText('Mover para cima:','Move up:'),index===0)+move('down','↓',homeText('Mover para baixo:','Move down:'),index===ids.length-1)+
+   homeButton(hidden?homeText('Mostrar','Show'):homeText('Ocultar','Hide'),'home-toggle:'+id,'btn btn-soft','aria-label="'+esc((hidden?homeText('Mostrar','Show'):homeText('Ocultar','Hide'))+' '+homeTitle(id))+'"')+
+   homeButton(homeText('Remover','Remove'),'home-remove:'+id,'btn btn-soft','aria-label="'+esc(homeText('Remover','Remove')+' '+homeTitle(id))+'"')+'</div>';
+ };
+ const cards=ids.map((id,index)=>{
+  const hidden=prefs.hidden.includes(id),icon=HOME_WIDGETS[id][2],label=homeTitle(id);
+  return '<article class="home-widget" data-home-widget="'+id+'" style="--home-index:'+index+'"><div class="home-widget-head"><span class="home-widget-icon" aria-hidden="true">'+
+   (icon.length>1?tripSvg(icon):icon)+'</span><h2 tabindex="-1">'+esc(label)+'</h2>'+
+   (editor?'<span class="home-drag" draggable="true" aria-hidden="true" title="'+esc(homeText('Arrastar para mover','Drag to move'))+'">⠿</span>':'')+
+   '</div><div class="home-widget-body">'+(hidden?'<p>'+homeText('Oculto na Home','Hidden on Home')+'</p>':homeWidgetBody(id,events))+'</div>'+
+   (editor?controls(id,index,hidden):'')+'</article>';
+ }).join('');
+ const available=Object.keys(HOME_WIDGETS).filter(id=>!prefs.order.includes(id));
+ const tools=editor?'<section class="home-editor"><div class="home-editor-head"><h2>'+homeText('Organizar widgets','Arrange widgets')+'</h2><div class="home-edit-actions">'+
+  homeButton(homeText('Restaurar padrão','Restore defaults'),'home-reset')+homeButton(t('cancel'),'home-cancel')+homeButton(t('save'),'home-save','btn')+'</div></div>'+
+  '<details class="home-gallery" '+(editor.gallery?'open':'')+'><summary>'+homeText('Galeria de widgets','Widget gallery')+'</summary><div class="home-gallery-grid">'+
+  (available.map(id=>'<div class="home-gallery-row"><strong>'+esc(homeTitle(id))+'</strong>'+homeButton(t('add'),'home-add:'+id,'btn btn-soft','aria-label="'+esc(t('add')+' '+homeTitle(id))+'"')+'</div>').join('')||
+   '<p>'+homeText('Todos os widgets já estão na Home.','All widgets are already on Home.')+'</p>')+'</div></details></section>':'';
+ const enter=!homeEntered;homeEntered=true;
+ return '<section class="home-dashboard"><header class="home-hero"><div><time datetime="'+today()+'">'+esc(date)+'</time><h1>'+esc(t('hero'))+'</h1></div>'+
+  (editor?'':homeButton(homeText('Personalizar Home','Customize Home'),'home-edit','btn'))+'</header>'+tools+
+  '<div class="home-board'+(enter?' home-enter':'')+'">'+(cards||'<div class="home-empty">'+empty(homeText('Adicione widgets para montar sua Home.','Add widgets to build your Home.'))+'</div>')+'</div></section>';
+}
+
+function homeRedraw(focusAction='',widget=''){
+ const editor=activeHomeEditor(),gallery=$('.home-gallery');
+ if(editor&&gallery)editor.gallery=gallery.open;
+ render();
+ if(!focusAction)return;
+ const target=$$('.home-dashboard button[data-action]').find(button=>button.dataset.action===focusAction&&!button.disabled);
+ (target||(widget&&$('.home-widget[data-home-widget="'+widget+'"] h2'))||$('.home-gallery summary'))?.focus({preventScroll:true});
+}
+function homeAction(action){
+ const [command,id]=action.split(':'),editor=activeHomeEditor();
+ if(command==='home-alerts')return $('#openAlertsCenterBtn')?.click();
+ if(command==='home-project'){page='finances';financeSubpage='project';render();window.scrollTo(0,0);return}
+ if(command==='home-gps')return requestHomeGps(true);
+ if(command==='home-city')return openHomeCity();
+ if(command==='home-weather-retry'){homeWeatherRead=null;return refreshHomeWeather()}
+ if(command==='home-edit'){
+  const {order,hidden}=homePrefs();homeEditor={key:homeKey(),layout:{order,hidden},gallery:true};
+  homeRedraw('home-save');return;
+ }
+ if(!editor)return;
+ const layout=editor.layout,index=layout.order.indexOf(id);
+ if(command==='home-save'){
+  if(!saveHomePrefs({...homePrefs(),...layout}))return;
+  homeEditor=null;homeRedraw('home-edit');notify(homeText('Home salva.','Home saved.'));return;
+ }
+ if(command==='home-cancel'){homeEditor=null;homeRedraw('home-edit');return}
+ if(command==='home-reset'){editor.layout={order:HOME_DEFAULT.slice(),hidden:[]};homeRedraw(action);return}
+ if(!Object.hasOwn(HOME_WIDGETS,id))return;
+ if(command==='home-add'&&index===-1){layout.order.push(id);homeRedraw('home-toggle:'+id,id);return}
+ if(index===-1)return;
+ if(command==='home-toggle')layout.hidden=layout.hidden.includes(id)?layout.hidden.filter(value=>value!==id):[...layout.hidden,id];
+ if(command==='home-remove'){
+  layout.order.splice(index,1);layout.hidden=layout.hidden.filter(value=>value!==id);
+  if($('.home-gallery'))$('.home-gallery').open=true;homeRedraw('home-add:'+id);return;
+ }
+ if(command==='home-up'||command==='home-down'){
+  const target=index+(command==='home-up'?-1:1);
+  if(target<0||target>=layout.order.length)return;
+  layout.order.splice(index,1);layout.order.splice(target,0,id);
+ }
+ homeRedraw(action,id);
+}
+function clearHomeDrop(){
+ $('.home-widget[data-home-target]')?.removeAttribute('data-home-target');
+ homeDragId='';
+}
+$('#pageContent').addEventListener('dragstart',event=>{
+ const handle=event.target.closest('.home-drag'),editor=activeHomeEditor();
+ if(!handle||!editor||!event.dataTransfer)return;
+ homeDragId=handle.closest('[data-home-widget]').dataset.homeWidget;
+ event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',homeDragId);
+});
+$('#pageContent').addEventListener('dragover',event=>{
+ const card=event.target.closest('[data-home-widget]');
+ if(!homeDragId||!card||!activeHomeEditor())return;
+ event.preventDefault();
+ $('.home-widget[data-home-target]')?.removeAttribute('data-home-target');
+ if(card.dataset.homeWidget!==homeDragId)card.setAttribute('data-home-target','');
+});
+$('#pageContent').addEventListener('drop',event=>{
+ const card=event.target.closest('[data-home-widget]'),editor=activeHomeEditor();
+ if(!homeDragId||!card||!editor)return;
+ event.preventDefault();
+ const order=editor.layout.order,source=order.indexOf(homeDragId),target=order.indexOf(card.dataset.homeWidget),id=homeDragId;
+ clearHomeDrop();
+ if(source<0||target<0||source===target)return;
+ order.splice(source,1);order.splice(target,0,id);homeRedraw('home-toggle:'+id,id);
+});
+$('#pageContent').addEventListener('dragend',clearHomeDrop);
+$('#pageContent').addEventListener('toggle',event=>{
+ const editor=activeHomeEditor();
+ if(editor&&event.target.matches('.home-gallery'))editor.gallery=event.target.open;
+},true);
+function homeVisibleWidget(id){
+ const prefs=activeHomeEditor()?.layout||homePrefs();
+ return page==='home'&&!prefs.hidden.includes(id)?$('.home-widget[data-home-widget="'+id+'"] .home-widget-body'):null;
+}
+function updateHomeWidget(id,body){
+ const element=homeVisibleWidget(id);
+ if(!element)return;
+ const focused=element.contains(document.activeElement)?document.activeElement?.dataset.action:null;
+ element.innerHTML=body();
+ if(focused)[...element.querySelectorAll('button[data-action]')].find(button=>button.dataset.action===focused&&!button.disabled)?.focus({preventScroll:true});
+}
+function homeWeatherCoordinates(place){return place?place.latitude+','+place.longitude:''}
+async function refreshHomeWeather(){
+ const place=homeWeatherPlace(),key=homeKey();
+ if(!homeVisibleWidget('weather')||!place)return;
+ const coordinates=homeWeatherCoordinates(place),previous=homeWeatherRead;
+ const match=previous?.key===key&&previous.coordinates===coordinates;
+ if(match&&(previous.pending||Date.now()-previous.at<(previous.failed?60000:600000)))return;
+ const request={key,coordinates,at:Date.now(),pending:true,failed:false,data:match?previous.data:null};
+ homeWeatherRead=request;
+ updateHomeWidget('weather',homeWeatherBody);
+ try{
+  const query=new URLSearchParams({latitude:place.latitude,longitude:place.longitude,current:'temperature_2m,apparent_temperature',temperature_unit:'celsius'});
+  const response=await fetch('https://api.open-meteo.com/v1/forecast?'+query,{signal:AbortSignal.timeout(10000),credentials:'omit'});
+  if(!response.ok)throw Error('Weather request failed');
+  const result=(await response.json()).current;
+  if(!Number.isFinite(result?.temperature_2m)||!Number.isFinite(result.apparent_temperature))throw Error('Missing weather values');
+  request.data=result;
+ }catch(error){request.failed=true}
+ finally{
+  request.pending=false;request.at=Date.now();
+  if(homeWeatherRead===request&&homeKey()===key)updateHomeWidget('weather',homeWeatherBody);
+ }
+}
+let homeGpsAttempt=null;
+async function requestHomeGps(interactive){
+ const key=homeKey();
+ if(homeGpsRequest?.key===key)return;
+ if(!navigator.geolocation){
+  if(interactive)notify(homeText('A localização está indisponível. Escolha uma cidade.','Location is unavailable. Choose a city.'));
+  return;
+ }
+ if(!interactive){
+  if(homeGpsAttempt?.key===key&&Date.now()-homeGpsAttempt.at<1800000)return;
+  homeGpsAttempt={key,at:Date.now()};
+  try{if((await navigator.permissions?.query({name:'geolocation'}))?.state!=='granted')return}catch(error){return}
+  if(homeKey()!==key||homePrefs().location?.mode!=='gps'||homeGpsRequest?.key===key)return;
+ }
+ const request={key};homeGpsRequest=request;
+ const active=()=>homeGpsRequest===request&&homeKey()===key;
+ updateHomeWidget('weather',homeWeatherBody);
+ navigator.geolocation.getCurrentPosition(({coords})=>{
+  if(!active())return;
+  homeGpsRequest=null;homeGpsAttempt={key,at:Date.now()};
+  if(interactive&&!saveHomePrefs({...homePrefs(),location:{mode:'gps'}})){updateHomeWidget('weather',homeWeatherBody);return}
+  homeGpsFix={key,latitude:Number(coords.latitude.toFixed(2)),longitude:Number(coords.longitude.toFixed(2))};
+  updateHomeWidget('weather',homeWeatherBody);refreshHomeWeather();
+ },error=>{
+  if(!active())return;
+  homeGpsRequest=null;updateHomeWidget('weather',homeWeatherBody);
+  if(interactive)notify(error.code===1?homeText('Localização bloqueada. Permita o acesso no navegador ou escolha uma cidade.','Location is blocked. Allow access in your browser or choose a city.'):
+   homeText('Não foi possível obter a localização. Tente novamente ou escolha uma cidade.','Could not get your location. Try again or choose a city.'));
+ },{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
+}
+function openHomeCity(){
+ const old=$('#homeCityDialog');if(old){old.focus();return}
+ const key=homeKey(),dialog=document.createElement('dialog');
+ dialog.id='homeCityDialog';dialog.className='home-location';dialog.setAttribute('aria-labelledby','home-city-title');
+ dialog.innerHTML='<h2 id="home-city-title">'+homeText('Escolher cidade','Choose city')+'</h2><form><label for="home-city-query">'+homeText('Nome da cidade','City name')+
+  '</label><input id="home-city-query" type="search" required minlength="2" maxlength="100"><button type="submit" class="btn">'+homeText('Buscar','Search')+
+  '</button></form><p role="status"></p><div class="home-location-results"></div><button type="button" class="btn btn-soft" data-home-city-close>'+t('cancel')+'</button>';
+ const input=dialog.querySelector('input'),result=dialog.querySelector('.home-location-results'),status=dialog.querySelector('[role="status"]'),submit=dialog.querySelector('[type="submit"]');
+ const returnFocus=()=>$('.home-widget [data-action="home-city"]')?.focus({preventScroll:true});
+ dialog.addEventListener('close',()=>{dialog.remove();returnFocus()},{once:true});
+ dialog.querySelector('[data-home-city-close]').onclick=()=>dialog.close();
+ dialog.querySelector('form').onsubmit=async event=>{
+  event.preventDefault();if(submit.disabled)return;
+  const name=input.value.trim();if(name.length<2)return;
+  status.textContent=homeText('Buscando cidades…','Searching for cities…');result.replaceChildren();submit.disabled=true;
+  try{
+   const query=new URLSearchParams({name,count:6,language:data.language});
+   const response=await fetch('https://geocoding-api.open-meteo.com/v1/search?'+query,{signal:AbortSignal.timeout(10000),credentials:'omit'});
+   if(!response.ok)throw Error('City search failed');
+   const payload=await response.json();
+   if(!dialog.isConnected||homeKey()!==key)return;
+   const places=(Array.isArray(payload.results)?payload.results:[]).filter(place=>typeof place.name==='string'&&Number.isFinite(place.latitude)&&Number.isFinite(place.longitude));
+   status.textContent=places.length?'':homeText('Nenhuma cidade encontrada.','No cities found.');
+   for(const place of places){
+    const choice=document.createElement('button');
+    choice.type='button';choice.className='btn btn-soft';
+    choice.textContent=[...new Set([place.name,place.admin1,place.country].filter(Boolean))].join(', ');
+    choice.onclick=()=>{
+     if(homeKey()!==key||!saveHomePrefs({...homePrefs(),location:{mode:'city',name:choice.textContent,latitude:place.latitude,longitude:place.longitude}}))return;
+     homeGpsRequest=null;homeGpsFix=null;dialog.close();updateHomeWidget('weather',homeWeatherBody);refreshHomeWeather();
+    };
+    result.append(choice);
+   }
+  }catch(error){status.textContent=homeText('Falha na busca. Tente novamente.','Search failed. Try again.')}
+  finally{submit.disabled=false}
+ };
+ document.body.append(dialog);dialog.showModal();input.focus();
+}
+function refreshHomeWidgets(){
+ if(page!=='home'){homeEntered=false;return}
+ if(homeVisibleWidget('weather')){
+  if(homePrefs().location?.mode==='gps')requestHomeGps(false);
+  refreshHomeWeather();
+ }
+ const userId=currentUser?.id;
+ if(!userId||!homeVisibleWidget('alerts'))return;
+ if(homeAlertsRead?.userId===userId&&Date.now()-homeAlertsRead.at<60000)return;
+ if(homeAlertsLoad?.userId===userId&&(homeAlertsLoad.pending||Date.now()-homeAlertsLoad.at<30000))return;
+ const request={userId,pending:true,failed:false,at:Date.now()};homeAlertsLoad=request;
+ loadCustomAlerts().catch(()=>{request.failed=true}).finally(()=>{
+  request.at=Date.now();request.pending=false;
+  if(currentUser?.id===userId)updateHomeWidget('alerts',homeRemindersBody);
+ });
+}
 function documentExpiryInfo(x){const raw=x.expiryDate||((x.hasExpiry&&x.due)?x.due:"");if(!raw)return {date:"",days:null,state:"none",label:data.language==="pt"?window.KiwiI18n.text("Validade não informada"):"Expiry date not set"};const d=dateOnlyLocal(raw);if(!d||isNaN(d.getTime()))return {date:raw,days:null,state:"none",label:data.language==="pt"?window.KiwiI18n.text("Confira a data de validade"):"Check expiry date"};const days=daysBetween(dateOnlyLocal(today()),d);if(days<0)return {date:raw,days,state:"expired",label:data.language==="pt"?`${window.KiwiI18n.text("Vencido há " )}${Math.abs(days)} dia(s)`:`Expired ${Math.abs(days)} day(s) ago`};if(days===0)return {date:raw,days,state:"soon",label:data.language==="pt"?window.KiwiI18n.text("Vence hoje"):"Expires today"};if(days<=30)return {date:raw,days,state:"soon",label:data.language==="pt"?`Renovar urgentemente · ${days} dia(s)`:`Renew urgently · ${days} day(s)`};if(days<=90)return {date:raw,days,state:"soon",label:data.language==="pt"?`${window.KiwiI18n.text("Planejar renovação · " )}${days} dia(s)`:`Plan renewal · ${days} day(s)`};return {date:raw,days,state:"safe",label:data.language==="pt"?`${days}${window.KiwiI18n.text(" dias até vencer" )}`:`${days} days until expiry`};}
 
 function documentIcon(x){
@@ -3344,7 +3723,7 @@ function removeTripPart(tripId,part,itemId){
  if(part==='itinerary')confirmDialog({title:window.KiwiI18n.text('Remover item do roteiro?'),message:linked?window.KiwiI18n.text('O item e seu evento conectado no Cronograma serão removidos.'):window.KiwiI18n.text('O item será removido do roteiro desta viagem.'),confirmText:window.KiwiI18n.text('Remover item'),cancelText:window.KiwiI18n.text('Manter item'),danger:true}).then(ok=>{if(ok)remove()});else remove();
 }
 
-function render(){window.KiwiI18n.setLanguage(data.language);disposeTripMemoryMap();disposeTripMovementMap();applyNavigationPrefs();renderProfileMenus();const names={home:"home",documents:"documents",timeline:"timeline",alerts:"customAlertsNav",finances:"finances",trips:"trips",shopping:"shopping",study:"study",dreams:"dreams"};$("#crumb").textContent=page==="alerts"?(data.language==="pt"?window.KiwiI18n.text("Alertas"):"Alerts"):t(names[page]||"home");$$("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));const views={home:dashboard,documents:documentPage,timeline:timelinePage,alerts:alertPage,finances:financesPage,trips:tripsPage,shopping:shoppingPage,study:studyPage,dreams:dreamsPage};$("#pageContent").innerHTML=(views[page]||dashboard)();if(page==="trips")setTimeout(()=>{renderTripMovementMap();renderTripMemoryMap()},0);applyStaticLanguage();document.documentElement.lang=data.language==="pt"?"pt-BR":"en";$$("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});$("#languageMenuLabel").textContent=data.language==="pt"?window.KiwiI18n.text("Mudar idioma para English"):"Change language to Português"}
+function render(){window.KiwiI18n.setLanguage(data.language);disposeTripMemoryMap();disposeTripMovementMap();applyNavigationPrefs();renderProfileMenus();const names={home:"home",documents:"documents",timeline:"timeline",alerts:"customAlertsNav",finances:"finances",trips:"trips",shopping:"shopping",study:"study",dreams:"dreams"};$("#crumb").textContent=page==="alerts"?(data.language==="pt"?window.KiwiI18n.text("Alertas"):"Alerts"):t(names[page]||"home");$$("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));const views={home:dashboard,documents:documentPage,timeline:timelinePage,alerts:alertPage,finances:financesPage,trips:tripsPage,shopping:shoppingPage,study:studyPage,dreams:dreamsPage};$("#pageContent").innerHTML=(views[page]||dashboard)();refreshHomeWidgets();if(page==="trips")setTimeout(()=>{renderTripMovementMap();renderTripMemoryMap()},0);applyStaticLanguage();document.documentElement.lang=data.language==="pt"?"pt-BR":"en";$$("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});$("#languageMenuLabel").textContent=data.language==="pt"?window.KiwiI18n.text("Mudar idioma para English"):"Change language to Português"}
 function notify(s){const el=$("#toast");el.textContent=s;el.classList.remove("hidden");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add("hidden"),2600)}
 function confirmDialog({title,message,confirmText,cancelText,danger=true}){
   return new Promise(resolve=>{
@@ -3786,7 +4165,7 @@ document.addEventListener('keydown',e=>{
 });
 
 $("#pageContent").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches('.finance-account-card')){e.preventDefault();e.target.click()}});
-$("#pageContent").addEventListener("click",e=>{const calDay=e.target.closest("[data-calendar-date]");if(calDay){calendarSelectedDate=calDay.dataset.calendarDate;calendarFilter="selected";render();return}const pie=e.target.closest("[data-pie-category]");if(pie){selectedPieCategory=pie.dataset.pieCategory;render();return}const pieCycle=e.target.closest("[data-pie-cycle]");if(pieCycle){const cats=[...new Set((data.transactions||[]).filter(x=>x.type==="expense"&&x.category).map(x=>x.category))];const next=cats.indexOf(selectedPieCategory)+1;selectedPieCategory=cats.length?cats[next%cats.length]:"";render();return}const b=e.target.closest("[data-action]")||e.target.closest("[data-memory-card-action]");if(!b)return;const a=(b.dataset.action||b.dataset.memoryCardAction).replace(/^travel-start-/,'travel-add-');if(a.startsWith("memory-"))return tripMemoryAction(a);if(a==="document-menu-toggle"){const menu=b.closest(".document-menu"),panel=menu.querySelector(".document-popover"),wasOpen=!panel.hidden;document.querySelectorAll(".document-popover").forEach(p=>{p.hidden=true;p.previousElementSibling.setAttribute("aria-expanded","false")});panel.hidden=wasOpen;b.setAttribute("aria-expanded",String(!wasOpen));return}if(b.closest(".document-popover")){const menu=b.closest(".document-menu");menu.querySelector(".document-popover").hidden=true;menu.querySelector(".document-menu-toggle").setAttribute("aria-expanded","false")}if(a.startsWith("edit-project-cost:"))return editProjectCost(a.split(":")[1]);if(a.startsWith("edit-transaction:"))return editFinanceTransaction(false,a.split(":")[1]);if(a.startsWith("edit-reserve:"))return editFinanceTransaction(true,a.split(":")[1]);if(a.startsWith("finance-account-open:")){financeStatementAccount=a.slice("finance-account-open:".length);financeSubpage="account-statement";financeAccountMenuId="";financeFiltersOpen=false;render();window.scrollTo({top:0,behavior:"smooth"});return}if(a.startsWith("finance-account-visibility:")){const id=a.slice("finance-account-visibility:".length);if(financeHiddenBalances.has(id))financeHiddenBalances.delete(id);else financeHiddenBalances.add(id);render();return}if(a.startsWith("finance-account-menu:")){const id=a.slice("finance-account-menu:".length);financeAccountMenuId=financeAccountMenuId===id?"":id;render();return}if(a.startsWith('edit-account:')){financeAccountMenuId="";return editAccount(a.split(':')[1])}if(a.startsWith('delete-account:')){financeAccountMenuId="";const id=a.split(':')[1];if((data.transactions||[]).some(x=>x.accountId===id)){notify(data.language==='pt'?window.KiwiI18n.text('Esta caixinha tem movimentações associadas e não pode ser excluída.'):'This money box has linked transactions and cannot be deleted.');return}return removeItem('accounts',id)}if(a.startsWith("shopping-export-pdf:")||a==="shopping-export-pdf"){const l=data.shoppingLists.find(x=>x.id===(a.includes(":")?a.slice(19):activeShoppingListId))||data.shoppingLists.find(x=>x.id===activeShoppingListId)||data.shoppingLists[0];if(!l){notify(data.language==="pt"?window.KiwiI18n.text("Crie uma lista primeiro."):"Create a list first.");return}const rows=(l.items||[]).map(i=>'<tr><td>'+esc(i.name)+'</td><td>'+i.quantity+' '+esc(i.unit||"un.")+'</td><td>'+money(i.unitPrice)+'</td><td>'+money(i.quantity*i.unitPrice)+'</td></tr>').join("");const w=window.open("","_blank");if(w){w.document.write('<!doctype html><html><head><title>'+esc(l.name)+'</title><style>body{font:14px Arial;padding:30px;color:#222}h1{font-size:24px}table{border-collapse:collapse;width:100%;margin-top:22px}td,th{padding:10px;border-bottom:1px solid #ddd;text-align:left}th{background:#f2f5f3}</style></head><body><h1>'+esc(l.name)+'</h1><p>KiwiPath · '+new Date().toLocaleDateString()+window.KiwiI18n.text('</p><table><thead><tr><th>Produto</th><th>Quantidade</th><th>Preço unitário</th><th>Total</th></tr></thead><tbody>')+rows+'</tbody></table><h3>Total: '+money((l.items||[]).reduce((n,i)=>n+(+i.quantity||0)*(+i.unitPrice||0),0))+'</h3><script>window.onload=()=>window.print()<\/script></body></html>');w.document.close()}return}if(a.startsWith("shopping-item-qty:")){const p=a.split(":"),l=data.shoppingLists.find(x=>x.id===p[1]),it=l?.items?.find(x=>x.id===p[2]);if(!it)return;const delta=Number(p[3]),q=Math.max(1,Number(it.quantity)||1);if(delta<0&&q<=1){confirmDialog({title:data.language==="pt"?window.KiwiI18n.text("Remover item da lista?"):"Remove item from list?",message:data.language==="pt"?window.KiwiI18n.text("A quantidade já é 1. Deseja remover este item da lista?"):"The quantity is already 1. Do you want to remove this item from the list?",confirmText:data.language==="pt"?window.KiwiI18n.text("Sim, remover"):"Yes, remove",cancelText:data.language==="pt"?window.KiwiI18n.text("Não"):"No",danger:true}).then(ok=>{if(!ok)return;l.items=l.items.filter(x=>x.id!==it.id);save();render()});return}it.quantity=Math.max(1,Math.round((q+delta)*100)/100);save();render();return}if(a.startsWith("shopping-inline-new:")){editShoppingProduct(undefined,$("#f-productSearch")?.value||"");return}if(a.startsWith("shopping-qty:")){const q=$("#f-quantity");if(q)q.value=Math.max(1,(parseAmount(q.value)||1)+Number(a.slice(13)));return}if(a.startsWith("shopping-tab:")){shoppingSubpage=a.slice(13);render();return}if(a.startsWith("shopping-list-menu:")){const id=a.slice("shopping-list-menu:".length);shoppingListMenuId=shoppingListMenuId===id?"":id;render();return}
+$("#pageContent").addEventListener("click",e=>{const calDay=e.target.closest("[data-calendar-date]");if(calDay){calendarSelectedDate=calDay.dataset.calendarDate;calendarFilter="selected";render();return}const pie=e.target.closest("[data-pie-category]");if(pie){selectedPieCategory=pie.dataset.pieCategory;render();return}const pieCycle=e.target.closest("[data-pie-cycle]");if(pieCycle){const cats=[...new Set((data.transactions||[]).filter(x=>x.type==="expense"&&x.category).map(x=>x.category))];const next=cats.indexOf(selectedPieCategory)+1;selectedPieCategory=cats.length?cats[next%cats.length]:"";render();return}const b=e.target.closest("[data-action]")||e.target.closest("[data-memory-card-action]");if(!b)return;const a=(b.dataset.action||b.dataset.memoryCardAction).replace(/^travel-start-/,'travel-add-');if(a.startsWith("home-"))return homeAction(a);if(a.startsWith("memory-"))return tripMemoryAction(a);if(a==="document-menu-toggle"){const menu=b.closest(".document-menu"),panel=menu.querySelector(".document-popover"),wasOpen=!panel.hidden;document.querySelectorAll(".document-popover").forEach(p=>{p.hidden=true;p.previousElementSibling.setAttribute("aria-expanded","false")});panel.hidden=wasOpen;b.setAttribute("aria-expanded",String(!wasOpen));return}if(b.closest(".document-popover")){const menu=b.closest(".document-menu");menu.querySelector(".document-popover").hidden=true;menu.querySelector(".document-menu-toggle").setAttribute("aria-expanded","false")}if(a.startsWith("edit-project-cost:"))return editProjectCost(a.split(":")[1]);if(a.startsWith("edit-transaction:"))return editFinanceTransaction(false,a.split(":")[1]);if(a.startsWith("edit-reserve:"))return editFinanceTransaction(true,a.split(":")[1]);if(a.startsWith("finance-account-open:")){financeStatementAccount=a.slice("finance-account-open:".length);financeSubpage="account-statement";financeAccountMenuId="";financeFiltersOpen=false;render();window.scrollTo({top:0,behavior:"smooth"});return}if(a.startsWith("finance-account-visibility:")){const id=a.slice("finance-account-visibility:".length);if(financeHiddenBalances.has(id))financeHiddenBalances.delete(id);else financeHiddenBalances.add(id);render();return}if(a.startsWith("finance-account-menu:")){const id=a.slice("finance-account-menu:".length);financeAccountMenuId=financeAccountMenuId===id?"":id;render();return}if(a.startsWith('edit-account:')){financeAccountMenuId="";return editAccount(a.split(':')[1])}if(a.startsWith('delete-account:')){financeAccountMenuId="";const id=a.split(':')[1];if((data.transactions||[]).some(x=>x.accountId===id)){notify(data.language==='pt'?window.KiwiI18n.text('Esta caixinha tem movimentações associadas e não pode ser excluída.'):'This money box has linked transactions and cannot be deleted.');return}return removeItem('accounts',id)}if(a.startsWith("shopping-export-pdf:")||a==="shopping-export-pdf"){const l=data.shoppingLists.find(x=>x.id===(a.includes(":")?a.slice(19):activeShoppingListId))||data.shoppingLists.find(x=>x.id===activeShoppingListId)||data.shoppingLists[0];if(!l){notify(data.language==="pt"?window.KiwiI18n.text("Crie uma lista primeiro."):"Create a list first.");return}const rows=(l.items||[]).map(i=>'<tr><td>'+esc(i.name)+'</td><td>'+i.quantity+' '+esc(i.unit||"un.")+'</td><td>'+money(i.unitPrice)+'</td><td>'+money(i.quantity*i.unitPrice)+'</td></tr>').join("");const w=window.open("","_blank");if(w){w.document.write('<!doctype html><html><head><title>'+esc(l.name)+'</title><style>body{font:14px Arial;padding:30px;color:#222}h1{font-size:24px}table{border-collapse:collapse;width:100%;margin-top:22px}td,th{padding:10px;border-bottom:1px solid #ddd;text-align:left}th{background:#f2f5f3}</style></head><body><h1>'+esc(l.name)+'</h1><p>KiwiPath · '+new Date().toLocaleDateString()+window.KiwiI18n.text('</p><table><thead><tr><th>Produto</th><th>Quantidade</th><th>Preço unitário</th><th>Total</th></tr></thead><tbody>')+rows+'</tbody></table><h3>Total: '+money((l.items||[]).reduce((n,i)=>n+(+i.quantity||0)*(+i.unitPrice||0),0))+'</h3><script>window.onload=()=>window.print()<\/script></body></html>');w.document.close()}return}if(a.startsWith("shopping-item-qty:")){const p=a.split(":"),l=data.shoppingLists.find(x=>x.id===p[1]),it=l?.items?.find(x=>x.id===p[2]);if(!it)return;const delta=Number(p[3]),q=Math.max(1,Number(it.quantity)||1);if(delta<0&&q<=1){confirmDialog({title:data.language==="pt"?window.KiwiI18n.text("Remover item da lista?"):"Remove item from list?",message:data.language==="pt"?window.KiwiI18n.text("A quantidade já é 1. Deseja remover este item da lista?"):"The quantity is already 1. Do you want to remove this item from the list?",confirmText:data.language==="pt"?window.KiwiI18n.text("Sim, remover"):"Yes, remove",cancelText:data.language==="pt"?window.KiwiI18n.text("Não"):"No",danger:true}).then(ok=>{if(!ok)return;l.items=l.items.filter(x=>x.id!==it.id);save();render()});return}it.quantity=Math.max(1,Math.round((q+delta)*100)/100);save();render();return}if(a.startsWith("shopping-inline-new:")){editShoppingProduct(undefined,$("#f-productSearch")?.value||"");return}if(a.startsWith("shopping-qty:")){const q=$("#f-quantity");if(q)q.value=Math.max(1,(parseAmount(q.value)||1)+Number(a.slice(13)));return}if(a.startsWith("shopping-tab:")){shoppingSubpage=a.slice(13);render();return}if(a.startsWith("shopping-list-menu:")){const id=a.slice("shopping-list-menu:".length);shoppingListMenuId=shoppingListMenuId===id?"":id;render();return}
 if(a.startsWith("shopping-taxonomy-add:"))return editShoppingTaxonomy(a.split(":")[1]);if(a.startsWith("shopping-taxonomy-edit:")){const p=a.split(":");return editShoppingTaxonomy(p[1],decodeURIComponent(p.slice(2).join(":")))}if(a.startsWith("shopping-taxonomy-delete:")){const p=a.split(":"),kind=p[1],value=decodeURIComponent(p.slice(2).join(":")),prop=({brands:"brand",units:"unit",categories:"category"})[kind],key=({brands:"shoppingBrands",units:"shoppingUnits",categories:"shoppingCategories"})[kind],pt=data.language==="pt";if(!prop||!key)return;const linked=(data.shoppingProducts||[]).filter(x=>String(x[prop]||"").trim().toLocaleLowerCase()===value.toLocaleLowerCase()).length;const message=pt?(linked?("“"+value+window.KiwiI18n.text("” está associado a ")+linked+window.KiwiI18n.text(" produto(s). A exclusão removerá esse vínculo também. Deseja continuar?")):("Deseja excluir “"+value+"” do cadastro?")):(linked?("“"+value+"” is linked to "+linked+" product(s). Deleting it will also remove those links. Continue?"):("Delete “"+value+"” from the registry?"));confirmDialog({title:pt?window.KiwiI18n.text("Excluir cadastro?"):"Delete record?",message,confirmText:pt?window.KiwiI18n.text("Excluir"):"Delete",cancelText:pt?window.KiwiI18n.text("Cancelar"):"Cancel",danger:true}).then(ok=>{if(!ok)return;data[key]=(data[key]||[]).filter(x=>String(x).trim().toLocaleLowerCase()!==value.toLocaleLowerCase());(data.shoppingProducts||[]).forEach(x=>{if(String(x[prop]||"").trim().toLocaleLowerCase()===value.toLocaleLowerCase())x[prop]=""});save();render();notify(pt?window.KiwiI18n.text("Cadastro excluído."):"Record deleted.")});return}if(a==="shopping-add-list")return editShoppingList();if(a.startsWith("shopping-open:")){activeShoppingListId=a.slice(14);shoppingSubpage="list";render();return}if(a==="shopping-back"){shoppingSubpage="lists";render();return}if(a.startsWith("shopping-edit-list:"))return editShoppingList(a.slice(19));if(a.startsWith("shopping-delete-list:"))return deleteShoppingList(a.slice(21));if(a.startsWith("shopping-add-item:"))return addShoppingItem(a.slice(18));if(a.startsWith("shopping-edit-item:")){const p=a.split(":");return addShoppingItem(p[1],p[2])}if(a.startsWith("shopping-remove-item:")){const p=a.split(":"),l=data.shoppingLists.find(x=>x.id===p[1]);if(l){l.items=(l.items||[]).filter(x=>x.id!==p[2]);save();render()}return}if(a.startsWith("shopping-complete:"))return completeShoppingList(a.slice(18));if(a.startsWith("shopping-reopen:")){const l=data.shoppingLists.find(x=>x.id===a.slice(16));if(l){l.status="open";l.items.forEach(x=>x.checked=false);save();render()}return}if(a==="shopping-add-product")return editShoppingProduct();if(a.startsWith("shopping-edit-product:"))return editShoppingProduct(a.slice(22));if(a.startsWith("shopping-delete-product:"))return deleteShoppingProduct(a.slice("shopping-delete-product:".length));if(a==="shopping-add-supplier")return editShoppingSupplier();if(a.startsWith("shopping-edit-supplier:"))return editShoppingSupplier(a.slice(23));if(a.startsWith("shopping-delete-supplier:"))return deleteShoppingSupplier(a.slice(25));if(a==="travel-new")return editTrip();
 if(a.startsWith("travel-open:")){activeTripId=a.slice("travel-open:".length);tripsView="plans";render();return}
 if(a.startsWith('travel-visited-countries:'))return editTripVisitedCountries(a.slice('travel-visited-countries:'.length));
@@ -4028,7 +4407,7 @@ supabaseClient.auth.getSession().then(({data:sessionData,error})=>{
   startApp(sessionData.session);
 });
 supabaseClient.auth.onAuthStateChange((event,session)=>{
-  if(event==="SIGNED_OUT"){currentUser=null;cloudRecordId=null;showAuth();}
+  if(event==="SIGNED_OUT"){currentUser=null;cloudRecordId=null;homeEditor=null;homeGpsRequest=null;homeGpsFix=null;homeWeatherRead=null;homeAlertsRead=null;homeAlertsLoad=null;customAlerts=[];$("#homeCityDialog")?.close();showAuth();}
   else if(event==="SIGNED_IN" && session?.user){currentUser=session.user;updateProfile();}
 });
 })();
