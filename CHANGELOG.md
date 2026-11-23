@@ -1,5 +1,10 @@
 # Release history
 
+## 1.5.1
+
+- Gave each Home widget a distinct layout, with calendar dates, document progress and day/night weather visuals.
+- Added live widget reordering by touch or mouse, with other cards moving into place during the gesture.
+
 ## 1.5.0
 
 - Redesigned Home as a customizable widget dashboard with add, hide, remove and reorder controls.

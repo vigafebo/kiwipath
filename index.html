@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./translations.js?v=1.5.0"></script>
+<script src="./translations.js?v=1.5.1"></script>
 <meta name="theme-color" content="#183d32">
 <title>KiwiPath — Our journey to New Zealand</title>
 <style>
@@ -1145,12 +1145,7 @@ h1{font-size:28px}
 .home-hero time{font-size:13px;color:#ddecdf}
 .home-hero h1{margin:5px 0 0;color:#fff;font-size:clamp(27px,5vw,51px);letter-spacing:-.035em;line-height:1.08}
 .home-hero .btn{background:#f1f6e9;color:#193e32;min-height:44px}
-.home-board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
-.home-widget{--widget-bg:#e4efe2;--widget-ink:#23513a;min-width:0;display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--paper);box-shadow:0 2px 6px #183d3208;transition:border-color .18s,box-shadow .18s;overflow-wrap:anywhere}
-.home-widget:hover{border-color:#a8c0a6;box-shadow:0 5px 17px #183d3210}
-.home-widget[data-home-widget="weather"]{--widget-bg:#dcebf6;--widget-ink:#264e68;background:linear-gradient(145deg,#f2f8ff,var(--paper) 85%)}
-.home-widget[data-home-widget="alerts"],.home-widget[data-home-widget="expiry"]{--widget-bg:#fbebcf;--widget-ink:#714514}
-.home-widget[data-home-widget="trips"],.home-widget[data-home-widget="countdown"]{--widget-bg:#eae3f1;--widget-ink:#5d407a}
+.home-widget{--widget-bg:#e4efe2;--widget-ink:#23513a;min-width:0;display:flex;flex-direction:column;border:1px solid;border-radius:18px;transition:border-color .18s,box-shadow .18s;overflow-wrap:anywhere}
 .home-widget-head{display:flex;align-items:center;gap:10px;min-width:0}
 .home-widget-head h2{margin:0;font-size:16px;line-height:1.2}
 .home-widget-icon{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:11px;background:var(--widget-bg);color:var(--widget-ink)}
@@ -1176,7 +1171,6 @@ h1{font-size:28px}
 .home-widget-controls{padding-top:8px;border-top:1px solid var(--line)}
 .home-widget-controls button:disabled{opacity:.4;cursor:default}
 .home-drag{margin-left:auto;cursor:grab;color:var(--muted);font-size:20px;padding:4px 7px;line-height:1}
-.home-widget[data-home-target]{border-color:#47785c;outline:2px dashed #47785c;outline-offset:-4px}
 .home-empty{grid-column:1/-1}
 .home-location{width:min(460px,calc(100vw - 22px));max-height:calc(100dvh - 24px);border:1px solid var(--line);border-radius:18px;padding:18px;background:var(--paper);color:var(--ink)}
 .home-location::backdrop{background:#112c24a0}
@@ -1187,9 +1181,77 @@ h1{font-size:28px}
 .home-location-results button{text-align:left;min-height:44px}
 .home-enter .home-widget{animation:home-arrive .34s ease-out both;animation-delay:calc(var(--home-index)*32ms)}
 @keyframes home-arrive{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:1050px){.home-board{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:580px){.home-board,.home-hero{grid-template-columns:minmax(0,1fr)}.home-hero .btn{justify-self:start}.home-drag{display:none}.home-widget-controls button{min-height:44px}}
+@media(max-width:580px){.home-hero{grid-template-columns:minmax(0,1fr)}.home-hero .btn{justify-self:start}.home-widget-controls button{min-height:44px}}
 @media(prefers-reduced-motion:reduce){.home-enter .home-widget{animation:none}.home-widget{transition:none}}
+
+.home-board{display:flex;flex-wrap:wrap;gap:14px}
+.home-widget{flex:1 1 calc((100% - 28px)/3);position:relative;isolation:isolate;overflow:hidden;min-height:186px;padding:17px;gap:12px;border-color:var(--widget-line,var(--line));background:var(--widget-surface,var(--paper));box-shadow:0 3px 12px #183d3209}
+.home-widget:hover{border-color:var(--widget-outline,#a8c0a6)}
+.home-widget-head h2{color:var(--widget-title,var(--ink))}
+.home-widget-head,.home-widget-body,.home-widget-controls{position:relative;z-index:1}
+.home-widget-head .home-drag{color:inherit}
+.home-board .home-widget[data-home-widget="agenda"]{flex-basis:60%}
+.home-board :is([data-home-widget="weather"],[data-home-widget="docs"],[data-home-widget="trips"],[data-home-widget="project"],[data-home-widget="balance"]){flex-basis:calc((100% - 14px)/2)}
+.home-board .home-widget[data-home-widget="links"],.home-empty{flex-basis:100%}
+.home-widget[data-home-widget="agenda"]{--widget-bg:#dce8f3;--widget-ink:#2d536d;--widget-line:#d5e1eb;--widget-outline:#90aabf;--widget-surface:#f5f9fc}
+.home-agenda{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.home-agenda li{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:10px}
+.home-agenda time{display:grid;place-items:center;border:1px solid #d4e1ed;border-radius:10px;padding:4px;background:#fff;color:#31536c;line-height:1.05}
+.home-agenda time strong{font-size:18px;font-variant-numeric:tabular-nums}
+.home-agenda time small{font-size:10px;text-transform:uppercase}
+.home-agenda li>div{display:grid;gap:3px}
+.home-agenda li>div small{color:var(--muted)}
+.home-widget[data-home-widget="alerts"]{--widget-bg:#f6e2ab;--widget-ink:#64451a;--widget-line:#ecdcaf;--widget-outline:#bf9b52;--widget-surface:#fff8e4;border-radius:18px 18px 4px 18px}
+.home-widget[data-home-widget="alerts"]::after{content:"";position:absolute;right:0;bottom:0;width:24px;height:24px;background:linear-gradient(135deg,#f0dda3 50%,var(--cream) 50%);pointer-events:none}
+.home-widget[data-home-widget="alerts"] .home-widget-list li{border-color:#e9d8a9}
+.home-widget[data-home-widget="weather"]{--widget-bg:#ffffff24;--widget-ink:#fff;--widget-title:#fff;--widget-line:#285c88;--widget-outline:#6d9bc1;background:linear-gradient(145deg,#183853,#255a80 72%,#386b96);color:#fff;min-height:228px}
+.home-widget[data-home-widget="weather"] .home-widget-body p,.home-widget[data-home-widget="weather"] .home-weather-source{color:#e6eff6}
+.home-widget[data-home-widget="weather"] .home-widget-value{color:#fff;font-size:clamp(35px,5vw,57px);letter-spacing:-.05em}
+.home-widget[data-home-widget="weather"] .home-widget-controls{border-color:#ffffff40}
+.home-weather-read{position:relative;min-height:84px;padding-inline-end:92px;display:grid;align-content:center;gap:3px}
+.home-weather-orbit{position:absolute;pointer-events:none;z-index:-1;inset:3px 0 auto auto;width:77px;height:77px;border-radius:50%;background:#ffdb85;box-shadow:0 0 0 9px #ffedb32b,0 0 0 19px #fff4be16}
+.home-weather-orbit::after{content:"";position:absolute;inset:auto -10px 4px 24px;height:20px;border-radius:22px;background:#dbebff;box-shadow:10px -12px 0 -2px #edf5ff,23px 0 0 -4px #edf5ff}
+.home-weather-orbit.is-night{background:#d6e4ff;box-shadow:0 0 0 9px #d6e4ff24,0 0 0 19px #d6e4ff13}
+.home-weather-orbit.is-night::after{inset:0 -5px auto auto;width:57px;height:58px;border-radius:50%;background:#275d83;box-shadow:none}
+.home-widget[data-home-widget="docs"]{--widget-bg:#d9ebdb;--widget-ink:#27593b;--widget-line:#d6e6d4;--widget-surface:#f4faf2}
+.home-doc-progress{display:flex;align-items:center;gap:12px}
+.home-doc-ring{flex:0 0 66px;height:66px;display:grid;place-items:center;border-radius:50%;background:conic-gradient(#43855b var(--home-doc-progress),#dce9d9 0);position:relative}
+.home-doc-ring::before{content:"";position:absolute;inset:6px;border-radius:50%;background:#f4faf2}
+.home-doc-ring strong{z-index:1;color:#245839;font-size:17px;font-variant-numeric:tabular-nums}
+.home-widget[data-home-widget="docs"] .task{padding:7px 0}
+.home-widget[data-home-widget="expiry"]{--widget-bg:#f3d9d1;--widget-ink:#853e30;--widget-line:#ecd6ce;--widget-surface:#fff8f5;border-inline-start:4px solid #bc6a54}
+.home-expiry-list li{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px}
+.home-expiry-list li>div{display:grid;gap:3px}
+.home-expiry-days{border-radius:8px;padding:4px 7px;background:#f5e0d8;color:#853e30;font-size:11px;font-weight:700}
+.home-widget[data-home-widget="shopping"]{--widget-bg:#e5e6cc;--widget-ink:#56562c;--widget-line:#e2e3d2;--widget-surface:#fcfcf4}
+.home-shopping-items{list-style:none;padding:0;margin:0;display:grid;gap:5px}
+.home-shopping-items li{display:flex;align-items:center;gap:7px}
+.home-shopping-items li::before{content:"";width:10px;height:10px;flex:none;border:1px solid #929266;border-radius:2px}
+.home-widget[data-home-widget="countdown"]{--widget-bg:#e7daf3;--widget-ink:#593879;--widget-line:#e0d3eb;--widget-surface:linear-gradient(145deg,#f6effb,#eaddf5);border-radius:18px 30px 18px 18px}
+.home-count-value{font-size:clamp(40px,7vw,66px);font-weight:800;letter-spacing:-.07em;color:#52356d;line-height:1}
+.home-count-value span{font-size:16px;letter-spacing:normal;margin-inline-start:5px}
+.home-widget[data-home-widget="trips"]{--widget-bg:#f9e6ce;--widget-ink:#75482b;--widget-line:#ead7c3;--widget-surface:#fff8ef;border-radius:16px}
+.home-trip-ticket{padding:8px 0;border-bottom:1px dashed #bba28b;display:grid;gap:4px}
+.home-trip-ticket strong{font-size:23px;color:#503621}
+.home-widget[data-home-widget="project"]{--widget-bg:#dce9e5;--widget-ink:#245349;--widget-line:#cfe1da;--widget-surface:#f0f8f5}
+.home-investment-bar{height:7px;background:#dbe9e3;border-radius:30px;overflow:hidden}
+.home-investment-bar span{display:block;height:100%;background:#3a806a}
+.home-widget[data-home-widget="balance"]{--widget-bg:#ece3d4;--widget-ink:#5d482b;--widget-line:#e6dccb;--widget-surface:#fbf8f2}
+.home-balance-row{display:flex;align-items:center;justify-content:space-between;gap:6px;border-top:1px solid #e6dccb;padding:8px 0}
+.home-balance-row span{font-size:11px;padding:4px 6px;background:#eee6d8;color:#5d482b;border-radius:5px}
+.home-widget[data-home-widget="links"]{--widget-bg:#dfeade;--widget-ink:#254638;min-height:auto}
+.home-shortcuts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,112px),1fr));gap:6px}
+.home-shortcuts .btn{min-height:42px;white-space:normal}
+.home-arranging .home-widget{min-height:0}
+@media(max-width:980px){.home-widget,.home-board .home-widget[data-home-widget="agenda"]{flex-basis:calc((100% - 14px)/2)}}
+@media(max-width:580px){.home-board .home-widget[data-home-widget]{flex-basis:100%}.home-weather-read{padding-inline-end:86px}.home-weather-orbit{width:65px;height:65px}}
+
+.home-drag{display:grid;place-items:center;min-width:40px;min-height:38px;border:1px solid currentColor;border-radius:11px;color:inherit;background:var(--widget-bg);touch-action:none;user-select:none;cursor:grab}
+.home-drag-tip{margin:8px 0;color:#385443;font-size:13px}
+.home-dragging,.home-dragging .home-drag{cursor:grabbing}
+.home-lifted{opacity:.2;outline:2px dashed #487359;outline-offset:-4px}
+.home-ghost{position:fixed;top:0;left:0;margin:0;z-index:1200;pointer-events:none;rotate:2deg;box-shadow:0 14px 34px #1f413b42}
+@media(prefers-reduced-motion:reduce){.home-ghost{rotate:none}}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1300,18 +1362,18 @@ h1{font-size:28px}
     </div>
   </header>
   <div id="pageContent"></div>
-  <footer>KiwiPath v1.5.0 · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
+  <footer>KiwiPath v1.5.1 · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
 </main>
 </div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./trip-guide.js?v=1.5.0"></script>
+<script src="./trip-guide.js?v=1.5.1"></script>
 <script src="./vendor/d3-7.9.0.min.js"></script>
 <script src="./vendor/topojson-client-3.1.0.min.js"></script>
 <script src="./vendor/memory-world-110m.js"></script>
-<script src="./memory-globe.js?v=1.5.0"></script>
-<script src="./flight-lookup.js?v=1.5.0"></script>
+<script src="./memory-globe.js?v=1.5.1"></script>
+<script src="./flight-lookup.js?v=1.5.1"></script>
 <script>
 (() => {
 "use strict";
@@ -1897,7 +1959,7 @@ const HOME_WIDGETS={
 };
 const HOME_DEFAULT=['agenda','alerts','weather','docs','expiry','shopping','countdown','links'];
 const homeText=(pt,en)=>data.language==='pt'?pt:en;
-let homeEditor=null,homeEntered=false,homeDragId='',homeGpsRequest=null,homeGpsFix=null;
+let homeEditor=null,homeEntered=false,homeGpsRequest=null,homeGpsFix=null;
 let homeWeatherRead=null,homeAlertsRead=null,homeAlertsLoad=null;
 function homeKey(){return 'kiwipath.home.'+(currentUser?.id||'guest')}
 function homePrefs(){
@@ -1942,7 +2004,8 @@ function homeWeatherBody(){
  const readings=weather?.data;
  const values=readings?'<strong class="home-widget-value">'+Math.round(readings.temperature_2m)+' °C</strong><p>'+
   esc(homeText('Sensação de ','Feels like ')+Math.round(readings.apparent_temperature)+' °C')+'</p>':'';
- return (label?'<strong>'+esc(label)+'</strong>':'')+values+(status?'<p role="status">'+esc(status)+'</p>':'')+
+ return '<div class="home-weather-read"><span class="home-weather-orbit'+(readings?.is_day===0?' is-night':'')+'" aria-hidden="true"></span>'+
+  (label?'<strong>'+esc(label)+'</strong>':'')+values+(status?'<p role="status">'+esc(status)+'</p>':'')+'</div>'+
   '<div class="home-widget-actions">'+homeButton(location?.mode==='gps'?homeText('Atualizar GPS','Refresh GPS'):homeText('Usar minha localização','Use my location'),'home-gps','btn btn-soft',gpsBusy?'disabled':'')+
   homeButton(homeText('Escolher cidade','Choose city'),'home-city','btn btn-soft')+
   (weather?.failed&&place&&location?.mode!=='gps'?homeButton(homeText('Tentar de novo','Retry'),'home-weather-retry'):'')+'</div>'+
@@ -1963,37 +2026,59 @@ function homeWidgetBody(id,events){
  switch(id){
   case 'weather':return homeWeatherBody();
   case 'alerts':return homeRemindersBody();
-  case 'agenda':return homeList(events.slice(0,3).map(event=>[recordText(event,'title'),fmtDate(event.date)+(event.time?' · '+event.time:'')]),t('noEvents'))+link(homeText('Abrir cronograma','Open calendar'),'go-timeline');
+  case 'agenda':{
+   const locale=data.language==='pt'?'pt-BR':'en-NZ';
+   const month=new Intl.DateTimeFormat(locale,{month:'short'});
+   const entries=events.slice(0,3).map(event=>{
+    const date=dateOnlyLocal(event.date);
+    return Number.isFinite(date?.getTime())?'<li><time datetime="'+esc(event.date)+'" aria-label="'+esc(fmtDate(event.date))+'"><strong>'+date.getDate()+'</strong><small>'+esc(month.format(date))+'</small></time><div><strong>'+
+     esc(recordText(event,'title'))+'</strong>'+(event.time?'<small>'+esc(event.time)+'</small>':'')+'</div></li>':'';
+   }).join('');
+   return (entries?'<ul class="home-agenda">'+entries+'</ul>':'<p>'+esc(t('noEvents'))+'</p>')+link(homeText('Abrir cronograma','Open calendar'),'go-timeline');
+  }
   case 'docs':{
    const pending=data.documents.filter(doc=>doc.status!=='done');
-   return metric(progress()+'%',t('progress'))+'<div class="progress-track" aria-hidden="true"><div class="progress-fill" style="width:'+progress()+'%"></div></div>'+
+   const pct=progress();
+   const completed=data.documents.length-pending.length;
+   return '<div class="home-doc-progress"><div class="home-doc-ring" style="--home-doc-progress:'+pct+'%"><strong>'+pct+'%</strong></div><div><strong>'+esc(t('progress'))+'</strong><p>'+
+    completed+' / '+data.documents.length+' '+esc(t('documentCount'))+'</p></div></div>'+
     (pending.length?pending.slice(0,2).map(taskHTML).join(''):'<p>'+esc(t('noTasks'))+'</p>')+link(t('viewAll'),'go-documents');
   }
   case 'expiry':{
    const expiring=data.documents.map(doc=>({doc,...documentExpiryInfo(doc)})).filter(item=>item.days!==null&&item.days>=0&&item.days<=90).sort((a,b)=>a.days-b.days);
-   return homeList(expiring.slice(0,3).map(item=>[recordText(item.doc,'title'),fmtDate(item.date)]),t('noExpiringDocs'))+link(t('viewAll'),'go-documents');
+   const rows=expiring.slice(0,3).map(item=>'<li><div><strong>'+esc(recordText(item.doc,'title'))+'</strong><small>'+esc(fmtDate(item.date))+'</small></div><span class="home-expiry-days">'+
+    esc(item.days===0?homeText('Hoje','Today'):item.days+' '+(item.days===1?homeText('dia','day'):homeText('dias','days')))+'</span></li>').join('');
+   return (rows?'<ul class="home-widget-list home-expiry-list">'+rows+'</ul>':'<p>'+esc(t('noExpiringDocs'))+'</p>')+link(t('viewAll'),'go-documents');
   }
   case 'shopping':{
-   const count=(data.shoppingLists||[]).reduce((total,list)=>total+(list.items||[]).filter(item=>!item.checked).length,0);
-   return metric(count,homeText('Itens ainda não concluídos','Items still to get'))+link(homeText('Abrir lista','Open shopping list'),'go-shopping');
+   const pending=(data.shoppingLists||[]).flatMap(list=>(list.items||[]).filter(item=>!item.checked));
+   const names=pending.map(item=>item.name||item.title).filter(Boolean).slice(0,2);
+   return metric(pending.length,homeText('Itens para comprar','Items to buy'))+
+    (names.length?'<ul class="home-shopping-items">'+names.map(name=>'<li>'+esc(name)+'</li>').join('')+'</ul>':'')+link(homeText('Abrir lista','Open shopping list'),'go-shopping');
   }
   case 'countdown':{
    const next=events[0];if(!next)return '<p>'+esc(t('pastEvent'))+'</p>';
    const days=Math.max(0,daysBetween(dateOnlyLocal(today()),dateOnlyLocal(next.date)));
-   return metric(days===0?homeText('É hoje','It’s today'):days+' '+(days===1?homeText('dia','day'):homeText('dias','days')),recordText(next,'title'))+
+   return '<strong class="home-count-value">'+(days===0?homeText('Hoje','Today'):days+'<span>'+(days===1?homeText('dia','day'):homeText('dias','days'))+'</span>')+
+    '</strong><strong>'+esc(recordText(next,'title'))+'</strong>'+
     '<p>'+esc(fmtDate(next.date))+'</p>'+link(homeText('Abrir cronograma','Open calendar'),'go-timeline');
   }
   case 'trips':{
    const next=(data.trips||[]).filter(trip=>trip.status!=='done'&&trip.startDate&&((trip.endDate||trip.startDate)>=today())).sort((a,b)=>a.startDate.localeCompare(b.startDate))[0];
-   return (next?homeList([[next.name,tripDates(next)]],''):'<p>'+homeText('Nenhuma viagem com data futura.','No upcoming trip with a date.')+'</p>')+
-    link(homeText('Abrir viagens','Open trips'),'go-trips');
+   return (next?'<div class="home-trip-ticket"><strong>'+esc(next.name)+'</strong>'+(next.destination?'<p>'+esc(next.destination)+'</p>':'')+'<p>'+esc(tripDates(next))+'</p></div>':
+    '<p>'+homeText('Nenhuma viagem com data futura.','No upcoming trip with a date.')+'</p>')+link(homeText('Abrir viagens','Open trips'),'go-trips');
   }
   case 'project':{
-   const paid=(data.projectCosts||[]).filter(item=>item.status!=='planned').reduce((sum,item)=>{
+   let paid=0,planned=0;
+   for(const item of data.projectCosts||[]){
     const nzd=Number(item.nzdAmount??(item.currency==='BRL'?Number(item.amount)/Number(item.rate):item.amount));
-    return sum+(Number.isFinite(nzd)?nzd:0);
-   },0);
-   return metric(money(paid),homeText('Já investido na mudança','Already invested in the move'))+link(homeText('Abrir projeto NZ','Open NZ project'),'home-project');
+    if(!Number.isFinite(nzd))continue;
+    if(item.status==='planned')planned+=nzd;else paid+=nzd;
+   }
+   const pct=paid+planned>0?Math.max(0,Math.min(100,paid/(paid+planned)*100)):0;
+   return metric(money(paid),homeText('Já investido na mudança','Already invested in the move'))+
+    '<div class="home-investment-bar" aria-hidden="true"><span style="width:'+pct+'%"></span></div><p>'+esc(homeText('Previsto: ','Planned: ')+money(planned))+'</p>'+
+    link(homeText('Abrir projeto NZ','Open NZ project'),'home-project');
   }
   case 'balance':{
    const balances=new Map();
@@ -2002,9 +2087,10 @@ function homeWidgetBody(id,events){
     const currency=account.currency==='BRL'?'BRL':'NZD';
     balances.set(currency,(balances.get(currency)||0)+accountBalance(account));
    }
-   return homeList([...balances].map(([currency,amount])=>[accountMoney({currency},amount),currency]),homeText('Nenhuma conta cadastrada.','No accounts yet.'))+link(t('finances'),'go-finances');
+   const rows=[...balances].map(([currency,amount])=>'<div class="home-balance-row"><span>'+currency+'</span><strong>'+esc(accountMoney({currency},amount))+'</strong></div>').join('');
+   return (rows||'<p>'+homeText('Nenhuma conta cadastrada.','No accounts yet.')+'</p>')+link(t('finances'),'go-finances');
   }
-  case 'links':return '<div class="home-widget-actions">'+['trips','finances','timeline','documents','shopping','study','dreams'].map(key=>homeButton(t(key),'go-'+key)).join('')+'</div>';
+  case 'links':return '<div class="home-shortcuts">'+['trips','finances','timeline','documents','shopping','study','dreams'].map(key=>homeButton(t(key),'go-'+key)).join('')+'</div>';
  }
  return '';
 }
@@ -2023,20 +2109,21 @@ function dashboard(){
   const hidden=prefs.hidden.includes(id),icon=HOME_WIDGETS[id][2],label=homeTitle(id);
   return '<article class="home-widget" data-home-widget="'+id+'" style="--home-index:'+index+'"><div class="home-widget-head"><span class="home-widget-icon" aria-hidden="true">'+
    (icon.length>1?tripSvg(icon):icon)+'</span><h2 tabindex="-1">'+esc(label)+'</h2>'+
-   (editor?'<span class="home-drag" draggable="true" aria-hidden="true" title="'+esc(homeText('Arrastar para mover','Drag to move'))+'">⠿</span>':'')+
+   (editor?'<span class="home-drag" aria-hidden="true" title="'+esc(homeText('Arrastar para mover','Drag to move'))+'">⠿</span>':'')+
    '</div><div class="home-widget-body">'+(hidden?'<p>'+homeText('Oculto na Home','Hidden on Home')+'</p>':homeWidgetBody(id,events))+'</div>'+
    (editor?controls(id,index,hidden):'')+'</article>';
  }).join('');
  const available=Object.keys(HOME_WIDGETS).filter(id=>!prefs.order.includes(id));
  const tools=editor?'<section class="home-editor"><div class="home-editor-head"><h2>'+homeText('Organizar widgets','Arrange widgets')+'</h2><div class="home-edit-actions">'+
   homeButton(homeText('Restaurar padrão','Restore defaults'),'home-reset')+homeButton(t('cancel'),'home-cancel')+homeButton(t('save'),'home-save','btn')+'</div></div>'+
+  '<p class="home-drag-tip">'+homeText('Arraste pelo puxador e passe sobre outro widget para reorganizar.','Drag by the handle and move over another widget to reorder.')+'</p>'+
   '<details class="home-gallery" '+(editor.gallery?'open':'')+'><summary>'+homeText('Galeria de widgets','Widget gallery')+'</summary><div class="home-gallery-grid">'+
   (available.map(id=>'<div class="home-gallery-row"><strong>'+esc(homeTitle(id))+'</strong>'+homeButton(t('add'),'home-add:'+id,'btn btn-soft','aria-label="'+esc(t('add')+' '+homeTitle(id))+'"')+'</div>').join('')||
    '<p>'+homeText('Todos os widgets já estão na Home.','All widgets are already on Home.')+'</p>')+'</div></details></section>':'';
  const enter=!homeEntered;homeEntered=true;
  return '<section class="home-dashboard"><header class="home-hero"><div><time datetime="'+today()+'">'+esc(date)+'</time><h1>'+esc(t('hero'))+'</h1></div>'+
   (editor?'':homeButton(homeText('Personalizar Home','Customize Home'),'home-edit','btn'))+'</header>'+tools+
-  '<div class="home-board'+(enter?' home-enter':'')+'">'+(cards||'<div class="home-empty">'+empty(homeText('Adicione widgets para montar sua Home.','Add widgets to build your Home.'))+'</div>')+'</div></section>';
+  '<div class="home-board'+(editor?' home-arranging':'')+(enter?' home-enter':'')+'">'+(cards||'<div class="home-empty">'+empty(homeText('Adicione widgets para montar sua Home.','Add widgets to build your Home.'))+'</div>')+'</div></section>';
 }
 
 function homeRedraw(focusAction='',widget=''){
@@ -2081,33 +2168,93 @@ function homeAction(action){
  }
  homeRedraw(action,id);
 }
-function clearHomeDrop(){
- $('.home-widget[data-home-target]')?.removeAttribute('data-home-target');
- homeDragId='';
+
+let homePointer=null;
+const homeShiftAnimations=new WeakMap();
+function moveHomeCard(drag,target){
+ const board=drag.board,order=drag.editor.layout.order;
+ const from=order.indexOf(drag.id),to=order.indexOf(target.dataset.homeWidget);
+ if(from<0||to<0||from===to)return;
+ const cards=[...board.querySelectorAll(':scope > .home-widget')];
+ const animate=!window.matchMedia('(prefers-reduced-motion: reduce)').matches&&typeof target.animate==='function';
+ const positions=animate?new Map(cards.map(card=>[card,card.getBoundingClientRect()])):null;
+ order.splice(from,1);order.splice(to,0,drag.id);
+ board.insertBefore(drag.source,from<to?target.nextSibling:target);
+ if(animate)for(const card of cards){
+  if(card===drag.source)continue;
+  const initial=positions.get(card);
+  homeShiftAnimations.get(card)?.cancel();
+  const current=card.getBoundingClientRect(),dx=initial.left-current.left,dy=initial.top-current.top;
+  if(Math.abs(dx)+Math.abs(dy)<1)continue;
+  homeShiftAnimations.set(card,card.animate([{transform:'translate('+dx+'px,'+dy+'px)'},{transform:'translate(0,0)'}],{duration:190,easing:'cubic-bezier(.2,.75,.25,1)'}));
+ }
 }
-$('#pageContent').addEventListener('dragstart',event=>{
+function positionHomeGhost(drag){
+ drag.ghost.style.translate=(drag.x-drag.offsetX)+'px '+(drag.y-drag.offsetY)+'px';
+}
+function previewHomeDrop(drag){
+ const target=document.elementFromPoint(drag.x,drag.y)?.closest('[data-home-widget]');
+ if(!target||target.parentElement!==drag.board||target===drag.source||target===drag.lastTarget)return;
+ drag.lastTarget=target;
+ moveHomeCard(drag,target);
+}
+function scrollWhileDragging(drag){
+ if(homePointer!==drag||!drag.ghost)return;
+ const edge=72,y=drag.y;
+ const speed=y<edge?-Math.ceil((edge-y)/6):y>innerHeight-edge?Math.ceil((y-innerHeight+edge)/6):0;
+ if(speed){
+  const before=window.scrollY;
+  window.scrollBy({top:speed,behavior:'instant'});
+  if(before!==window.scrollY)previewHomeDrop(drag);
+ }
+ drag.frame=requestAnimationFrame(()=>scrollWhileDragging(drag));
+}
+function finishHomeDrag({restore=false,redraw=false}={}){
+ const drag=homePointer;
+ if(!drag)return;
+ homePointer=null;
+ cancelAnimationFrame(drag.frame);
+ drag.ghost?.remove();
+ drag.source.classList.remove('home-lifted');
+ drag.board.classList.remove('home-dragging');
+ if(drag.board.hasPointerCapture?.(drag.pointerId))drag.board.releasePointerCapture(drag.pointerId);
+ if(restore)drag.editor.layout.order=drag.startOrder;
+ if(redraw&&drag.ghost&&activeHomeEditor()===drag.editor)homeRedraw('home-toggle:'+drag.id,drag.id);
+}
+const homeDragBoard=$('#pageContent');
+homeDragBoard.addEventListener('pointerdown',event=>{
  const handle=event.target.closest('.home-drag'),editor=activeHomeEditor();
- if(!handle||!editor||!event.dataTransfer)return;
- homeDragId=handle.closest('[data-home-widget]').dataset.homeWidget;
- event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',homeDragId);
+ if(!handle||!editor||homePointer||!event.isPrimary||event.button!==0)return;
+ const source=handle.closest('[data-home-widget]'),board=source.parentElement,box=source.getBoundingClientRect();
+ homePointer={source,board,editor,id:source.dataset.homeWidget,pointerId:event.pointerId,startOrder:editor.layout.order.slice(),
+  startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,offsetX:event.clientX-box.left,offsetY:event.clientY-box.top};
+ board.setPointerCapture(event.pointerId);
 });
-$('#pageContent').addEventListener('dragover',event=>{
- const card=event.target.closest('[data-home-widget]');
- if(!homeDragId||!card||!activeHomeEditor())return;
- event.preventDefault();
- $('.home-widget[data-home-target]')?.removeAttribute('data-home-target');
- if(card.dataset.homeWidget!==homeDragId)card.setAttribute('data-home-target','');
+homeDragBoard.addEventListener('pointermove',event=>{
+ const drag=homePointer;
+ if(!drag||event.pointerId!==drag.pointerId)return;
+ if(activeHomeEditor()!==drag.editor){finishHomeDrag();return}
+ drag.x=event.clientX;drag.y=event.clientY;
+ if(!drag.ghost){
+  if(Math.hypot(drag.x-drag.startX,drag.y-drag.startY)<7)return;
+  const box=drag.source.getBoundingClientRect(),ghost=drag.source.cloneNode(true);
+  ghost.classList.add('home-ghost');ghost.setAttribute('aria-hidden','true');ghost.inert=true;
+  ghost.querySelector('.home-widget-controls')?.remove();
+  ghost.style.width=box.width+'px';ghost.style.minHeight=box.height+'px';
+  document.body.append(ghost);drag.ghost=ghost;
+  drag.source.classList.add('home-lifted');drag.board.classList.add('home-dragging');
+  drag.frame=requestAnimationFrame(()=>scrollWhileDragging(drag));
+ }
+ positionHomeGhost(drag);previewHomeDrop(drag);
 });
-$('#pageContent').addEventListener('drop',event=>{
- const card=event.target.closest('[data-home-widget]'),editor=activeHomeEditor();
- if(!homeDragId||!card||!editor)return;
- event.preventDefault();
- const order=editor.layout.order,source=order.indexOf(homeDragId),target=order.indexOf(card.dataset.homeWidget),id=homeDragId;
- clearHomeDrop();
- if(source<0||target<0||source===target)return;
- order.splice(source,1);order.splice(target,0,id);homeRedraw('home-toggle:'+id,id);
+for(const eventName of ['pointerup','pointercancel','lostpointercapture']){
+ homeDragBoard.addEventListener(eventName,event=>{
+  if(homePointer?.pointerId===event.pointerId)finishHomeDrag({restore:eventName!=='pointerup',redraw:true});
+ });
+}
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&homePointer?.ghost){event.preventDefault();finishHomeDrag({restore:true,redraw:true})}
 });
-$('#pageContent').addEventListener('dragend',clearHomeDrop);
 $('#pageContent').addEventListener('toggle',event=>{
  const editor=activeHomeEditor();
  if(editor&&event.target.matches('.home-gallery'))editor.gallery=event.target.open;
@@ -2134,7 +2281,7 @@ async function refreshHomeWeather(){
  homeWeatherRead=request;
  updateHomeWidget('weather',homeWeatherBody);
  try{
-  const query=new URLSearchParams({latitude:place.latitude,longitude:place.longitude,current:'temperature_2m,apparent_temperature',temperature_unit:'celsius'});
+  const query=new URLSearchParams({latitude:place.latitude,longitude:place.longitude,current:'temperature_2m,apparent_temperature,is_day',temperature_unit:'celsius'});
   const response=await fetch('https://api.open-meteo.com/v1/forecast?'+query,{signal:AbortSignal.timeout(10000),credentials:'omit'});
   if(!response.ok)throw Error('Weather request failed');
   const result=(await response.json()).current;
@@ -3723,7 +3870,7 @@ function removeTripPart(tripId,part,itemId){
  if(part==='itinerary')confirmDialog({title:window.KiwiI18n.text('Remover item do roteiro?'),message:linked?window.KiwiI18n.text('O item e seu evento conectado no Cronograma serão removidos.'):window.KiwiI18n.text('O item será removido do roteiro desta viagem.'),confirmText:window.KiwiI18n.text('Remover item'),cancelText:window.KiwiI18n.text('Manter item'),danger:true}).then(ok=>{if(ok)remove()});else remove();
 }
 
-function render(){window.KiwiI18n.setLanguage(data.language);disposeTripMemoryMap();disposeTripMovementMap();applyNavigationPrefs();renderProfileMenus();const names={home:"home",documents:"documents",timeline:"timeline",alerts:"customAlertsNav",finances:"finances",trips:"trips",shopping:"shopping",study:"study",dreams:"dreams"};$("#crumb").textContent=page==="alerts"?(data.language==="pt"?window.KiwiI18n.text("Alertas"):"Alerts"):t(names[page]||"home");$$("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));const views={home:dashboard,documents:documentPage,timeline:timelinePage,alerts:alertPage,finances:financesPage,trips:tripsPage,shopping:shoppingPage,study:studyPage,dreams:dreamsPage};$("#pageContent").innerHTML=(views[page]||dashboard)();refreshHomeWidgets();if(page==="trips")setTimeout(()=>{renderTripMovementMap();renderTripMemoryMap()},0);applyStaticLanguage();document.documentElement.lang=data.language==="pt"?"pt-BR":"en";$$("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});$("#languageMenuLabel").textContent=data.language==="pt"?window.KiwiI18n.text("Mudar idioma para English"):"Change language to Português"}
+function render(){finishHomeDrag();window.KiwiI18n.setLanguage(data.language);disposeTripMemoryMap();disposeTripMovementMap();applyNavigationPrefs();renderProfileMenus();const names={home:"home",documents:"documents",timeline:"timeline",alerts:"customAlertsNav",finances:"finances",trips:"trips",shopping:"shopping",study:"study",dreams:"dreams"};$("#crumb").textContent=page==="alerts"?(data.language==="pt"?window.KiwiI18n.text("Alertas"):"Alerts"):t(names[page]||"home");$$("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));const views={home:dashboard,documents:documentPage,timeline:timelinePage,alerts:alertPage,finances:financesPage,trips:tripsPage,shopping:shoppingPage,study:studyPage,dreams:dreamsPage};$("#pageContent").innerHTML=(views[page]||dashboard)();refreshHomeWidgets();if(page==="trips")setTimeout(()=>{renderTripMovementMap();renderTripMemoryMap()},0);applyStaticLanguage();document.documentElement.lang=data.language==="pt"?"pt-BR":"en";$$("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n)});$("#languageMenuLabel").textContent=data.language==="pt"?window.KiwiI18n.text("Mudar idioma para English"):"Change language to Português"}
 function notify(s){const el=$("#toast");el.textContent=s;el.classList.remove("hidden");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add("hidden"),2600)}
 function confirmDialog({title,message,confirmText,cancelText,danger=true}){
   return new Promise(resolve=>{
