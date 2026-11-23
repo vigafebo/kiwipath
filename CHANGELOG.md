@@ -1,5 +1,10 @@
 # Release history
 
+## 1.10.0
+
+- Redesigned the sign-in screen and added a password recovery flow.
+- Added an introduction to KiwiPath and an access request form that prepares an email draft for review.
+
 ## 1.9.2
 
 - Removed the redundant Trips banner label and aligned History with Your plans on mobile.
