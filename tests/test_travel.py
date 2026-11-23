@@ -522,6 +522,40 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Preparation checklist',contents)
         self.assertNotIn('Roteiro dia a dia',contents)
 
+    def test_finance_filters_start_closed_on_desktop(self):
+        self.page.set_viewport_size({'width':1100,'height':844})
+        for section, selector in [('monthly','.finance-monthly-filter-scope'),('statement','.finance-statement-view')]:
+            self.page.locator('[data-page="finances"]').click()
+            self.page.locator('.finance-entry[data-section="'+section+'"]').click()
+            filters=self.page.locator(selector)
+            toggle=filters.locator('[data-action="finance-filters-toggle"]')
+            controls=filters.locator('.finance-filter-controls')
+            self.assertTrue(toggle.is_visible())
+            self.assertFalse(controls.is_visible())
+            toggle.click()
+            self.assertTrue(controls.is_visible())
+            self.assertEqual(toggle.get_attribute('aria-expanded'),'true')
+            toggle.click()
+            self.assertFalse(controls.is_visible())
+
+    def test_section_banners_match_finance_and_history_sits_with_plans(self):
+        self.page.set_viewport_size({'width':375,'height':844})
+        self.page.locator('[data-page="finances"]').click()
+        heading=self.page.locator('.finance-hub-header')
+        size=heading.evaluate("el=>getComputedStyle(el.querySelector('h1')).fontSize")
+        for lang in ['pt','en']:
+            self.page.evaluate("lang=>__travel.language(lang)",lang)
+            for page in ['documents','timeline','shopping']:
+                self.page.locator('[data-page="'+page+'"]').click()
+                banner=self.page.locator('.section-banner')
+                self.assertEqual(banner.locator('svg,button').count(),0)
+                self.assertEqual(banner.evaluate("el=>getComputedStyle(el.querySelector('h1')).fontSize"),size)
+        self.page.locator('[data-page="trips"]').click()
+        self.page.locator('[data-action="travel-back"]').click()
+        self.assertEqual(self.page.locator('.travel-hero [data-action="travel-history"]').count(),0)
+        self.page.locator('.travel-plans-heading [data-action="travel-history"]').click()
+        self.assertTrue(self.page.locator('.memory-hero').is_visible())
+
     def test_refreshed_documents_calendar_and_travel_share_creation_controls(self):
         self.page.set_viewport_size({'width':375,'height':844})
         for locale, doc, event in [

@@ -3,7 +3,7 @@ Our journey to New Zealand — immigration, study, finances and dreams.
 
 ## Version
 
-Current official version: **v1.9.0**. Version numbering began with v1.0.0. The app displays the version in its footer.
+Current official version: **v1.9.1**. Version numbering began with v1.0.0. The app displays the version in its footer.
 
 ## Home widgets
 
