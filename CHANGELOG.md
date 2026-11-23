@@ -1,5 +1,10 @@
 # Release history
 
+## 1.5.0
+
+- Redesigned Home as a customizable widget dashboard with add, hide, remove and reorder controls.
+- Added weather via GPS or city search, personal reminders and quick links to trips and the NZ project.
+
 ## 1.4.0
 
 - Separated paid and planned NZ project costs in the totals and entry lists.
