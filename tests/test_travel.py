@@ -339,6 +339,27 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Preparation checklist',contents)
         self.assertNotIn('Roteiro dia a dia',contents)
 
+    def test_project_costs_separate_paid_and_planned_in_charts_and_rows(self):
+        self.page.evaluate("""()=>__travel.state().projectCosts=[
+            {id:'paid', title:'Meu visto', category:'Visa', status:'paid', amount:120, currency:'NZD', nzdAmount:120, date:'2026-10-02'},
+            {id:'future', title:'Meu exame', category:'Exames', status:'planned', amount:300, currency:'BRL', rate:3, nzdAmount:100, date:'2026-11-04'},
+            {id:'legacy', title:'Hotel', category:'Housing', amount:30, currency:'NZD'}
+        ]""")
+        self.page.locator('[data-page="finances"]').click()
+        self.page.locator('[data-action="finance-tab:project"]').click()
+        self.assertIn('NZ$ 150.00', self.page.locator('.project-metric.paid').inner_text())
+        self.assertIn('NZ$ 100.00', self.page.locator('.project-metric.planned').inner_text())
+        self.assertIn('NZ$ 250.00', self.page.locator('.project-summary').inner_text())
+        self.assertIn('Previsto', self.page.locator('.project-status.planned').inner_text())
+        self.assertIn('Exames médicos', self.page.locator('.project-chart').first.inner_text())
+        self.assertIn('Sem data', self.page.locator('.project-chart').last.inner_text())
+        self.page.set_viewport_size({'width':375,'height':844})
+        self.page.evaluate("__travel.language('en')")
+        self.assertEqual(self.page.locator('#project-by-category').inner_text(), 'Investment by category')
+        self.assertIn('Medical tests', self.page.locator('.project-chart').first.inner_text())
+        self.assertIn('Meu exame', self.page.locator('.project-group').last.inner_text())
+        self.assertTrue(self.page.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+
     def test_money_box_opens_own_transactions_and_period_filters(self):
         self.page.evaluate('''()=>{const d=__travel.state();
           d.accounts=[{id:'a',name:'Conta A',currency:'BRL',owner:'zack'},

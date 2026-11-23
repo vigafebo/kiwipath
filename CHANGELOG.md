@@ -1,5 +1,10 @@
 # Release history
 
+## 1.4.0
+
+- Separated paid and planned NZ project costs in the totals and entry lists.
+- Added investment charts by category and month in NZD.
+
 ## 1.3.0
 
 - Added Today to travel mode with the day’s itinerary, next commitment, local departure details and voucher access.

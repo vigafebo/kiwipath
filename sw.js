@@ -1,6 +1,6 @@
-const CACHE_NAME = "kiwipath-pwa-v34";
+const CACHE_NAME = "kiwipath-pwa-v35";
 const APP_BASE = "/kiwipath/";
-const APP_SHELL = [APP_BASE, APP_BASE + "manifest.webmanifest", APP_BASE + "translations.js?v=1.3.0"];
+const APP_SHELL = [APP_BASE, APP_BASE + "manifest.webmanifest", APP_BASE + "translations.js?v=1.4.0"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
