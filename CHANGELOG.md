@@ -5,6 +5,7 @@
 - Added a release archive to the account menu and grouped Personalization and My alerts under Settings.
 - Made both clocks more compact and gave each Finance section a dedicated transition.
 - Reduced the space between the Finance hub and footer on mobile.
+- Grouped mobile transaction shortcuts under an animated Add button.
 
 ## 1.6.0
 
