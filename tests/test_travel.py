@@ -538,6 +538,16 @@ class TravelTests(unittest.TestCase):
             toggle.click()
             self.assertFalse(controls.is_visible())
 
+    def test_trip_creation_buttons_fit_mobile_section_headers(self):
+        self.page.set_viewport_size({'width':320,'height':844})
+        for action in ['travel-add-reservation','travel-place-new','travel-add-check','travel-add-document']:
+            button=self.page.locator('.trip-section-head [data-action^="'+action+':"]')
+            self.assertTrue(button.evaluate("""el=>{
+                const button=el.getBoundingClientRect(), header=el.parentElement.getBoundingClientRect();
+                return button.height>=44 && button.right<=header.right+1 &&
+                    getComputedStyle(el.parentElement).display==='grid';
+            }"""))
+
     def test_section_banners_match_finance_and_history_sits_with_plans(self):
         self.page.set_viewport_size({'width':375,'height':844})
         self.page.locator('[data-page="finances"]').click()
