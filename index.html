@@ -1563,6 +1563,14 @@ h1{font-size:28px}
  .kiwi-travel-view .travel-plans-heading p{margin:3px 0 0}
  .kiwi-travel-view .travel-plans-heading>[data-action="travel-history"]{padding-inline:10px}
 }
+
+@media(max-width:700px){
+ .kiwi-travel-view .trip-section-head:has(>.glass-create-inline){display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:center;gap:7px}
+ .kiwi-travel-view .trip-section-head>.trip-icon-heading{min-width:0;gap:6px}
+ .kiwi-travel-view .trip-section-head>.trip-icon-heading>div{min-width:0;overflow-wrap:anywhere}
+ .kiwi-travel-view .trip-section-head>.glass-create-inline{justify-self:end;width:auto;min-width:0;min-height:44px;padding:5px 8px 5px 5px;gap:5px;white-space:nowrap;font-size:12px;line-height:1.15}
+ .kiwi-travel-view .trip-section-head>.glass-create-inline .glass-create-mark{flex-basis:24px;width:24px;height:24px;font-size:17px}
+}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -2218,8 +2226,8 @@ function archiveRelease(theme,art,pt,en){
 const RELEASE_NOTES={
  '1.9.2':{
   theme:'journey',art:['agenda','trips','links','docs'],
-  pt:{title:'Ações no lugar certo',items:[['agenda','Novo evento no cabeçalho','O botão fica junto ao título do Cronograma.'],['trips','Viagens mais limpa','O topo fica só com o título e Histórico se alinha a Seus planos no celular.']]},
-  en:{title:'Actions in the right place',items:[['agenda','New event in the header','The button sits with the Calendar title.'],['trips','A cleaner Trips page','The redundant label is gone and History aligns with Your plans on mobile.']]}
+  pt:{title:'Ações no lugar certo',items:[['agenda','Novo evento no cabeçalho','O botão fica junto ao título do Cronograma.'],['trips','Viagens mais limpa','O topo fica só com o título. No celular, Histórico e os botões internos ficam alinhados às suas seções.']]},
+  en:{title:'Actions in the right place',items:[['agenda','New event in the header','The button sits with the Calendar title.'],['trips','A cleaner Trips page','The redundant label is gone. On mobile, History and the actions inside trips line up with their sections.']]}
  },
  '1.9.1':{
   theme:'journey',art:['docs','agenda','shopping','trips'],
