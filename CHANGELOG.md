@@ -1,5 +1,10 @@
 # Release history
 
+## 1.7.1
+
+- Extended Finance card transitions to one second and made the mobile hub fill the screen.
+- Replaced the mobile Add disclosure with a glass overlay and animated shortcut fan.
+
 ## 1.7.0
 
 - Added a release archive to the account menu and grouped Personalization and My alerts under Settings.
