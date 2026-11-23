@@ -3,7 +3,7 @@ Our journey to New Zealand — immigration, study, finances and dreams.
 
 ## Version
 
-Current official version: **v1.9.2**. Version numbering began with v1.0.0. The app displays the version in its footer.
+Current official version: **v1.10.0**. Version numbering began with v1.0.0. The app displays the version in its footer.
 
 ## Home widgets
 
@@ -21,6 +21,14 @@ Open What’s new from the account menu to revisit the cards for published relea
 Each app version shows its highlights on the first opening by each signed-in
 account in the current browser. Add bilingual highlights, a theme and artwork
 icons to `RELEASE_NOTES` in `index.html` when changing the official version.
+
+## Account access
+
+Password recovery uses Supabase Auth. Allow the deployed app URL with
+`?recover=1` under Auth URL Configuration and confirm the project can deliver
+recovery email to users. Signup requests open the visitor's email app with a
+draft addressed to info.kiwipath@gmail.com. Sending happens in that email app.
+The request creates no Supabase Auth account.
 
 ## Local development
 
