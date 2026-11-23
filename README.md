@@ -3,7 +3,7 @@ Our journey to New Zealand — immigration, study, finances and dreams.
 
 ## Version
 
-Current official version: **v1.6.0**. Version numbering began with v1.0.0. The app displays the version in its footer.
+Current official version: **v1.7.0**. Version numbering began with v1.0.0. The app displays the version in its footer.
 
 ## Home widgets
 
@@ -15,6 +15,8 @@ the browser’s location permission. GPS coordinates are rounded for requests an
 kept only in memory.
 
 ## Update notices
+
+Open What’s new from the account menu to revisit the cards for published releases.
 
 Each app version shows its highlights on the first opening by each signed-in
 account in the current browser. Add bilingual highlights, a theme and artwork

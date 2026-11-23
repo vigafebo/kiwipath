@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./translations.js?v=1.6.0"></script>
+<script src="./translations.js?v=1.7.0"></script>
 <meta name="theme-color" content="#183d32">
 <title>KiwiPath — Our journey to New Zealand</title>
 <style>
@@ -1320,6 +1320,73 @@ h1{font-size:28px}
 @media(max-width:480px){.finance-entry-grid{gap:8px}.finance-entry{min-height:150px;gap:7px;padding:12px}.finance-entry-icon{width:37px;height:37px}.finance-entry-icon svg{width:21px;height:21px}.finance-entry-arrow{width:25px;height:25px}.finance-entry-copy small{font-size:12px}.finance-hub-header{margin-bottom:12px}}
 @media(prefers-reduced-motion:reduce){.finance-hub-enter .finance-entry,.finance-detail-enter{animation:none}.finance-entry,.finance-entry-arrow{transition:none}.finance-entry:hover,.finance-entry:active,.finance-entry:hover .finance-entry-arrow{transform:none}}
 .release-notice[data-theme="finance"] .release-hero{background:linear-gradient(130deg,#153e35,#2c6050 65%,#41664d)}
+
+.profile-menu-heading{padding:9px 10px 11px}
+.profile-menu .profile-news{margin:1px 0 4px;background:#e7f1e3;color:#244c35}
+.profile-menu .profile-news:hover{background:#dcebd7}
+.profile-menu #profileSettingsBtn[aria-expanded="true"] .profile-chevron{transform:rotate(180deg)}
+.profile-menu .profile-settings-panel{margin:2px 0 6px 10px;padding-inline-start:6px;border-inline-start:1px solid #dce7d9}
+.profile-menu .profile-settings-panel[hidden],.profile-menu .profile-clock[hidden]{display:none}
+.profile-menu .profile-timezones{display:flex;align-items:center;gap:0;padding:7px 8px;margin:0 0 6px;border-radius:11px}
+.profile-menu .profile-timezones .profile-clock{flex:1;min-width:0;padding:1px 6px;gap:2px}
+.profile-menu .profile-clock+.profile-clock{border-inline-start:1px solid #dce6d8}
+.profile-menu .profile-clock time{font-size:13px;line-height:1.15;font-variant-numeric:tabular-nums}
+.profile-menu .profile-clock small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.profile-menu .profile-clock-zone{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
+.release-history{width:min(690px,calc(100vw - 22px));max-height:calc(100dvh - 24px);padding:0;border:1px solid var(--line);border-radius:23px;background:var(--paper);color:var(--ink);box-shadow:0 24px 78px #112b2370;overscroll-behavior:contain}
+.release-history::backdrop{background:#112b2399}
+.release-history[open]{animation:release-arrive .28s ease-out}
+.release-history-head{position:sticky;z-index:2;top:0;display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--paper);padding:14px 17px;border-bottom:1px solid var(--line)}
+.release-history-head h2{margin:0;font-size:24px}
+.release-history-close{min-width:44px;min-height:44px;font-size:18px}
+.release-archive{display:grid;gap:10px;padding:12px 16px 17px}
+.release-card{--archive-bg:#e8f0e4;--archive-ink:#264b38;overflow:hidden;border-radius:15px;background:var(--archive-bg);color:var(--archive-ink)}
+.release-card[data-theme="finance"]{--archive-bg:#e1eff0;--archive-ink:#204d56}
+.release-card[data-theme="home"]{--archive-bg:#eee8fa;--archive-ink:#503875}
+.release-card[data-theme="travel"]{--archive-bg:#f8edda;--archive-ink:#6e4924}
+.release-card[data-theme="calendar"]{--archive-bg:#e7eef9;--archive-ink:#315171}
+.release-card summary{display:grid;grid-template-columns:44px minmax(0,1fr) 24px;align-items:center;gap:10px;padding:12px;cursor:pointer;list-style:none}
+.release-card summary::-webkit-details-marker{display:none}
+.release-card summary:focus-visible{outline:2px solid currentColor;outline-offset:-3px;border-radius:15px}
+.release-card-icon{display:grid;place-items:center;min-height:44px;background:#ffffff96;border-radius:11px}
+.release-card-icon svg{width:22px;height:22px}
+.release-card-copy{display:grid;gap:3px;min-width:0}
+.release-card-copy small{font-size:11px;font-weight:700}
+.release-card-copy strong{font-size:16px;line-height:1.2;overflow-wrap:anywhere}
+.release-card-chevron{justify-self:end;transition:transform .18s ease}
+.release-card[open] .release-card-chevron{transform:rotate(180deg)}
+.release-card-detail{display:grid;gap:11px;padding:0 12px 13px}
+.release-card .release-art{height:48px;width:156px}
+.release-card .release-art svg{width:16px;height:16px}
+.release-card .release-list p,.release-card .release-list strong{color:var(--archive-ink)}
+.release-notice[data-theme="account"] .release-hero{background:linear-gradient(125deg,#264a43,#3d5069 68%,#5f5275)}
+.finance-detail-enter[data-finance-section="monthly"]{animation:finance-flow-in .28s cubic-bezier(.2,.75,.25,1) both}
+.finance-detail-enter[data-finance-section="statement"]{animation:finance-paper-in .32s cubic-bezier(.2,.75,.25,1)}
+.finance-detail-enter[data-finance-section="boxes"]{animation:finance-boxes-in .32s cubic-bezier(.2,.75,.25,1) both}
+.finance-detail-enter[data-finance-section="project"]{animation:finance-project-in .34s cubic-bezier(.2,.75,.25,1) both}
+@keyframes finance-flow-in{from{opacity:.25;translate:0 16px;scale:.985}to{opacity:1;translate:0 0;scale:1}}
+@keyframes finance-paper-in{from{opacity:.25;translate:22px 0;clip-path:inset(0 0 12% 0 round 14px)}to{opacity:1;translate:0 0;clip-path:inset(0)}}
+@keyframes finance-boxes-in{from{opacity:.25;translate:0 11px;scale:.958 .985}to{opacity:1;translate:0 0;scale:1}}
+@keyframes finance-project-in{from{opacity:.25;translate:-12px 6px;scale:.99}to{opacity:1;translate:0 0;scale:1}}
+@media(max-width:700px){.main:has(.finance-hub) footer{padding-top:12px}.main:has(.finance-hub){padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}}
+@media(prefers-reduced-motion:reduce){.release-history[open],.profile-menu,.finance-detail-enter[data-finance-section]{animation:none}.release-card-chevron{transition:none}}
+
+.finance-quick-list{display:flex;gap:8px;flex-wrap:wrap}
+.finance-quick-actions .finance-quick-toggle,.finance-quick-actions .finance-quick-mobile-label{display:none}
+@media(max-width:700px){
+ .finance-detail-view .finance-quick-actions{display:block;width:100%;margin:0}
+ .finance-quick-actions .finance-quick-toggle{display:inline-flex;width:auto;min-height:44px;gap:7px;padding-inline:13px}
+ .finance-quick-toggle svg{margin-inline-start:3px;transition:rotate .2s ease}
+ .finance-quick-toggle[aria-expanded="true"] svg{rotate:180deg}
+ .finance-quick-actions .finance-quick-list{display:none}
+ .finance-quick-actions.is-open .finance-quick-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px;animation:finance-quick-expand .24s ease-out both}
+ .finance-quick-actions .finance-quick-list .btn{display:flex;align-items:center;justify-content:flex-start;gap:7px;width:100%;min-height:44px;min-width:0;height:auto;white-space:normal;background:#dce8d8;color:var(--forest);border:1px solid #dce8d8}
+ .finance-quick-actions .finance-quick-list .finance-quick-other{order:1}
+ .finance-quick-actions .finance-quick-desktop-label{display:none}
+ .finance-quick-actions .finance-quick-mobile-label{display:inline}
+}
+@keyframes finance-quick-expand{from{opacity:0;translate:0 -6px}to{opacity:1;translate:0 0}}
+@media(prefers-reduced-motion:reduce){.finance-quick-actions.is-open .finance-quick-list{animation:none}.finance-quick-toggle svg{transition:none}}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1411,17 +1478,21 @@ h1{font-size:28px}
         </button>
         <div class="profile-menu" id="profileMenu" hidden>
           <div class="profile-menu-heading"><strong id="profileMenuName">Vitor</strong><small data-i18n="accountMenuSubtitle">Conta e preferências</small></div>
-          <section class="profile-timezones" aria-labelledby="deviceClockHeading"><strong id="deviceClockHeading">Horários</strong><div><small id="deviceClockLabel">Neste dispositivo · automático</small><time id="deviceLocalClock"></time><span id="deviceClockZone"></span></div><div id="deviceNzClockRow"><small id="deviceNzLabel">Nova Zelândia · Auckland</small><time id="deviceNzClock"></time></div></section>
+          <section class="profile-timezones" id="deviceClockHeading" aria-label="Horários"><div class="profile-clock"><small id="deviceClockLabel">Local</small><time id="deviceLocalClock"></time><span class="profile-clock-zone" id="deviceClockZone"></span></div><div class="profile-clock" id="deviceNzClockRow"><small id="deviceNzLabel">Auckland</small><time id="deviceNzClock"></time></div></section>
+          <button type="button" class="profile-menu-item profile-news" id="profileUpdatesBtn"><span class="menu-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v5m0 10v5M2 12h5m10 0h5M5 5l3 3m8 8 3 3M19 5l-3 3m-8 8-3 3"/></svg></span><span id="profileUpdatesLabel">Novidades</span></button>
           <button type="button" class="profile-menu-item" id="languageBtn"><span class="menu-item-icon">文</span><span id="languageMenuLabel">Mudar idioma para English</span></button>
           <button type="button" class="profile-menu-item" id="syncRefreshBtn"><span class="menu-item-icon">↻</span><span data-i18n="syncRefresh">Sincronizar e atualizar</span></button>
           <button type="button" class="profile-menu-item" id="profileMenusBtn" aria-expanded="false" aria-controls="profileMenusSubmenu"><span class="menu-item-icon">☷</span><span data-i18n="profileMenus">Menus</span><span class="profile-chevron" aria-hidden="true">⌄</span></button>
           <div id="profileMenusSubmenu" class="profile-alerts-submenu" hidden></div>
+          <button type="button" class="profile-menu-item" id="profileSettingsBtn" aria-expanded="false" aria-controls="profileSettingsPanel"><span class="menu-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="2" fill="var(--sage)"/><circle cx="15" cy="12" r="2" fill="var(--sage)"/><circle cx="10" cy="18" r="2" fill="var(--sage)"/></svg></span><span id="profileSettingsLabel">Configurações</span><span class="profile-chevron" aria-hidden="true">⌄</span></button>
+          <div class="profile-settings-panel" id="profileSettingsPanel" hidden>
           <button type="button" class="profile-menu-item" id="profileCustomizeBtn"><span class="menu-item-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="2.5"></rect><path d="M8 8h8M8 12h5M8 16h8"></path></svg></span><span data-i18n="personalization">Personalização</span></button>
           <button type="button" class="profile-menu-item" id="profileAlertsBtn" aria-expanded="false" aria-controls="profileAlertsSubmenu"><span class="menu-item-icon">♧</span><span id="alertsMenuLabel">Meus alertas</span><span class="profile-chevron" aria-hidden="true">⌄</span></button>
           <div id="profileAlertsSubmenu" class="profile-alerts-submenu" hidden>
             <button type="button" class="profile-menu-item profile-menu-subitem" id="openAlertsCenterBtn"><span class="menu-item-icon">◷</span><span data-i18n="openAlertsCenter">Central de alertas</span></button>
             <button type="button" class="profile-menu-item profile-menu-subitem" id="enablePushBtn"><span class="menu-item-icon">♧</span><span id="enablePushLabel">Ativar notificações</span></button>
             <button type="button" class="profile-menu-item profile-menu-subitem" id="testPushBtn"><span class="menu-item-icon">⌁</span><span id="testPushLabel">Enviar notificação de teste</span></button>
+          </div>
           </div>
           <div class="profile-menu-divider"></div>
           <button type="button" class="profile-menu-item profile-menu-logout" id="logoutBtn"><span class="menu-item-icon">⇥</span><span data-i18n="logout">Sair da conta</span></button>
@@ -1430,18 +1501,18 @@ h1{font-size:28px}
     </div>
   </header>
   <div id="pageContent"></div>
-  <footer>KiwiPath v<span id="appVersion">1.6.0</span> · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
+  <footer>KiwiPath v<span id="appVersion">1.7.0</span> · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
 </main>
 </div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./trip-guide.js?v=1.6.0"></script>
+<script src="./trip-guide.js?v=1.7.0"></script>
 <script src="./vendor/d3-7.9.0.min.js"></script>
 <script src="./vendor/topojson-client-3.1.0.min.js"></script>
 <script src="./vendor/memory-world-110m.js"></script>
-<script src="./memory-globe.js?v=1.6.0"></script>
-<script src="./flight-lookup.js?v=1.6.0"></script>
+<script src="./memory-globe.js?v=1.7.0"></script>
+<script src="./flight-lookup.js?v=1.7.0"></script>
 <script>
 (() => {
 "use strict";
@@ -1577,12 +1648,15 @@ function eventInDeviceZone(event){
 function renderDeviceClocks(){
  const local=$('#deviceLocalClock'),nz=$('#deviceNzClock');if(!local||!nz)return;
  const pt=data.language==='pt',locale=pt?'pt-BR':'en-NZ',now=new Date();
- $('#deviceClockHeading').textContent=pt?'Horários':'Time zones';
- $('#deviceClockLabel').textContent=pt?'Neste dispositivo · automático':'This device · automatic';
+ $('#deviceClockHeading').setAttribute('aria-label',pt?'Horários':'Time zones');
+ $('#deviceClockLabel').textContent=pt?'Local':'Local time';
  $('#deviceClockZone').textContent=DEVICE_TIMEZONE;
- local.textContent=new Intl.DateTimeFormat(locale,{timeZone:DEVICE_TIMEZONE,dateStyle:'short',timeStyle:'medium',hourCycle:'h23'}).format(now);local.dateTime=now.toISOString();
- $('#deviceNzLabel').textContent=pt?'Nova Zelândia · Auckland':'New Zealand · Auckland';
- nz.textContent=new Intl.DateTimeFormat(locale,{timeZone:ALERT_TIMEZONE,dateStyle:'short',timeStyle:'medium',hourCycle:'h23'}).format(now);nz.dateTime=now.toISOString();
+ for(const [clock,zone] of [[local,DEVICE_TIMEZONE],[nz,ALERT_TIMEZONE]]){
+  const time=new Intl.DateTimeFormat(locale,{timeZone:zone,timeStyle:'short',hourCycle:'h23'});
+  const full=new Intl.DateTimeFormat(locale,{timeZone:zone,dateStyle:'medium',timeStyle:'short',hourCycle:'h23'});
+  clock.textContent=time.format(now);clock.dateTime=now.toISOString();
+  clock.title=full.format(now)+' · '+zone;clock.setAttribute('aria-label',clock.title);
+ }
  $('#deviceNzClockRow').hidden=DEVICE_TIMEZONE===ALERT_TIMEZONE;
 }
 let deviceClockDay='';
@@ -1962,7 +2036,21 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 window.addEventListener("pagehide",()=>{if(currentUser&&navigator.onLine){clearTimeout(cloudSaveTimer);syncToCloud()}});
 function applyStaticLanguage(){window.KiwiI18n.setLanguage(data.language);document.querySelectorAll('[data-ui-copy]').forEach(el=>{el.textContent=window.KiwiI18n.text(el.dataset.uiCopy)});document.querySelectorAll('[data-ui-label]').forEach(el=>{el.setAttribute('aria-label',window.KiwiI18n.text(el.dataset.uiLabel))});}
 
+function archiveRelease(theme,art,pt,en){
+ return {theme,art,pt:{title:pt[0],items:[[art[0],'',pt[1]]]},en:{title:en[0],items:[[art[0],'',en[1]]]}};
+}
 const RELEASE_NOTES={
+ '1.7.0':{
+  theme:'account',art:['links','alerts','balance','docs'],
+  pt:{title:'Novidades sempre à mão',items:[
+   ['links','Menu da conta mais leve','Histórico de atualizações, relógios compactos e Configurações para Personalização e Meus alertas.'],
+   ['balance','Finanças em movimento','Cada card abre com uma transição própria. No celular, os atalhos de lançamentos ficam em Adicionar.']
+  ]},
+  en:{title:'What’s new is always close by',items:[
+   ['links','A lighter account menu','Browse the update history, see compact clocks, and find Personalization and My alerts under Settings.'],
+   ['balance','Finance in motion','Each card opens with its own transition. On mobile, transaction shortcuts are under Add.']
+  ]}
+ },
  '1.6.0':{
   theme:'finance',
   art:['balance','docs','project','links'],
@@ -1990,9 +2078,44 @@ const RELEASE_NOTES={
    ['grip','Drag and watch things fall into place','As you move over another widget, the cards make room before you let go.'],
    ['alerts','What’s new on first launch','See the highlights from each update here.']
   ]}
- }
+ },
+ '1.5.1':archiveRelease("home",["agenda","weather","grip","docs"],["Widgets com personalidade","Cards com tamanhos e estilos próprios e reordenação ao vivo por arraste."],["Widgets with personality","Distinct card sizes and styles, with live drag reordering."]),
+ '1.5.0':archiveRelease("home",["links","weather","alerts","docs"],["A Home do seu jeito","Galeria de widgets, clima por GPS e lembretes na Home."],["Make Home yours","A widget gallery, GPS weather and reminders on Home."]),
+ '1.4.0':archiveRelease("finance",["project","balance","docs","links"],["Investimento NZ mais claro","Custos pagos e previstos separados, com gráficos por categoria e mês."],["A clearer NZ investment view","Separate paid and planned costs, with category and monthly charts."]),
+ '1.3.0':archiveRelease("travel",["trips","agenda","docs","alerts"],["O dia da viagem em uma tela","Tela Hoje com próximo compromisso, horário local, comprovantes e guia PDF."],["Your travel day in one view","The Today screen shows the next commitment, local time, vouchers and the PDF guide."]),
+ '1.2.1':archiveRelease("calendar",["agenda","alerts","docs","links"],["Cronograma mais compacto","Próximos eventos ganhou rolagem interna para manter o card compacto."],["A more compact calendar","Upcoming events scrolls inside its card to keep the layout compact."]),
+ '1.2.0':archiveRelease("travel",["trips","docs","agenda","links"],["Planejar viagens ficou mais simples","Formulários de viagem remodelados e destino separado do ponto de partida."],["Simpler trip planning","Redesigned trip forms and separated the destination from departure."]),
+ '1.1.0':archiveRelease("home",["links","docs","trips","agenda"],["Kiwi Path em dois idiomas","Mais telas, formulários e guias de viagem em português e inglês."],["Kiwi Path in two languages","More screens, forms and trip guides in Portuguese and English."]),
+ '1.0.0':archiveRelease("finance",["balance","links","project","docs"],["Primeira versão oficial","Numeração de versões, filtros de Finanças unificados e uma barra mobile renovada."],["The first official version","Version numbering, unified finance filters and a refreshed mobile dock."]),
 };
 const openedReleaseNotices=new Set();
+
+function releaseArtwork(release){
+ return '<div class="release-art" aria-hidden="true">'+release.art.map((icon,index)=>'<span style="--release-tile:'+index+'">'+homeWidgetIcon(icon)+'</span>').join('')+'</div>';
+}
+function releaseHighlights(copy){
+ return '<ul class="release-list">'+copy.items.map(([icon,title,description])=>'<li><span class="release-list-icon" aria-hidden="true">'+homeWidgetIcon(icon)+
+  '</span><div>'+(title?'<strong>'+esc(title)+'</strong>':'')+'<p>'+esc(description)+'</p></div></li>').join('')+'</ul>';
+}
+function openReleaseHistory(){
+ if($('#releaseHistory'))return;
+ const pt=data.language==='pt',lang=pt?'pt':'en',dialog=document.createElement('dialog');
+ if(typeof dialog.showModal!=='function')return;
+ dialog.id='releaseHistory';dialog.className='release-history';dialog.setAttribute('aria-labelledby','releaseHistoryTitle');
+ const cards=Object.entries(RELEASE_NOTES).sort(([a],[b])=>b.localeCompare(a,undefined,{numeric:true})).map(([version,release])=>{
+  const copy=release[lang];
+  return '<details class="release-card" data-theme="'+esc(release.theme)+'"><summary><span class="release-card-icon" aria-hidden="true">'+
+   homeWidgetIcon(release.art[0])+'</span><span class="release-card-copy"><small>v'+esc(version)+'</small><strong>'+esc(copy.title)+
+   '</strong></span><span class="release-card-chevron" aria-hidden="true">⌄</span></summary><div class="release-card-detail">'+releaseArtwork(release)+releaseHighlights(copy)+'</div></details>';
+ }).join('');
+ dialog.innerHTML='<header class="release-history-head"><h2 id="releaseHistoryTitle">'+(pt?'Novidades':'What’s new')+
+  '</h2><button type="button" class="btn btn-soft release-history-close" aria-label="'+(pt?'Fechar':'Close')+
+  '" autofocus>×</button></header><div class="release-archive">'+cards+'</div>';
+ dialog.querySelector('.release-history-close').onclick=()=>dialog.close();
+ dialog.addEventListener('close',()=>{dialog.remove();if($('#kiwiApp').style.visibility==='visible')$('#profileMenuToggle').focus({preventScroll:true})},{once:true});
+ document.body.append(dialog);
+ try{dialog.showModal()}catch(error){dialog.remove()}
+}
 function showReleaseNotice(){
  const version=$('#appVersion')?.textContent.trim();
  const release=RELEASE_NOTES[version],userId=currentUser?.id;
@@ -2012,9 +2135,9 @@ function showReleaseNotice(){
  <span class="release-kicker">${pt?'Novidades':'What’s new'} · v${esc(version)}</span>
  <h2 id="releaseNoticeTitle">${esc(copy.title)}</h2>
  <button type="button" class="release-close" data-release-close autofocus aria-label="${pt?'Fechar':'Close'}">×</button>
- <div class="release-art" aria-hidden="true">${release.art.map((symbol,index)=>'<span style="--release-tile:'+index+'">'+homeWidgetIcon(symbol)+'</span>').join('')}</div>
+ ${releaseArtwork(release)}
  </header><div class="release-body">
- <ul class="release-list">${copy.items.map(([icon,title,description])=>'<li><span class="release-list-icon" aria-hidden="true">'+homeWidgetIcon(icon)+'</span><div><strong>'+esc(title)+'</strong><p>'+esc(description)+'</p></div></li>').join('')}</ul>
+ ${releaseHighlights(copy)}
  <div class="release-actions"><button type="button" class="btn" data-release-close>${pt?'Entendi':'Got it'}</button></div></div>`;
  dialog.querySelectorAll('[data-release-close]').forEach(button=>button.addEventListener('click',()=>dialog.close()));
  dialog.addEventListener('close',()=>dialog.remove(),{once:true});
@@ -2026,6 +2149,7 @@ function showReleaseNotice(){
 }
 function showAuth(message=""){
   $("#releaseNotice")?.close();
+  $("#releaseHistory")?.close();
   applyStaticLanguage();document.documentElement.lang=data.language==="en"?"en":"pt-BR";
   $("#authScreen").style.display="grid";
   $("#kiwiApp").style.visibility="hidden";
@@ -2588,6 +2712,11 @@ function financeHub(enter){
     '</small></span><span class="finance-entry-pattern" aria-hidden="true"></span></button>';
   }).join('')+'</div></section>';
 }
+
+function setFinanceQuickActions(button,open){
+ button.setAttribute('aria-expanded',String(open));
+ button.closest('.finance-quick-actions').classList.toggle('is-open',open);
+}
 function openFinanceSection(section){
  if(section!=='hub'&&!FINANCE_SECTIONS.some(item=>item[0]===section))return;
  const previous=financeSubpage;
@@ -2809,7 +2938,7 @@ const pieSegments=sums.map((x,i)=>{
 }).join('');
 const selectedPieData=sums.find(x=>x.c===selectedPieCategory);
 const sortedTransactions=[...filtered].sort((a,b)=>{if(a.createdAt&&b.createdAt)return Date.parse(b.createdAt)-Date.parse(a.createdAt);if(a.createdAt)return -1;if(b.createdAt)return 1;return (b.date||"").localeCompare(a.date||"")});const recentTransactions=sortedTransactions.slice(0,5);const recentActivity='<section class="panel finance-recent-panel"><div class="finance-recent-head"><div><span class="finance-section-kicker">'+(data.language==="pt"?window.KiwiI18n.text("VISÃO RÁPIDA"):"QUICK VIEW")+'</span><h2>'+(data.language==="pt"?window.KiwiI18n.text("Movimentações recentes"):"Recent activity")+'</h2><p>'+filtered.length+" "+(data.language==="pt"?window.KiwiI18n.text("movimentos no período"):"transactions in this period")+'</p></div>'+(sortedTransactions.length>5?'<button type="button" class="finance-statement-link" data-action="finance-tab:statement">'+(data.language==="pt"?window.KiwiI18n.text("Ver extrato completo"):"View full statement")+'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>':'')+'</div>'+(recentTransactions.length?'<div class="finance-transaction-list">'+recentTransactions.map(financeTransactionRow).join("")+'</div>':empty())+(sortedTransactions.length>5?'<button type="button" class="finance-statement-mobile-link" data-action="finance-tab:statement">'+(data.language==="pt"?window.KiwiI18n.text("Ver todas as movimentações"):"View all transactions")+'</button>':'')+'</section>';
-const pieCenter=selectedPieData?'<strong>'+((selectedPieData.v/totalCat*100).toLocaleString('en-NZ',{maximumFractionDigits:1}))+'%</strong><span>'+esc(selectedPieData.c)+'</span>':'<strong>'+money(chartTotal)+'</strong><span>'+ (data.language==='pt'?(financeChartMode==='income'?window.KiwiI18n.text('Total de entradas'):window.KiwiI18n.text('Total gasto')):(financeChartMode==='income'?'Total income':'Total spent'))+'</span>';const incomeInner='<span>'+t('totalIn')+'</span><strong>'+money(income)+'</strong>';const expenseInner='<span>'+t('totalOut')+'</span><strong>'+money(expense)+'</strong>';const summaryHeading='<h2>'+(data.language==='pt'?window.KiwiI18n.text('Resumo do período'):'Period summary')+'</h2>';return `<div class="section-head"><div><div class="eyebrow">KIWIPATH / ${data.language==='pt'?window.KiwiI18n.text('CONTROLE MENSAL'):'MONTHLY CONTROL'}</div><h1>${data.language==='pt'?window.KiwiI18n.text('Controle mensal'):'Income & expenses'}</h1><p>${data.language==='pt'?window.KiwiI18n.text('Acompanhe entradas e saídas, por período e categoria.'):'Track income and expenses by period and category.'}</p></div><div class="finance-quick-actions"><button class="btn" data-action="add-transaction"><span aria-hidden="true">+</span>${t('add')}</button><button class="btn" data-action="quick-transaction:market"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>${window.KiwiI18n.text("Mercado" )}</button><button class="btn" data-action="quick-transaction:transport"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="15" rx="3"/><path d="M5 11h14M8 21l2-3m6 3-2-3M8 7h.01M16 7h.01"/></svg>${window.KiwiI18n.text("Transporte" )}</button><button class="btn" data-action="quick-transaction:leisure"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.2 5.7.8-4.1 4 1 5.7-5.2-2.7-5.2 2.7 1-5.7-4.1-4 5.7-.8L12 3z"/></svg>${window.KiwiI18n.text("Lazer" )}</button></div></div><div class="finance-monthly-filter-scope">${financeFilterMarkup(cats)}</div><div class="money-summary finance-monthly-summary"><button type="button" class="money-mini income finance-chart-switch ${financeChartMode==='income'?'selected':''}" data-action="finance-chart:income">${incomeInner}</button><button type="button" class="money-mini expense finance-chart-switch ${financeChartMode==='expense'?'selected':''}" data-action="finance-chart:expense">${expenseInner}</button></div><div class="finance-chart-row"><section class="panel expense-breakdown"><h2>${financeChartMode==='income'?(data.language==='pt'?window.KiwiI18n.text('Entradas por categoria'):'Income by category'):(data.language==='pt'?window.KiwiI18n.text('Despesas por categoria'):'Expenses by category')}</h2>${sums.length?`<div class="pie-chart"><svg class="pie-chart-svg" viewBox="0 0 100 100" aria-label="${data.language==='pt'?(financeChartMode==='income'?window.KiwiI18n.text('Distribuição das entradas por categoria'):window.KiwiI18n.text('Distribuição das despesas por categoria')):(financeChartMode==='income'?'Income distribution by category':'Expense distribution by category')}">${pieSegments}</svg><div class="pie-chart-core ${selectedPieData?'is-selection':'is-total'}" aria-live="polite">${pieCenter}</div></div><div class="pie-legend">${sums.map((x,i)=>`<button type="button" class="${selectedPieCategory===x.c?'selected':''}" data-pie-category="${esc(x.c)}"><span style="background:${['#183d32','#91b78c','#d9b779','#b66c55','#6d8790','#a9a0bd'][i%6]};width:10px;height:10px;border-radius:50%;flex:none"></span>${esc(x.c)} <strong>${money(x.v)}</strong></button>`).join('')}</div>${selectedPieCategory&&sums.some(x=>x.c===selectedPieCategory)?`<div class="pie-detail"><strong>${esc(selectedPieCategory)}</strong>: ${(sums.find(x=>x.c===selectedPieCategory).v/totalCat*100).toLocaleString('en-NZ',{maximumFractionDigits:1,minimumFractionDigits:1})}% ${data.language==='pt'?(financeChartMode==='income'?window.KiwiI18n.text('do total de entradas'):window.KiwiI18n.text('do total de despesas')):(financeChartMode==='income'?'of total income':'of total expenses')} (${money(sums.find(x=>x.c===selectedPieCategory).v)}).</div>`:''}`:`<p class="muted">${data.language==='pt'?(financeChartMode==='income'?window.KiwiI18n.text('Adicione entradas com categorias para ver o gráfico.'):window.KiwiI18n.text('Adicione despesas com categorias para ver o gráfico.')):(financeChartMode==='income'?'Add categorised income to see the chart.':'Add categorised expenses to see the chart.')}</p>`}</section><section class="panel finance-period-summary"><div class="finance-period-summary-head">${summaryHeading}<div class="finance-user-filters" role="group" aria-label="${data.language==='pt'?window.KiwiI18n.text('Filtrar por usuário'):'Filter by user'}"><span>${data.language==='pt'?window.KiwiI18n.text('Usuário'):'User'}</span><button type="button" class="${financeUserFilter==='all'?'selected':''}" data-action="finance-user-filter:all">${data.language==='pt'?window.KiwiI18n.text('Ambos'):'Both'}</button><button type="button" class="${financeUserFilter==='vitor'?'selected':''}" data-action="finance-user-filter:vitor">Vitor</button><button type="button" class="${financeUserFilter==='zack'?'selected':''}" data-action="finance-user-filter:zack">Zack</button></div></div><div class="summary-line"><span>${data.language==='pt'?window.KiwiI18n.text('Saldo'):'Balance'}</span><strong>${money(income-expense)}</strong></div><div class="summary-line"><span>${data.language==='pt'?window.KiwiI18n.text('Lançamentos'):'Entries'}</span><strong>${filtered.length}</strong></div></section></div>${recentActivity}`}
+const pieCenter=selectedPieData?'<strong>'+((selectedPieData.v/totalCat*100).toLocaleString('en-NZ',{maximumFractionDigits:1}))+'%</strong><span>'+esc(selectedPieData.c)+'</span>':'<strong>'+money(chartTotal)+'</strong><span>'+ (data.language==='pt'?(financeChartMode==='income'?window.KiwiI18n.text('Total de entradas'):window.KiwiI18n.text('Total gasto')):(financeChartMode==='income'?'Total income':'Total spent'))+'</span>';const incomeInner='<span>'+t('totalIn')+'</span><strong>'+money(income)+'</strong>';const expenseInner='<span>'+t('totalOut')+'</span><strong>'+money(expense)+'</strong>';const summaryHeading='<h2>'+(data.language==='pt'?window.KiwiI18n.text('Resumo do período'):'Period summary')+'</h2>';return `<div class="section-head"><div><div class="eyebrow">KIWIPATH / ${data.language==='pt'?window.KiwiI18n.text('CONTROLE MENSAL'):'MONTHLY CONTROL'}</div><h1>${data.language==='pt'?window.KiwiI18n.text('Controle mensal'):'Income & expenses'}</h1><p>${data.language==='pt'?window.KiwiI18n.text('Acompanhe entradas e saídas, por período e categoria.'):'Track income and expenses by period and category.'}</p></div><div class="finance-quick-actions"><button type="button" class="btn finance-quick-toggle" data-action="finance-quick-toggle" aria-expanded="false" aria-controls="financeQuickList"><span aria-hidden="true">+</span>${t('add')}<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div id="financeQuickList" class="finance-quick-list"><button type="button" class="btn finance-quick-other" data-action="add-transaction"><span aria-hidden="true">+</span><span class="finance-quick-desktop-label">${t('add')}</span><span class="finance-quick-mobile-label">${data.language==='pt'?'Outro':'Other'}</span></button><button class="btn" data-action="quick-transaction:market"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>${window.KiwiI18n.text("Mercado" )}</button><button class="btn" data-action="quick-transaction:transport"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="15" rx="3"/><path d="M5 11h14M8 21l2-3m6 3-2-3M8 7h.01M16 7h.01"/></svg>${window.KiwiI18n.text("Transporte" )}</button><button class="btn" data-action="quick-transaction:leisure"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.2 5.7.8-4.1 4 1 5.7-5.2-2.7-5.2 2.7 1-5.7-4.1-4 5.7-.8L12 3z"/></svg>${window.KiwiI18n.text("Lazer" )}</button></div></div></div><div class="finance-monthly-filter-scope">${financeFilterMarkup(cats)}</div><div class="money-summary finance-monthly-summary"><button type="button" class="money-mini income finance-chart-switch ${financeChartMode==='income'?'selected':''}" data-action="finance-chart:income">${incomeInner}</button><button type="button" class="money-mini expense finance-chart-switch ${financeChartMode==='expense'?'selected':''}" data-action="finance-chart:expense">${expenseInner}</button></div><div class="finance-chart-row"><section class="panel expense-breakdown"><h2>${financeChartMode==='income'?(data.language==='pt'?window.KiwiI18n.text('Entradas por categoria'):'Income by category'):(data.language==='pt'?window.KiwiI18n.text('Despesas por categoria'):'Expenses by category')}</h2>${sums.length?`<div class="pie-chart"><svg class="pie-chart-svg" viewBox="0 0 100 100" aria-label="${data.language==='pt'?(financeChartMode==='income'?window.KiwiI18n.text('Distribuição das entradas por categoria'):window.KiwiI18n.text('Distribuição das despesas por categoria')):(financeChartMode==='income'?'Income distribution by category':'Expense distribution by category')}">${pieSegments}</svg><div class="pie-chart-core ${selectedPieData?'is-selection':'is-total'}" aria-live="polite">${pieCenter}</div></div><div class="pie-legend">${sums.map((x,i)=>`<button type="button" class="${selectedPieCategory===x.c?'selected':''}" data-pie-category="${esc(x.c)}"><span style="background:${['#183d32','#91b78c','#d9b779','#b66c55','#6d8790','#a9a0bd'][i%6]};width:10px;height:10px;border-radius:50%;flex:none"></span>${esc(x.c)} <strong>${money(x.v)}</strong></button>`).join('')}</div>${selectedPieCategory&&sums.some(x=>x.c===selectedPieCategory)?`<div class="pie-detail"><strong>${esc(selectedPieCategory)}</strong>: ${(sums.find(x=>x.c===selectedPieCategory).v/totalCat*100).toLocaleString('en-NZ',{maximumFractionDigits:1,minimumFractionDigits:1})}% ${data.language==='pt'?(financeChartMode==='income'?window.KiwiI18n.text('do total de entradas'):window.KiwiI18n.text('do total de despesas')):(financeChartMode==='income'?'of total income':'of total expenses')} (${money(sums.find(x=>x.c===selectedPieCategory).v)}).</div>`:''}`:`<p class="muted">${data.language==='pt'?(financeChartMode==='income'?window.KiwiI18n.text('Adicione entradas com categorias para ver o gráfico.'):window.KiwiI18n.text('Adicione despesas com categorias para ver o gráfico.')):(financeChartMode==='income'?'Add categorised income to see the chart.':'Add categorised expenses to see the chart.')}</p>`}</section><section class="panel finance-period-summary"><div class="finance-period-summary-head">${summaryHeading}<div class="finance-user-filters" role="group" aria-label="${data.language==='pt'?window.KiwiI18n.text('Filtrar por usuário'):'Filter by user'}"><span>${data.language==='pt'?window.KiwiI18n.text('Usuário'):'User'}</span><button type="button" class="${financeUserFilter==='all'?'selected':''}" data-action="finance-user-filter:all">${data.language==='pt'?window.KiwiI18n.text('Ambos'):'Both'}</button><button type="button" class="${financeUserFilter==='vitor'?'selected':''}" data-action="finance-user-filter:vitor">Vitor</button><button type="button" class="${financeUserFilter==='zack'?'selected':''}" data-action="finance-user-filter:zack">Zack</button></div></div><div class="summary-line"><span>${data.language==='pt'?window.KiwiI18n.text('Saldo'):'Balance'}</span><strong>${money(income-expense)}</strong></div><div class="summary-line"><span>${data.language==='pt'?window.KiwiI18n.text('Lançamentos'):'Entries'}</span><strong>${filtered.length}</strong></div></section></div>${recentActivity}`}
 function financeReservePage(){const items=data.nzReserve||[];const income=items.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);const expense=items.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);return `${pageHead(data.language==='pt'?window.KiwiI18n.text('Reserva criada na NZ'):'Savings built in NZ',data.language==='pt'?window.KiwiI18n.text('Dinheiro ganho ou guardado na Nova Zelândia, sem conversão de reais.'):'Money earned or saved in New Zealand, with no BRL conversion.','add-reserve',t('add'))}<div class="money-total"><div class="label">${data.language==='pt'?window.KiwiI18n.text('Saldo da reserva'):'Savings balance'} · NZD</div><div class="amount">${money(income-expense)}</div><small>${data.language==='pt'?window.KiwiI18n.text('Somente valores em NZD feitos na Nova Zelândia.'):'NZD amounts accumulated in New Zealand only.'}</small></div><div class="money-summary"><div class="money-mini income"><span>${t('totalIn')}</span><strong>${money(income)}</strong></div><div class="money-mini expense"><span>${t('totalOut')}</span><strong>${money(expense)}</strong></div></div><section class="panel"><div class="panel-head"><div><h2>${data.language==='pt'?window.KiwiI18n.text('Movimentos da reserva'):'Savings movements'}</h2><p>${items.length} ${data.language==='pt'?window.KiwiI18n.text('lançamentos'):'entries'}</p></div></div>${items.length?[...items].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(x=>`<div class="item-row"><div class="item-date">${fmtDate(x.date)}</div><div class="item-main"><strong>${esc(recordText(x,"title"))}</strong><p>${t(x.type)} · ${financePerson(x)}</p></div><strong style="color:${x.type==='income'?'#47785c':'#a15a47'};white-space:nowrap">${x.type==='income'?'+':'−'}${money(x.amount)}</strong><div class="item-actions">${button('✎','edit-reserve:'+x.id,'btn-small')}${button('×','delete-reserve:'+x.id,'btn-small btn-danger')}</div></div>`).join(''):empty()}</section>`}
 function accountBalance(account){const tx=(data.transactions||[]).filter(x=>x.accountId===account.id);return Number(account.initialBalance||0)+tx.reduce((sum,x)=>sum+(x.type==='income'?1:-1)*Number(x.amount||0),0)}
 function accountCurrency(account){return account.currency==='BRL'?'R$':'NZ$'}
@@ -2891,7 +3020,7 @@ function financesPage(){
  const views={monthly:financeMonthlyPage,statement:financeStatementPage,boxes:financeBoxesPage,project:financeProjectPage,
   'boxes-analysis':financeBoxesAnalyticsPage,'account-statement':financeAccountStatementPage};
  const back=financeNavIcon('<path d="M19 12H5m5-5-5 5 5 5"/>')+(data.language==='pt'?'Voltar a Finanças':'Back to Finance');
- return '<div class="finance-detail-view'+(enter?' finance-detail-enter':'')+'"><button type="button" class="finance-return" data-action="finance-tab:hub">'+back+'</button>'+views[financeSubpage]()+'</div>';
+ return '<div class="finance-detail-view'+(enter?' finance-detail-enter':'')+'" data-finance-section="'+financeSubpage+'"><button type="button" class="finance-return" data-action="finance-tab:hub">'+back+'</button>'+views[financeSubpage]()+'</div>';
 }
 
 function studyPage(){return `${pageHead(t("study"),t("studyNote"),"add-study",t("add"))}<section class="panel"><div class="panel-head"><div><h2>${t("target")}</h2><p>${data.study.length} ${t("studyCount")}</p></div></div>${data.study.length?data.study.map(x=>`<div class="item-row"><div class="module-icon" style="margin:0;width:37px;height:37px;flex:0 0 37px">⌑</div><div class="item-main"><strong>${esc(recordText(x,"title"))}</strong><p>${esc(recordText(x,"category")||t("other"))} · ${esc(recordText(x,"note"))}</p>${x.date?`<p>${t("date")}: ${fmtDate(x.date)}</p>`:""}<span class="tag ${x.status==="active"?"":"gold"}">${t(x.status)}</span></div><div class="item-actions">${button("✎","edit-study:"+x.id,"btn-small")}${button("×","delete-study:"+x.id,"btn-small btn-danger")}</div></div>`).join(""):empty()}</section><div class="note">${t("officialNote")}</div>`}
@@ -2931,6 +3060,10 @@ function applyNavigationPrefs(){
 }
 function renderProfileMenus(){
  renderDeviceClocks();
+ const isPt=data.language==='pt';
+ $('#profileUpdatesLabel').textContent=isPt?'Novidades':'What’s new';
+ $('#profileSettingsLabel').textContent=isPt?'Configurações':'Settings';
+ $('#alertsMenuLabel').textContent=isPt?'Meus alertas':'My alerts';
  const box=$("#profileMenusSubmenu");if(!box)return;
  const pt=data.language==="pt";
  box.innerHTML=NAV_PAGES.map(p=>'<button type="button" class="profile-menu-item profile-menu-subitem" data-profile-page="'+p.id+'"><span class="menu-item-icon">'+p.icon+'</span><span>'+(pt?p.label:p.en)+'</span></button>').join("");
@@ -4483,13 +4616,30 @@ async function removeItem(collection,id){
 }
 $("#navigation").addEventListener("click",e=>{const b=e.target.closest("button[data-page]");if(!b)return;const nextPage=b.dataset.page;if(nextPage==="finances"){selectFinanceSection("hub");financeChartMode="expense";selectedPieCategory="";}page=nextPage;render();window.scrollTo({top:0,behavior:"smooth"})});
 $(".brand-home").addEventListener("click",()=>{page="home";render();window.scrollTo({top:0,behavior:"smooth"})});
-function closeProfileMenu(){const menu=$("#profileMenu"),toggle=$("#profileMenuToggle");if(menu)menu.hidden=true;if(toggle)toggle.setAttribute("aria-expanded","false")}
-$("#profileMenuToggle").addEventListener("click",()=>{const menu=$("#profileMenu"),toggle=$("#profileMenuToggle");const willOpen=menu.hidden;menu.hidden=!willOpen;toggle.setAttribute("aria-expanded",String(willOpen))});
+function setProfileDisclosure(button,open){
+ const panel=document.getElementById(button.getAttribute('aria-controls'));
+ panel.hidden=!open;button.setAttribute('aria-expanded',String(open));
+}
+function closeProfileMenu(){
+ const menu=$("#profileMenu"),toggle=$("#profileMenuToggle");
+ if(menu.hidden)return;
+ for(const id of ['profileMenusBtn','profileSettingsBtn','profileAlertsBtn'])setProfileDisclosure(document.getElementById(id),false);
+ setProfileDisclosure(toggle,false);
+}
+$("#profileMenuToggle").addEventListener("click",()=>{
+ const toggle=$("#profileMenuToggle");
+ if($("#profileMenu").hidden)setProfileDisclosure(toggle,true);else closeProfileMenu();
+});
 document.addEventListener("click",e=>{if(!e.target.closest("#profileMenuWrap"))closeProfileMenu()});
-// Fechar o menu da conta e recolher os submenus quando o cursor sair da área inteira do menu.
-const profileMenuWrap=$("#profileMenuWrap");
-if(profileMenuWrap && window.matchMedia("(hover: hover) and (pointer: fine)").matches)profileMenuWrap.addEventListener("mouseleave",()=>{closeProfileMenu();const menus=$("#profileMenusSubmenu"),alerts=$("#profileAlertsSubmenu"),menusBtn=$("#profileMenusBtn"),alertsBtn=$("#profileAlertsBtn");if(menus)menus.hidden=true;if(alerts)alerts.hidden=true;if(menusBtn)menusBtn.setAttribute("aria-expanded","false");if(alertsBtn)alertsBtn.setAttribute("aria-expanded","false")});
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeProfileMenu()});
+document.addEventListener("keydown",e=>{
+ if(e.key==="Escape"&&!$("#profileMenu").hidden){closeProfileMenu();$("#profileMenuToggle").focus()}
+});
+$("#profileUpdatesBtn").onclick=()=>{closeProfileMenu();openReleaseHistory()};
+$("#profileSettingsBtn").onclick=()=>{
+ const button=$("#profileSettingsBtn"),open=$("#profileSettingsPanel").hidden;
+ if(!open)setProfileDisclosure($("#profileAlertsBtn"),false);
+ setProfileDisclosure(button,open);
+};
 $("#languageBtn").onclick=async()=>{data.language=data.language==="pt"?"en":"pt";persistUserLanguage(data.language,currentUser?.id);if(currentUser&&supabaseClient?.auth?.updateUser){try{const {data:updated,error}=await supabaseClient.auth.updateUser({data:{kiwipath_language:data.language}});if(error)throw error;if(updated?.user)currentUser=updated.user}catch(e){console.warn("Could not sync personal language preference to account:",e)}}save();render();closeProfileMenu();notify(t("languageChanged"))};
 $("#profileAlertsBtn").onclick=()=>{const sub=$("#profileAlertsSubmenu"),b=$("#profileAlertsBtn");sub.hidden=!sub.hidden;b.setAttribute("aria-expanded",String(!sub.hidden))};
 $("#profileMenusBtn").onclick=()=>{const sub=$("#profileMenusSubmenu"),b=$("#profileMenusBtn");sub.hidden=!sub.hidden;b.setAttribute("aria-expanded",String(!sub.hidden))};
@@ -4553,6 +4703,9 @@ if(a.startsWith("travel-remove-itinerary:")){const p=a.split(":");return removeT
 if(a.startsWith("travel-remove-check:")){const p=a.split(":");return removeTripPart(p[1],"checklist",p[2])}
 if(a.startsWith("travel-check-toggle:")){const p=a.split(":"),trip=data.trips.find(x=>x.id===p[1]),item=trip?.checklist?.find(x=>x.id===p[2]);if(item){item.done=!item.done;save();render()}return}
 if(a.startsWith("travel-open-linked:")){page=a.slice("travel-open-linked:".length);if(page==="finances")selectFinanceSection("hub");render();window.scrollTo({top:0,behavior:"smooth"});return}
+if(a==="finance-quick-toggle"){setFinanceQuickActions(b,b.getAttribute("aria-expanded")!=="true");return}
+const quickActions=b.closest("#financeQuickList");
+if(quickActions){const toggle=quickActions.previousElementSibling;setFinanceQuickActions(toggle,false)}
 if(a==="finance-filters-toggle"){financeFiltersOpen=!financeFiltersOpen;render();return}if(a.startsWith("finance-chart:")){financeChartMode=a.split(":")[1]==="income"?"income":"expense";selectedPieCategory="";render();return}if(a.startsWith("finance-user-filter:")){financeUserFilter=a.split(":")[1];selectedPieCategory="";financeFiltersOpen=false;render();return}if(a==="finance-pie-reset"){selectedPieCategory="";render();return}if(a==="finance-statement-charts"){financeStatementView="charts";render();return}if(a==="finance-statement-list"){financeStatementView="list";render();return}if(a==="download-finance-csv"||a==="download-finance-statement"){downloadFinanceStatement();return}if(a==="download-finance-pdf"){downloadFinancePdf();return}if(a.startsWith("finance-transaction-menu:")){const id=a.split(":")[1];financeTransactionMenuId=financeTransactionMenuId===id?"":id;render();return}if(a.startsWith("finance-tab:"))return openFinanceSection(a.slice("finance-tab:".length));if(a==="finance-boxes-analysis"){financeSubpage="boxes-analysis";render();return}if(a==="finance-boxes-filters-toggle"){financeBoxesFiltersOpen=!financeBoxesFiltersOpen;render();return}if(a.startsWith("finance-boxes-period:")){financeBoxesPeriod=a.slice("finance-boxes-period:".length);financeBoxesFiltersOpen=financeBoxesPeriod==="custom";render();return}if(a.startsWith("finance-period:")){financePeriod=a.split(":")[1];financeFiltersOpen=financePeriod==="custom";render();return}if(a.startsWith("quick-transaction:"))return editFinanceTransaction(false,null,a.split(":")[1]);if(a==="add-project-cost")return editProjectCost();if(a==="add-reserve")return editFinanceTransaction(true);if(a==='add-account')return editAccount();if(a==="add-transaction")return addTransactionWizard();if(a.startsWith("go-")){const nextPage=a.slice(3);if(nextPage==="finances"){selectFinanceSection("hub");financeChartMode="expense";selectedPieCategory="";}page=nextPage;render();window.scrollTo({top:0,behavior:"smooth"});return}if(a==="add-document")return editDoc();if(a.startsWith("preview-document:"))return documentFileAction(a.slice(17),false);if(a.startsWith("download-document:"))return documentFileAction(a.slice(18),true);if(a.startsWith("calendar-filter:")){calendarFilter=a.slice(16);render();return}if(a==="calendar-prev"){calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()-1,1);render();return}if(a==="calendar-next"){calendarCursor=new Date(calendarCursor.getFullYear(),calendarCursor.getMonth()+1,1);render();return}if(a==="calendar-today"){calendarCursor=new Date();calendarSelectedDate=today();render();return}if(a.startsWith("export-event:"))return downloadEventIcs(a.slice(13));if(a==="add-event")return editEvent();if(a==="add-alert")return editAlert();if(a==="refresh-alerts"){(async()=>{await syncDocumentExpiryAlerts();await loadCustomAlerts();render()})().catch(err=>{console.error(err);notify(data.language==="pt"?window.KiwiI18n.text("Falha ao carregar alertas."):"Could not load alerts.")});return}if(a.startsWith("edit-alert:"))return editAlert(a.slice(11));if(a.startsWith("cancel-alert:")){cancelAlert(a.slice(13));return}if(a.startsWith("delete-alert:")){deleteAlert(a.slice(13));return}if(a==="add-transaction")return editTransaction();if(a==="add-study")return editStudy();if(a==="add-dream")return editDream();if(a==="edit-goal")return editGoal();for(const [prefix,fn] of [["edit-document:",editDoc],["edit-event:",editEvent],["edit-study:",editStudy],["edit-dream:",editDream]])if(a.startsWith(prefix))return fn(a.slice(prefix.length));for(const [prefix,col] of [["delete-document:","documents"],["delete-event:","events"],["delete-transaction:","transactions"],["delete-project-cost:","projectCosts"],["delete-reserve:","nzReserve"],["delete-study:","study"],["delete-dream:","dreams"]])if(a.startsWith(prefix))return removeItem(col,a.slice(prefix.length));if(a.startsWith("toggle-dream:")){const x=data.dreams.find(x=>x.id===a.slice(12));if(x)x.done=!x.done;save();render()}});
 document.addEventListener("click",e=>{if(!e.target.closest(".document-menu"))document.querySelectorAll(".document-popover:not([hidden])").forEach(p=>{p.hidden=true;p.previousElementSibling.setAttribute("aria-expanded","false")});let changed=false;if(financeTransactionMenuId&&!e.target.closest(".finance-transaction-menu")){financeTransactionMenuId="";changed=true}if(financeAccountMenuId&&!e.target.closest(".finance-account-menu")){financeAccountMenuId="";changed=true}if(shoppingListMenuId&&!e.target.closest(".shopping-list-menu-wrap")){shoppingListMenuId="";changed=true}if(changed)render()});
 document.addEventListener("click",e=>{const b=e.target.closest("#modalBackdrop [data-action]");if(!b)return;const a=b.dataset.action;if(a.startsWith("shopping-pick-product:")){const id=a.slice("shopping-pick-product:".length),p=data.shoppingProducts.find(x=>x.id===id),input=$("#f-productSearch"),box=$("#shoppingProductResults");if(p&&input){input.value=p.name;if(box){box.classList.add("hidden");box.innerHTML=""}input.dispatchEvent(new Event("change",{bubbles:true}))}return;}if(a.startsWith("shopping-inline-new:")){const listId=a.slice("shopping-inline-new:".length),seed=$("#f-productSearch")?.value||"";editShoppingProduct(undefined,seed,listId);return}if(a.startsWith("shopping-qty:")){const q=$("#f-quantity");if(q)q.value=Math.max(1,Math.floor((parseAmount(q.value)||1)+Number(a.slice(13))));return}});
