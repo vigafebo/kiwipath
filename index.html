@@ -1549,6 +1549,13 @@ h1{font-size:28px}
 .kiwi-travel-view .travel-plans-heading>[data-action="travel-history"]{display:inline-flex;align-items:center;gap:7px;min-height:44px}
 @media(max-width:570px){.calendar-command-bar .calendar-stats{flex-basis:100%}.calendar-command-bar>.glass-create{margin-inline-start:auto}}
 @media(prefers-reduced-motion:reduce){.kiwi-view-enter .section-banner{animation:none}}
+
+@media(min-width:601px){
+ :is(.finance-monthly-filter-scope,.finance-statement-view) .finance-filters:not(.mobile-filters-open) .finance-filter-controls{display:none}
+ :is(.finance-monthly-filter-scope,.finance-statement-view) .finance-filters{padding:9px}
+ :is(.finance-monthly-filter-scope,.finance-statement-view) .finance-filter-toggle{width:100%;display:flex;align-items:center;gap:9px;padding:7px 8px;border:1px solid var(--line);border-radius:11px;background:#fffdf8;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+ :is(.finance-monthly-filter-scope,.finance-statement-view) .finance-filters.mobile-filters-open .finance-filter-controls{padding:12px 8px 6px}
+}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -2204,8 +2211,8 @@ function archiveRelease(theme,art,pt,en){
 const RELEASE_NOTES={
  '1.9.1':{
   theme:'journey',art:['docs','agenda','shopping','trips'],
-  pt:{title:'Cabeçalhos mais limpos',items:[['links','Um topo mais leve','Documentos, Cronograma e Lista de compras adotam o formato de Finanças. Em Viagens, Histórico fica junto aos planos.']]},
-  en:{title:'Cleaner page headers',items:[['links','A lighter header','Documents, Calendar and Shopping follow the Finance header layout. In Trips, History sits alongside your plans.']]}
+  pt:{title:'Cabeçalhos mais limpos',items:[['links','Um topo mais leve','Documentos, Cronograma e Lista de compras adotam o formato de Finanças. Em Viagens, Histórico fica junto aos planos. Os filtros de Gastos e Entradas e Extrato começam recolhidos no desktop.']]},
+  en:{title:'Cleaner page headers',items:[['links','A lighter header','Documents, Calendar and Shopping follow the Finance header layout. In Trips, History sits alongside your plans. Income & expenses and Statement filters start collapsed on desktop.']]}
  },
  '1.9.0':{
   theme:'journey',art:['docs','agenda','trips','links'],
