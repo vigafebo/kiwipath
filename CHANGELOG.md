@@ -1,5 +1,9 @@
 # Release history
 
+## 1.2.1
+
+- Made the Upcoming events list scroll within its card and removed its 12-entry limit.
+
 ## 1.2.0
 
 - Redesigned trip creation and editing, with optional settings tucked away.

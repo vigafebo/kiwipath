@@ -263,6 +263,33 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Salvar',self.page.locator('#modalBackdrop').inner_text())
         self.assertEqual(self.errors,[])
 
+    def test_upcoming_calendar_scrolls_inside_card_in_both_languages(self):
+        self.page.evaluate("""()=>{
+            const date=__travel.today(), timeZone=__travel.zone();
+            __travel.state().events=Array.from({length:18}, (_,i)=>({
+                id:'scroll-'+i,title:'Event '+i,date,time:'12:00',timeZone,eventType:'personal'
+            }));
+        }""")
+        self.page.locator('[data-page="timeline"]').click()
+        self.page.locator('[data-action="calendar-filter:upcoming"]').click()
+        for width, language, heading in [
+            (375, 'pt', 'Próximos eventos'), (1100, 'en', 'Upcoming events'),
+        ]:
+            with self.subTest(width=width, language=language):
+                self.page.set_viewport_size({'width':width,'height':810})
+                self.page.evaluate("lang=>__travel.language(lang)", language)
+                self.assertEqual(self.page.locator('#calendar-events-heading').inner_text(), heading)
+                region = self.page.get_by_role('region', name=heading, exact=True)
+                self.assertEqual(region.locator('.event-card').count(), 18)
+                self.assertTrue(region.evaluate("""el=>{
+                    const heading=document.getElementById(el.getAttribute('aria-labelledby'));
+                    const top=heading.getBoundingClientRect().top;
+                    el.scrollTop=el.scrollHeight;
+                    return el.scrollTop>0 && el.scrollWidth<=el.clientWidth &&
+                        top===heading.getBoundingClientRect().top &&
+                        el.lastElementChild.getBoundingClientRect().bottom<=el.getBoundingClientRect().bottom;
+                }"""))
+
     def test_trip_editor_and_first_transfer_in_both_languages(self):
         self.page.set_viewport_size({'width': 375, 'height': 844})
         for language, create, more, save in [
