@@ -618,8 +618,8 @@ class TravelTests(unittest.TestCase):
         self.assertIn("Madrid", contents)
         self.assertTrue(download.value.suggested_filename.endswith(".pdf"))
         self.page.get_by_role("button", name="Fechar", exact=True).click()
-        self.page.get_by_role("button", name="Modo em viagem", exact=True).click()
-        self.assertIn("trip-travel-mode", self.page.locator(".trip-dashboard").get_attribute("class"))
+        self.page.get_by_role("button", name="Abrir tela Hoje", exact=True).click()
+        self.assertIn("Hoje", self.page.locator(".trip-today h1").inner_text())
 
     def test_guide_includes_available_pdf_and_mobile_has_no_overflow(self):
         self.page.set_viewport_size({"width":390,"height":844})
@@ -741,6 +741,38 @@ class TravelTests(unittest.TestCase):
         self.assertIn("Activity 0",self.page.locator(".trip-now h2").inner_text())
         self.page.reload()
         self.assertEqual(self.page.evaluate("__travel.state().trips[0].itinerary[1].status"),"skipped")
+
+    def test_today_shows_local_departure_and_linked_voucher_then_advances(self):
+        self.page.clock.set_fixed_time("2026-10-15T07:00:00Z")
+        trip = {**TRIP, "timeZone":"Europe/Madrid",
+            "reservations":[dict(id="booking", flightNumber="IB123", reference="ABC123", documentId="voucher")],
+            "itinerary":[
+                dict(id="old", title="Passed", date="2026-10-15", time="07:00"),
+                dict(id="flight", title="Meu voo", kind="travel", date="2026-10-15", time="10:00",
+                     origin="MAD", location="Barcelona", sourceReservationId="booking"),
+                dict(id="next", title="Museu", date="2026-10-15", time="14:00"),
+                dict(id="future", title="Tomorrow", date="2026-10-16", time="10:00")]}
+        self.page.evaluate("""trip=>{
+            __travel.reset(trip);
+            __travel.state().documents=[{id:'voucher',title:'Voucher',filePath:'voucher.pdf'}];
+        }""",trip)
+        self.page.set_viewport_size({'width':375,'height':844})
+        self.page.get_by_role("button", name="Abrir tela Hoje", exact=True).click()
+        panel = self.page.locator(".trip-today")
+        self.assertTrue(panel.evaluate("el=>el.scrollWidth<=el.clientWidth"))
+        self.assertEqual(panel.locator(".trip-today-next h2").inner_text(),"Meu voo")
+        self.assertIn("10:00",panel.inner_text())
+        self.assertIn("MAD",panel.inner_text())
+        self.assertIn("IB123 · ABC123",panel.inner_text())
+        self.assertEqual(panel.get_by_role("button",name="Abrir comprovante").get_attribute("data-action"),"preview-document:voucher")
+        self.assertEqual(panel.locator(".trip-today-agenda li").count(),3)
+        self.page.evaluate("__travel.language('en')")
+        self.assertEqual(panel.locator("h1").inner_text(),"Today")
+        self.assertEqual(panel.locator(".trip-today-next h2").inner_text(),"Meu voo")
+        panel.get_by_role("button", name="Mark done").click()
+        self.assertEqual(panel.locator(".trip-today-next h2").inner_text(),"Museu")
+        panel.get_by_role("button", name="View full plan").click()
+        self.assertTrue(self.page.locator(".trip-dashboard").is_visible())
 
     def test_overnight_timezones_convert_calendar_and_detect_overlap(self):
         self.page.evaluate("__travel.open()")
