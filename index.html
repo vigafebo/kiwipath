@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./translations.js?v=1.3.0"></script>
+<script src="./translations.js?v=1.4.0"></script>
 <meta name="theme-color" content="#183d32">
 <title>KiwiPath — Our journey to New Zealand</title>
 <style>
@@ -1119,6 +1119,26 @@ h1{font-size:28px}
 .trip-today-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px 14px;padding:11px 0;border-top:1px solid var(--line)}
 .trip-today-row div{display:grid;gap:3px;min-width:0;overflow-wrap:anywhere}
 .trip-today-offline{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.project-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:10px;margin-bottom:16px}
+.project-metric{display:grid;gap:6px;min-width:0;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+.project-metric span{font-size:13px;font-weight:700}
+.project-metric strong{font-size:clamp(18px,3vw,25px);overflow-wrap:anywhere}
+.project-metric small{color:var(--muted)}
+.project-metric.paid,.project-status.paid{background:#e4f1e5;color:#225432}
+.project-metric.planned,.project-status.planned{background:#fff0d7;color:#754612}
+.project-charts{margin-bottom:16px}
+.project-chart-list{display:grid;gap:13px;max-height:330px;overflow-y:auto;padding:4px}
+.project-chart-heading,.project-chart-values{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 10px;overflow-wrap:anywhere}
+.project-chart-values{font-size:12px;margin-top:4px}
+.project-chart-values .paid{color:#225432}.project-chart-values .planned{color:#754612}
+.project-chart-track{display:flex;height:8px;margin:7px 0 0;overflow:hidden;border-radius:8px;background:#ecefe9}
+.project-chart-track .paid{background:#36754a}.project-chart-track .planned{background:#cf8b2f}
+.project-group{min-width:0;margin-bottom:14px}
+.project-cost-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:12px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
+.project-cost-row p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.project-cost-row .item-actions{grid-column:1/-1;justify-content:flex-end}
+.project-status{display:inline-block;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:750;margin-bottom:4px}
+.project-chart-list:focus-visible{outline:2px solid var(--green);border-radius:8px}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1229,18 +1249,18 @@ h1{font-size:28px}
     </div>
   </header>
   <div id="pageContent"></div>
-  <footer>KiwiPath v1.3.0 · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
+  <footer>KiwiPath v1.4.0 · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
 </main>
 </div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./trip-guide.js?v=1.3.0"></script>
+<script src="./trip-guide.js?v=1.4.0"></script>
 <script src="./vendor/d3-7.9.0.min.js"></script>
 <script src="./vendor/topojson-client-3.1.0.min.js"></script>
 <script src="./vendor/memory-world-110m.js"></script>
-<script src="./memory-globe.js?v=1.3.0"></script>
-<script src="./flight-lookup.js?v=1.3.0"></script>
+<script src="./memory-globe.js?v=1.4.0"></script>
+<script src="./flight-lookup.js?v=1.4.0"></script>
 <script>
 (() => {
 "use strict";
@@ -1970,7 +1990,75 @@ function financeStatementPage(){
 }
 
 
-function financeProjectPage(){const items=data.projectCosts||[];const total=items.reduce((a,x)=>a+Number(x.nzdAmount||0),0);return `${pageHead(data.language==='pt'?window.KiwiI18n.text('Gastos do projeto NZ'):'NZ project costs',data.language==='pt'?window.KiwiI18n.text('Tudo que já investimos ou ainda vamos investir na mudança.'):'Everything already spent or planned for the move.', 'add-project-cost',t('add'))}<div class="money-total"><div class="label">${data.language==='pt'?window.KiwiI18n.text('Total do projeto estimado'):'Estimated project total'} · NZD</div><div class="amount">${money(total)}</div><small>${data.language==='pt'?window.KiwiI18n.text('Inclui gastos pagos e previstos, convertidos para NZD para facilitar a comparação.'):'Includes paid and planned costs, converted to NZD for comparison.'}</small></div><section class="panel"><div class="panel-head"><div><h2>${data.language==='pt'?window.KiwiI18n.text('Todos os custos'):'All project costs'}</h2><p>${items.length} ${data.language==='pt'?window.KiwiI18n.text('lançamentos'):'entries'}</p></div></div>${items.length?[...items].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(x=>`<div class="item-row"><div class="item-date">${fmtDate(x.date)}</div><div class="item-main"><strong>${esc(recordText(x,"title"))}</strong><p>${esc(x.category)} · ${x.status==='planned'?(data.language==='pt'?window.KiwiI18n.text('Previsto'):'Planned'):(data.language==='pt'?window.KiwiI18n.text('Pago'):'Paid')} · ${financePerson(x)}</p><p>${x.currency==='BRL'?`R$ ${Number(x.amount||0).toLocaleString('pt-BR',{minimumFractionDigits:2})} · câmbio NZD ${Number(x.rate||0).toFixed(4)}`:'NZD '+Number(x.amount||0).toFixed(2)}</p></div><strong style="white-space:nowrap">${money(x.nzdAmount)}</strong><div class="item-actions">${button('✎','edit-project-cost:'+x.id,'btn-small')}${button('×','delete-project-cost:'+x.id,'btn-small btn-danger')}</div></div>`).join(''):empty()}</section><div class="note">${data.language==='pt'?window.KiwiI18n.text('Para valores em reais, informe a cotação de 1 NZD em BRL na data do lançamento. O sistema calcula o equivalente em NZD. Para despesas futuras, marque “Previsto”.'):'For BRL amounts, enter the BRL value of 1 NZD on the transaction date. The equivalent NZD amount is calculated. Mark future expenses as “Planned”.'}</div>`}
+function projectCostCategory(value){
+ const categories=[
+  ['Visa','Visto'],['Medical tests','Exames médicos'],['Tuition','Mensalidade'],
+  ['Trip','Viagem'],['Documents','Documentos'],['Insurance','Seguro'],
+  ['Housing','Moradia'],['Other','Outro']
+ ];
+ const category=value==='Exames'?'Exames médicos':value;
+ const names=categories.find(pair=>pair.includes(category));
+ return names?names[data.language==='pt'?1:0]:category||t('other');
+}
+function projectCostChart(groups,id,title,labels,emptyText){
+ const total=group=>group.paid+group.planned;
+ const scale=Math.max(1,...groups.map(total));
+ const bars=groups.map(group=>`<div class="project-chart-row"><div class="project-chart-heading"><strong>${esc(group.label)}</strong><strong>${money(total(group))}</strong></div>
+ <div class="project-chart-track" aria-hidden="true"><span class="paid" style="width:${group.paid/scale*100}%"></span><span class="planned" style="width:${group.planned/scale*100}%"></span></div>
+ <div class="project-chart-values"><span class="paid">${labels.paid} ${money(group.paid)}</span><span class="planned">${labels.planned} ${money(group.planned)}</span></div></div>`).join('');
+ return `<section class="finance-detail-card project-chart"><div class="finance-detail-card-head"><h3 id="${id}">${title}</h3></div>${bars?`<div class="project-chart-list" role="region" tabindex="0" aria-labelledby="${id}">${bars}</div>`:`<p>${emptyText}</p>`}</section>`;
+}
+function financeProjectPage(){
+ const pt=data.language==='pt',labels={paid:pt?'Pago':'Paid',planned:pt?'Previsto':'Planned'};
+ const items=(data.projectCosts||[]).map(entry=>{
+  const converted=entry.currency==='BRL'?Number(entry.amount)/Number(entry.rate):Number(entry.amount);
+  const nzd=Number(entry.nzdAmount??converted);
+  return {...entry,stage:entry.status==='planned'?'planned':'paid',nzd:Number.isFinite(nzd)?nzd:0};
+ });
+ const totals={paid:0,planned:0},categories=new Map(),months=new Map();
+ const addCost=(groups,key,item)=>{
+  const group=groups.get(key)||{paid:0,planned:0};
+  group[item.stage]+=item.nzd;
+  groups.set(key,group);
+ };
+ for(const item of items){
+  totals[item.stage]+=item.nzd;
+  addCost(categories,projectCostCategory(item.category),item);
+  const month=/^\d{4}-(0[1-9]|1[0-2])-\d{2}$/.test(item.date||'')?item.date.slice(0,7):'';
+  addCost(months,month,item);
+ }
+ const byCategory=[...categories].map(([label,amounts])=>({label,...amounts})).sort((a,b)=>(b.paid+b.planned)-(a.paid+a.planned));
+ const monthLabel=new Intl.DateTimeFormat(pt?'pt-BR':'en-NZ',{month:'short',year:'numeric'});
+ const byMonth=[...months].sort(([a],[b])=>b.localeCompare(a)).map(([month,amounts])=>({
+  label:month?monthLabel.format(new Date(month+'-01T12:00:00')):pt?'Sem data':'Undated',...amounts
+ }));
+ const metric=(label,value,hint,stage='')=>`<article class="project-metric ${stage}"><span>${label}</span><strong>${money(value)}</strong><small>${hint}</small></article>`;
+ const sorted=items.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ const section=(stage,title,emptyText)=>{
+  const entries=sorted.filter(item=>item.stage===stage);
+  const rows=entries.map(item=>{
+   const id=esc(item.id),name=recordText(item,'title');
+   const original=item.currency==='BRL'
+    ?new Intl.NumberFormat(pt?'pt-BR':'en-NZ',{style:'currency',currency:'BRL'}).format(Number(item.amount||0))
+    :'';
+   return `<article class="project-cost-row"><div><span class="project-status ${stage}">${labels[stage]}</span><br><strong>${esc(name)}</strong>
+   <p>${esc(projectCostCategory(item.category))} · ${financePerson(item)} · ${fmtDate(item.date)}</p>${original?`<p>${esc(original)} · ${pt?'Cotação':'Rate'} ${Number(item.rate||0).toFixed(4)}</p>`:''}</div>
+   <strong>${money(item.nzd)}</strong><div class="item-actions">
+   <button type="button" class="btn-small" data-action="edit-project-cost:${id}" aria-label="${esc((pt?'Editar ':'Edit ')+name)}">✎</button>
+   <button type="button" class="btn-small btn-danger" data-action="delete-project-cost:${id}" aria-label="${esc((pt?'Excluir ':'Delete ')+name)}">×</button></div></article>`;
+  }).join('');
+  return `<section class="panel project-group"><div class="panel-head"><div><h2>${title}</h2><p>${entries.length} ${pt?'lançamentos':'entries'}</p></div></div>${rows||empty(emptyText)}</section>`;
+ };
+ return pageHead(pt?'Gastos do projeto NZ':'NZ project costs',pt?'Acompanhe o investimento na mudança em NZD.':'Track your investment in the move in NZD.','add-project-cost',t('add'))+
+  '<div class="project-summary">'+metric(pt?'Já pago':'Already paid',totals.paid,pt?'Investimento realizado':'Amount spent','paid')+
+  metric(pt?'Ainda previsto':'Still planned',totals.planned,pt?'Investimento a fazer':'Amount still to spend','planned')+
+  metric(pt?'Total estimado':'Estimated total',totals.paid+totals.planned,pt?'Pago + previsto':'Paid + planned')+'</div>'+
+  '<div class="finance-detail-grid project-charts">'+
+   projectCostChart(byCategory,'project-by-category',pt?'Investimento por categoria':'Investment by category',labels,pt?'Nenhum custo cadastrado.':'No project costs yet.')+
+   projectCostChart(byMonth,'project-by-month',pt?'Investimento por mês':'Investment by month',labels,pt?'Nenhum custo cadastrado.':'No project costs yet.')+'</div>'+
+  '<div class="finance-detail-grid">'+section('paid',pt?'Custos pagos':'Paid costs',pt?'Nenhum custo pago.':'No paid costs.')+
+  section('planned',pt?'Custos previstos':'Planned costs',pt?'Nenhum custo previsto.':'No planned costs.')+'</div>';
+}
 function financeMonthlyPage(){const all=data.transactions||[];const now=new Date(today()+"T12:00:00");const from=new Date(now);if(financePeriod==='day')from.setHours(0,0,0,0);else if(financePeriod==='week'){const mondayOffset=(now.getDay()+6)%7;from.setDate(now.getDate()-mondayOffset);}else if(financePeriod==='month')from.setDate(1);else if(financePeriod==='custom'&&financeFrom){const d=new Date(financeFrom+'T00:00:00');if(!isNaN(d))from.setTime(d.getTime());}const to=financePeriod==='custom'&&financeTo?new Date(financeTo+'T23:59:59.999'):(financePeriod==='week'?new Date(now.getFullYear(),now.getMonth(),now.getDate()+(6-((now.getDay()+6)%7)),23,59,59,999):financePeriod==='month'?new Date(now.getFullYear(),now.getMonth()+1,0,23,59,59,999):new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59,999));const fromDay=new Date(from.getFullYear(),from.getMonth(),from.getDate());const filtered=all.filter(x=>{const d=x.date?new Date(x.date+'T00:00:00'):null;return d&&!isNaN(d.getTime())&&d>=fromDay&&d<=to&&(financePeriod!=='day'||x.date===today())&&(financeCategory==='all'||x.category===financeCategory)&&(financeUserFilter==='all'||x.createdBy===financeUserFilter)});const incomeEntries=filtered.filter(x=>x.type==='income');
 const expenseEntries=filtered.filter(x=>x.type==='expense');
 const income=incomeEntries.reduce((s,x)=>s+Number(x.amount||0),0);
