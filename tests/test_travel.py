@@ -522,6 +522,24 @@ class TravelTests(unittest.TestCase):
         self.assertIn('Preparation checklist',contents)
         self.assertNotIn('Roteiro dia a dia',contents)
 
+    def test_section_banners_match_finance_and_history_sits_with_plans(self):
+        self.page.set_viewport_size({'width':375,'height':844})
+        self.page.locator('[data-page="finances"]').click()
+        heading=self.page.locator('.finance-hub-header')
+        size=heading.evaluate("el=>getComputedStyle(el.querySelector('h1')).fontSize")
+        for lang in ['pt','en']:
+            self.page.evaluate("lang=>__travel.language(lang)",lang)
+            for page in ['documents','timeline','shopping']:
+                self.page.locator('[data-page="'+page+'"]').click()
+                banner=self.page.locator('.section-banner')
+                self.assertEqual(banner.locator('svg,button').count(),0)
+                self.assertEqual(banner.evaluate("el=>getComputedStyle(el.querySelector('h1')).fontSize"),size)
+        self.page.locator('[data-page="trips"]').click()
+        self.page.locator('[data-action="travel-back"]').click()
+        self.assertEqual(self.page.locator('.travel-hero [data-action="travel-history"]').count(),0)
+        self.page.locator('.travel-plans-heading [data-action="travel-history"]').click()
+        self.assertTrue(self.page.locator('.memory-hero').is_visible())
+
     def test_refreshed_documents_calendar_and_travel_share_creation_controls(self):
         self.page.set_viewport_size({'width':375,'height':844})
         for locale, doc, event in [
