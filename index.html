@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./translations.js?v=1.10.0"></script>
+<script src="./translations.js?v=1.10.1"></script>
 <meta name="theme-color" content="#183d32">
 <title>KiwiPath — Our journey to New Zealand</title>
 <style>
@@ -1627,8 +1627,12 @@ h1{font-size:28px}
     <section class="auth-view" data-auth-panel="reset" hidden><h1 data-auth-pt="Crie uma nova senha" data-auth-en="Create a new password">Crie uma nova senha</h1><form id="authResetForm" class="auth-form"><label><span data-auth-pt="Nova senha" data-auth-en="New password">Nova senha</span><input id="authNewPassword" type="password" autocomplete="new-password" minlength="8" required></label><label><span data-auth-pt="Confirme a nova senha" data-auth-en="Confirm new password">Confirme a nova senha</span><input id="authConfirmPassword" type="password" autocomplete="new-password" minlength="8" required></label><button class="btn" type="submit"><span data-auth-pt="Salvar senha" data-auth-en="Save password">Salvar senha</span></button><p class="auth-message" role="status" aria-live="polite"></p></form></section>
     <section class="auth-view" data-auth-panel="expired" hidden><h1 data-auth-pt="Link indisponível" data-auth-en="Link unavailable">Link indisponível</h1><p data-auth-pt="Solicite um novo link para recuperar sua senha." data-auth-en="Request a new link to reset your password.">Solicite um novo link para recuperar sua senha.</p><button type="button" class="btn btn-soft" data-auth-view="forgot"><span data-auth-pt="Solicitar novo link" data-auth-en="Request a new link">Solicitar novo link</span></button><button type="button" class="btn btn-soft" data-auth-view="login"><span data-auth-pt="Voltar ao login" data-auth-en="Back to sign in">Voltar ao login</span></button></section>
     <section class="auth-view" data-auth-panel="about" hidden><h1 data-auth-pt="Conheça o KiwiPath" data-auth-en="Get to know KiwiPath">Conheça o KiwiPath</h1><ul class="auth-features"><li><span data-auth-pt="Planeje viagens e organize seu cronograma." data-auth-en="Plan trips and organise your calendar.">Planeje viagens e organize seu cronograma.</span></li><li><span data-auth-pt="Acompanhe gastos, documentos e listas de compras." data-auth-en="Track expenses, documents and shopping lists.">Acompanhe gastos, documentos e listas de compras.</span></li><li><span data-auth-pt="Monte uma Home com os widgets que usa no dia a dia." data-auth-en="Customise Home with the widgets you use every day.">Monte uma Home com os widgets que usa no dia a dia.</span></li></ul><p data-auth-pt="O acesso é liberado após a análise da solicitação de cadastro." data-auth-en="Access is granted after your application is reviewed.">O acesso é liberado após a análise da solicitação de cadastro.</p><div class="auth-actions"><button type="button" class="btn btn-soft" data-auth-view="request"><span data-auth-pt="Solicitar cadastro" data-auth-en="Request access">Solicitar cadastro</span></button><button type="button" class="btn btn-soft" data-auth-view="login"><span data-auth-pt="Voltar ao login" data-auth-en="Back to sign in">Voltar ao login</span></button></div></section>
-    <section class="auth-view" data-auth-panel="request" hidden><h1 data-auth-pt="Solicitar cadastro" data-auth-en="Request access">Solicitar cadastro</h1><p data-auth-pt="Usaremos seus dados para analisar o pedido e responder por e-mail." data-auth-en="We’ll use your details to review and respond to your request.">Usaremos seus dados para analisar o pedido e responder por e-mail.</p><form id="authRequestForm" class="auth-form"><label><span data-auth-pt="Qual e-mail você quer usar?" data-auth-en="Which email would you like to use?">Qual e-mail você quer usar?</span><input id="requestEmail" type="email" required autocomplete="email" maxlength="254"></label><label><span data-auth-pt="Qual é seu nome?" data-auth-en="What’s your name?">Qual é seu nome?</span><input id="requestName" type="text" required autocomplete="name" maxlength="120"></label><label><span data-auth-pt="Qual é sua data de nascimento?" data-auth-en="What’s your date of birth?">Qual é sua data de nascimento?</span><input id="requestBirth" type="date" required autocomplete="bday"></label><button class="btn" type="submit"><span data-auth-pt="Enviar" data-auth-en="Send">Enviar</span></button><p class="auth-message" role="status" aria-live="polite"></p></form><div class="auth-actions"><button type="button" class="btn btn-soft" data-auth-view="about"><span data-auth-pt="Voltar" data-auth-en="Back">Voltar</span></button></div></section>
-    <section class="auth-view" data-auth-panel="request-ready" hidden><h1 data-auth-pt="Finalize o envio pelo seu e-mail" data-auth-en="Finish sending from your email app">Finalize o envio pelo seu e-mail</h1><p data-auth-pt="Abra a mensagem preenchida e toque em Enviar para encaminhar o pedido ao KiwiPath." data-auth-en="Open the drafted message and tap Send to submit your request to KiwiPath.">Abra a mensagem preenchida e toque em Enviar para encaminhar o pedido ao KiwiPath.</p><p><a id="authRequestDraft" class="btn btn-soft"><span data-auth-pt="Abrir mensagem pronta" data-auth-en="Open email draft">Abrir mensagem pronta</span></a></p><p data-auth-pt="Depois de enviar, você deverá receber um e-mail de confirmação do cadastro. Se aprovado, você receberá uma senha temporária e deverá trocá-la no primeiro acesso." data-auth-en="Once sent, you should receive an email about your application. If approved, you’ll receive a temporary password to change on your first sign-in.">Depois de enviar, você deverá receber um e-mail de confirmação do cadastro. Se aprovado, você receberá uma senha temporária e deverá trocá-la no primeiro acesso.</p><button type="button" class="btn btn-soft" data-auth-view="login"><span data-auth-pt="Voltar ao login" data-auth-en="Back to sign in">Voltar ao login</span></button></section>
+    <section class="auth-view" data-auth-panel="request" hidden><h1 data-auth-pt="Solicitar cadastro" data-auth-en="Request access">Solicitar cadastro</h1><p data-auth-pt="Usaremos seus dados para analisar o pedido e responder por e-mail." data-auth-en="We’ll use your details to review and respond to your request.">Usaremos seus dados para analisar o pedido e responder por e-mail.</p><form id="authRequestForm" class="auth-form"><div hidden aria-hidden="true"><input id="requestWebsite" name="website" type="text" tabindex="-1" autocomplete="off"></div><label><span data-auth-pt="Qual e-mail você quer usar?" data-auth-en="Which email would you like to use?">Qual e-mail você quer usar?</span><input id="requestEmail" type="email" required autocomplete="email" maxlength="254"></label><label><span data-auth-pt="Qual é seu nome?" data-auth-en="What’s your name?">Qual é seu nome?</span><input id="requestName" type="text" required autocomplete="name" maxlength="120"></label><label><span data-auth-pt="Qual é sua data de nascimento?" data-auth-en="What’s your date of birth?">Qual é sua data de nascimento?</span><input id="requestBirth" type="date" required autocomplete="bday"></label><button class="btn" type="submit"><span data-auth-pt="Enviar" data-auth-en="Send">Enviar</span></button><p class="auth-message" role="status" aria-live="polite"></p></form><div class="auth-actions"><button type="button" class="btn btn-soft" data-auth-view="about"><span data-auth-pt="Voltar" data-auth-en="Back">Voltar</span></button></div></section>
+    <section class="auth-view" data-auth-panel="request-sent" hidden>
+ <h1 data-auth-pt="Solicitação enviada" data-auth-en="Request sent">Solicitação enviada</h1>
+ <p data-auth-pt="Você deverá receber um e-mail de confirmação do cadastro em breve. Se o pedido for aprovado, você receberá uma senha temporária e deverá trocá-la no primeiro acesso." data-auth-en="You should receive an email about your request soon. If approved, you’ll receive a temporary password to change on your first sign-in.">Você deverá receber um e-mail de confirmação do cadastro em breve. Se o pedido for aprovado, você receberá uma senha temporária e deverá trocá-la no primeiro acesso.</p>
+ <button type="button" class="btn btn-soft" data-auth-view="login"><span data-auth-pt="Voltar ao login" data-auth-en="Back to sign in">Voltar ao login</span></button>
+</section><section class="auth-view" data-auth-panel="request-ready" hidden><h1 data-auth-pt="Finalize o envio pelo seu e-mail" data-auth-en="Finish sending from your email app">Finalize o envio pelo seu e-mail</h1><p data-auth-pt="Abra a mensagem preenchida e toque em Enviar para encaminhar o pedido ao KiwiPath." data-auth-en="Open the drafted message and tap Send to submit your request to KiwiPath.">Abra a mensagem preenchida e toque em Enviar para encaminhar o pedido ao KiwiPath.</p><p><a id="authRequestDraft" class="btn btn-soft"><span data-auth-pt="Abrir mensagem pronta" data-auth-en="Open email draft">Abrir mensagem pronta</span></a></p><p data-auth-pt="Depois de enviar, você deverá receber um e-mail de confirmação do cadastro. Se aprovado, você receberá uma senha temporária e deverá trocá-la no primeiro acesso." data-auth-en="Once sent, you should receive an email about your application. If approved, you’ll receive a temporary password to change on your first sign-in.">Depois de enviar, você deverá receber um e-mail de confirmação do cadastro. Se aprovado, você receberá uma senha temporária e deverá trocá-la no primeiro acesso.</p><button type="button" class="btn btn-soft" data-auth-view="login"><span data-auth-pt="Voltar ao login" data-auth-en="Back to sign in">Voltar ao login</span></button></section>
   </section>
 </div>
 <div class="app" id="kiwiApp" style="visibility:hidden">
@@ -1705,18 +1709,18 @@ h1{font-size:28px}
     </div>
   </header>
   <div id="pageContent"></div>
-  <footer>KiwiPath v<span id="appVersion">1.10.0</span> · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
+  <footer>KiwiPath v<span id="appVersion">1.10.1</span> · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
 </main>
 </div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./trip-guide.js?v=1.10.0"></script>
+<script src="./trip-guide.js?v=1.10.1"></script>
 <script src="./vendor/d3-7.9.0.min.js"></script>
 <script src="./vendor/topojson-client-3.1.0.min.js"></script>
 <script src="./vendor/memory-world-110m.js"></script>
-<script src="./memory-globe.js?v=1.10.0"></script>
-<script src="./flight-lookup.js?v=1.10.0"></script>
+<script src="./memory-globe.js?v=1.10.1"></script>
+<script src="./flight-lookup.js?v=1.10.1"></script>
 <script>
 (() => {
 "use strict";
@@ -2247,6 +2251,11 @@ function archiveRelease(theme,art,pt,en){
  return {theme,art,pt:{title:pt[0],items:[[art[0],'',pt[1]]]},en:{title:en[0],items:[[art[0],'',en[1]]]}};
 }
 const RELEASE_NOTES={
+ '1.10.1':{
+  theme:'account',art:['alerts','docs','links','trips'],
+  pt:{title:'Solicitações direto pelo KiwiPath',items:[['alerts','Envio no formulário','Quando o serviço de e-mail está ativo, o formulário envia seu pedido e confirma o recebimento na tela.']]},
+  en:{title:'Requests sent from KiwiPath',items:[['alerts','Send from the form','When email delivery is active, the form sends your request and confirms it on screen.']]}
+ },
  '1.10.0':{
   theme:'account',art:['links','alerts','docs','trips'],
   pt:{title:'Uma nova entrada para o KiwiPath',items:[['links','Login renovado','A entrada apresenta o KiwiPath sem presumir uma conta compartilhada.'],['alerts','Recuperação e cadastro','Recupere a senha por e-mail ou prepare uma solicitação de acesso.']]},
@@ -5091,17 +5100,40 @@ $('#authResetForm').addEventListener('submit',async event=>{
  finally{button.disabled=false}
 });
 $('#requestBirth').max=today();
-$('#authRequestForm').addEventListener('submit',event=>{
+let signupAttempt=null;
+$('#authRequestForm').addEventListener('submit',async event=>{
  event.preventDefault();
+ const form=event.currentTarget,button=form.querySelector('[type="submit"]');
+ if(button.disabled)return;
  const name=$('#requestName').value.trim(),email=$('#requestEmail').value.trim(),birth=$('#requestBirth').value;
  if(!name||!birth||birth>today()){
-  authStatus(event.currentTarget,authText('Confira seu nome e sua data de nascimento.','Check your name and date of birth.'));return;
+  authStatus(form,authText('Confira seu nome e sua data de nascimento.','Check your name and date of birth.'));return;
  }
- const subject='Solicitação de cadastro no KiwiPath';
- const body=['Nome: '+name,'E-mail: '+email,'Data de nascimento: '+birth].join('\r\n');
- $('#authRequestDraft').href='mailto:info.kiwipath@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
- setAuthView('request-ready');
- $('#authRequestDraft').click();
+ const details=JSON.stringify({name,email,birth});
+ if(signupAttempt?.details!==details)signupAttempt={details,id:crypto.randomUUID()};
+ button.disabled=true;authStatus(form,authText('Enviando…','Sending…'));
+ try{
+  const response=await fetch(SUPABASE_URL+'/functions/v1/kiwipath-signup-request',{
+   method:'POST',headers:{'Content-Type':'application/json',apikey:SUPABASE_PUBLISHABLE_KEY},
+   body:JSON.stringify({name,email,birth,id:signupAttempt.id,website:$('#requestWebsite').value}),
+   signal:AbortSignal.timeout(18000)
+  });
+  if(response.ok&&(await response.json()).code==='sent'){
+   signupAttempt=null;form.reset();$('#authRequestDraft').removeAttribute('href');
+   authStatus(form,'');setAuthView('request-sent');return;
+  }
+  if(response.status===404||response.status===503){
+   const subject='Solicitação de cadastro no KiwiPath';
+   const body=['Nome: '+name,'E-mail: '+email,'Data de nascimento: '+birth].join('\r\n');
+   $('#authRequestDraft').href='mailto:info.kiwipath@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+   authStatus(form,'');setAuthView('request-ready');return;
+  }
+  if(response.status===429){
+   authStatus(form,authText('Limite temporário de pedidos. Tente mais tarde.','Temporary request limit. Try again later.'));return;
+  }
+  throw Error('Signup delivery failed');
+ }catch(error){authStatus(form,authText('Não foi possível confirmar o envio. Tente novamente.','Could not confirm delivery. Try again.'))}
+ finally{button.disabled=false}
 });
 $("#authForm").addEventListener("submit",async e=>{
   e.preventDefault();

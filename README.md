@@ -3,7 +3,7 @@ Our journey to New Zealand — immigration, study, finances and dreams.
 
 ## Version
 
-Current official version: **v1.10.0**. Version numbering began with v1.0.0. The app displays the version in its footer.
+Current official version: **v1.10.1**. Version numbering began with v1.0.0. The app displays the version in its footer.
 
 ## Home widgets
 
@@ -26,9 +26,28 @@ icons to `RELEASE_NOTES` in `index.html` when changing the official version.
 
 Password recovery uses Supabase Auth. Allow the deployed app URL with
 `?recover=1` under Auth URL Configuration and confirm the project can deliver
-recovery email to users. Signup requests open the visitor's email app with a
-draft addressed to info.kiwipath@gmail.com. Sending happens in that email app.
-The request creates no Supabase Auth account.
+recovery email to users. Signup requests call the `kiwipath-signup-request` Edge Function. When delivery
+is unavailable because it has not been configured, the form offers an email
+draft. No Auth account is created.
+
+### Enable automatic requests
+
+1. While signed in as `info.kiwipath@gmail.com`, create a Google Apps Script
+   project and paste `integrations/apps-script/signup-mail.gs`. In Project settings,
+   add the script property `SIGNUP_SCRIPT_SECRET` with a random secret of at
+   least 32 characters. Deploy it as a web app, executing as the owner and
+   accessible to anyone, then approve Google's mail permission.
+2. Set `SIGNUP_SCRIPT_URL` to the deployment's production `/exec` URL and
+   `SIGNUP_SCRIPT_SECRET` to the same secret under Supabase Edge Function secrets.
+   Optionally set `SIGNUP_ORIGIN` if the site moves off `https://vigafebo.github.io`.
+3. Deploy the `kiwipath-signup-request` function with JWT verification disabled.
+   It is called by signed-out visitors. The Google deployment checks the
+   server-side secret and enforces per-window delivery caps.
+4. Submit a test with fictional data from the published app and check the
+   destination inbox before relying on automatic delivery.
+
+This integration is for signup requests. Password reset delivery still uses
+the Supabase Auth email configuration.
 
 ## Local development
 
