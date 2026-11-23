@@ -1,5 +1,10 @@
 # Release history
 
+## 1.5.2
+
+- Added a bilingual animated update notice shown once per version and account in the current browser.
+- Matched Home widget icons to the main navigation and gave Weather a cloud icon.
+
 ## 1.5.1
 
 - Gave each Home widget a distinct layout, with calendar dates, document progress and day/night weather visuals.
