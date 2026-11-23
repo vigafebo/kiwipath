@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./translations.js?v=1.9.0"></script>
+<script src="./translations.js?v=1.9.1"></script>
 <meta name="theme-color" content="#183d32">
 <title>KiwiPath — Our journey to New Zealand</title>
 <style>
@@ -1287,10 +1287,10 @@ h1{font-size:28px}
 .home-drag svg,.release-list-icon svg{width:18px;height:18px}.release-art svg{width:24px;height:24px}.release-art span:nth-child(4) svg{width:17px;height:17px}
 
 .finance-hub,.finance-detail-view{min-width:0}
-.finance-hub-header{position:relative;isolation:isolate;overflow:hidden;border-radius:24px;padding:clamp(20px,5vw,40px);margin-bottom:16px;color:#fff;background:linear-gradient(110deg,#173d33,#2b5847 68%,#42674e)}
-.finance-hub-header::after{content:"";z-index:-1;position:absolute;inset:-96px -45px auto auto;width:260px;height:260px;border:1px solid #e5f0d849;border-radius:50%;box-shadow:0 0 0 27px #e5f0d818,0 0 0 57px #e5f0d810;pointer-events:none}
-.finance-hub-header h1{margin:0;font-size:clamp(30px,6vw,55px);letter-spacing:-.045em;color:#fff}
-.finance-hub-header p{margin:6px 0 0;color:#e1eee5;font-size:clamp(13px,2vw,15px)}
+:is(.finance-hub-header,.section-banner){position:relative;isolation:isolate;overflow:hidden;border-radius:24px;padding:clamp(20px,5vw,40px);margin-bottom:16px;color:#fff;background:linear-gradient(110deg,#173d33,#2b5847 68%,#42674e)}
+:is(.finance-hub-header,.section-banner)::after{content:"";z-index:-1;position:absolute;inset:-96px -45px auto auto;width:260px;height:260px;border:1px solid #e5f0d849;border-radius:50%;box-shadow:0 0 0 27px #e5f0d818,0 0 0 57px #e5f0d810;pointer-events:none}
+:is(.finance-hub-header,.section-banner) h1{margin:0;font-size:clamp(30px,6vw,55px);letter-spacing:-.045em;color:#fff}
+:is(.finance-hub-header,.section-banner) p{margin:6px 0 0;color:#e1eee5;font-size:clamp(13px,2vw,15px)}
 .finance-entry-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .finance-entry{--entry-ink:#254c37;--entry-surface:#edf4e6;--entry-icon:#dcebd5;--entry-line:#dae7d6;position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;gap:10px;align-items:start;min-width:0;min-height:166px;text-align:left;border:1px solid var(--entry-line);border-radius:19px;padding:clamp(12px,2.6vw,22px);background:var(--entry-surface);color:var(--entry-ink);font:inherit;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;box-shadow:0 4px 12px #183d3208}
 .finance-entry[data-section="statement"]{--entry-ink:#244c66;--entry-surface:#edf4fa;--entry-icon:#d8e8f4;--entry-line:#dbe8f1}
@@ -1317,7 +1317,7 @@ h1{font-size:28px}
 .finance-hub-enter .finance-entry{animation:finance-enter .34s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--finance-entry-index)*45ms)}
 .finance-detail-enter{animation:finance-enter .24s ease-out both}
 @keyframes finance-enter{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
-@media(max-width:480px){.finance-entry-grid{gap:8px}.finance-entry{min-height:150px;gap:7px;padding:12px}.finance-entry-icon{width:37px;height:37px}.finance-entry-icon svg{width:21px;height:21px}.finance-entry-arrow{width:25px;height:25px}.finance-entry-copy small{font-size:12px}.finance-hub-header{margin-bottom:12px}}
+@media(max-width:480px){.finance-entry-grid{gap:8px}.finance-entry{min-height:150px;gap:7px;padding:12px}.finance-entry-icon{width:37px;height:37px}.finance-entry-icon svg{width:21px;height:21px}.finance-entry-arrow{width:25px;height:25px}.finance-entry-copy small{font-size:12px}:is(.finance-hub-header,.section-banner){margin-bottom:12px}}
 @media(prefers-reduced-motion:reduce){.finance-hub-enter .finance-entry,.finance-detail-enter{animation:none}.finance-entry,.finance-entry-arrow{transition:none}.finance-entry:hover,.finance-entry:active,.finance-entry:hover .finance-entry-arrow{transform:none}}
 .release-notice[data-theme="finance"] .release-hero{background:linear-gradient(130deg,#153e35,#2c6050 65%,#41664d)}
 
@@ -1425,12 +1425,7 @@ h1{font-size:28px}
 .shop-shell{min-width:0}
 .shop-shell .shop-content{padding:0;background:none;border:0;box-shadow:none}
 .shop-shell[data-shop-view]:not([data-shop-view="lists"]):not([data-shop-view="list"]):not([data-shop-view="functions"]) .shop-content{padding:16px;background:var(--paper);border:1px solid var(--line);border-radius:17px}
-.shop-hero{display:flex;align-items:center;gap:16px;isolation:isolate;position:relative;overflow:hidden;padding:clamp(18px,4.8vw,34px);border-radius:23px;background:linear-gradient(120deg,#204b3b,#3c6850);color:#fff;margin-bottom:11px}
-.shop-hero::after{content:"";position:absolute;z-index:-1;inset:-85px -45px auto auto;width:225px;height:225px;border:1px solid #ffffff58;border-radius:37%;box-shadow:0 0 0 18px #ffffff19,0 0 0 36px #ffffff0d;transform:rotate(-18deg)}
-.shop-hero h1{margin:0;color:#fff;letter-spacing:-.045em;font-size:clamp(25px,6vw,44px)}
-.shop-hero p{margin:4px 0 0;color:#e3f2e7;line-height:1.4}
-.shop-hero-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:15px;background:#ffffff21;border:1px solid #ffffff44}
-.shop-shell[data-shop-view="functions"] .shop-hero{background:linear-gradient(125deg,#253d56,#476a73)}
+
 .shop-shell .shopping-tabs{display:inline-flex;padding:4px;gap:5px;border:1px solid #cfdfd3;border-radius:14px;background:linear-gradient(145deg,#fbfffaed,#e4efe8b0);margin-bottom:15px}
 .shop-shell .shopping-tab{cursor:pointer;min-height:40px;border:1px solid transparent;background:transparent;border-radius:10px}
 .shop-shell .shopping-tab.active{background:#214e3f;color:#fff;box-shadow:0 3px 8px #214e3f22}
@@ -1471,18 +1466,18 @@ h1{font-size:28px}
 .shop-enter .shopping-management-card{animation:shop-arrive .38s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--shop-index)*35ms)}
 @keyframes shop-arrive{from{opacity:0;translate:0 9px}to{opacity:1;translate:0 0}}
 @media(max-width:700px){.shop-shell .shopping-management-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.shop-shell .shopping-management-card{padding:11px}}
-@media(max-width:430px){.shop-hero{gap:9px}.shop-shell .shop-checklist .shopping-item{grid-template-columns:auto minmax(0,1fr)}.shop-shell .shop-checklist .shopping-price{grid-column:2;justify-self:end}.shop-shell .shop-checklist .shopping-item-meta{line-height:1.5}}
+@media(max-width:430px){.shop-shell .shop-checklist .shopping-item{grid-template-columns:auto minmax(0,1fr)}.shop-shell .shop-checklist .shopping-price{grid-column:2;justify-self:end}.shop-shell .shop-checklist .shopping-item-meta{line-height:1.5}}
 @media(prefers-reduced-motion:reduce){.shop-enter .shop-content,.shop-enter .shopping-management-card{animation:none}.shop-shell .shopping-management-card,.shop-shell .shop-receipts .shopping-list-card{transition:none}.shop-shell .shopping-management-card:hover,.shop-shell .shop-receipts .shopping-list-card:hover{translate:none;transform:none}}
 .release-notice[data-theme="shopping"] .release-hero{background:linear-gradient(125deg,#27483f,#52714e)}
 .release-card[data-theme="shopping"]{--archive-bg:#e8efdc;--archive-ink:#385433}
 
 .kiwi-module{min-width:0;--module-edge:#dce7de}
-.module-hero,.kiwi-travel-view .travel-hero,.kiwi-travel-view .trip-dashboard-head{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:clamp(17px,4vw,34px);border-radius:23px;margin-bottom:14px;background:var(--module-gradient);color:#fff}
-.module-hero::after,.kiwi-travel-view .travel-hero::after,.kiwi-travel-view .trip-dashboard-head::after{content:"";position:absolute;z-index:-1;right:-40px;top:-100px;width:242px;height:242px;border:1px solid #ffffff49;border-radius:29%;box-shadow:0 0 0 18px #ffffff16,0 0 0 36px #ffffff0d;transform:rotate(-18deg);pointer-events:none}
-.module-hero-title{display:flex;align-items:center;gap:12px;min-width:0}
-.module-hero-icon{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:13px;background:#ffffff22;border:1px solid #ffffff5c}
-.module-hero h1,.kiwi-travel-view .travel-hero h1,.kiwi-travel-view .trip-dashboard-head h1{margin:0;color:#fff;letter-spacing:-.045em;line-height:1.1;font-size:clamp(25px,5vw,43px);overflow-wrap:anywhere}
-.module-hero p,.kiwi-travel-view .travel-hero .subtitle,.kiwi-travel-view .trip-dashboard-head .trip-date{margin:5px 0 0;color:#ecf5f0;line-height:1.4;font-size:13px}
+.kiwi-travel-view .travel-hero,.kiwi-travel-view .trip-dashboard-head{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:clamp(17px,4vw,34px);border-radius:23px;margin-bottom:14px;background:var(--module-gradient);color:#fff}
+.kiwi-travel-view .travel-hero::after,.kiwi-travel-view .trip-dashboard-head::after{content:"";position:absolute;z-index:-1;right:-40px;top:-100px;width:242px;height:242px;border:1px solid #ffffff49;border-radius:29%;box-shadow:0 0 0 18px #ffffff16,0 0 0 36px #ffffff0d;transform:rotate(-18deg);pointer-events:none}
+
+
+.kiwi-travel-view .travel-hero h1,.kiwi-travel-view .trip-dashboard-head h1{margin:0;color:#fff;letter-spacing:-.045em;line-height:1.1;font-size:clamp(25px,5vw,43px);overflow-wrap:anywhere}
+.kiwi-travel-view .travel-hero .subtitle,.kiwi-travel-view .trip-dashboard-head .trip-date{margin:5px 0 0;color:#ecf5f0;line-height:1.4;font-size:13px}
 .glass-create.btn,.kiwi-travel-view .glass-create-inline{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;max-width:100%;padding:6px 12px 6px 6px;border:1px solid #b0cdbd;border-radius:999px;background:linear-gradient(145deg,#f6fff4,#d3e9da 72%,#c3dfd1);color:#153d31;box-shadow:inset 0 1px 1px #fff,0 4px 11px #264e3722;font:inherit;font-size:13px;font-weight:750;cursor:pointer;transition:transform .18s ease}
 .glass-create.btn:hover,.kiwi-travel-view .glass-create-inline:hover{background:linear-gradient(145deg,#fff,#d5ebda);color:#153d31}
 .glass-create-mark{flex:0 0 30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#285746;color:#fff;font-size:20px;line-height:1;font-weight:500}
@@ -1497,7 +1492,7 @@ h1{font-size:28px}
 .kiwi-document-view .doc-filters{background:#ecf3eb;border:1px solid #dce8d9;border-radius:13px;padding:7px}
 .kiwi-document-view .doc-filters .search-input{background:#fffefb}
 .kiwi-calendar-view{--module-gradient:linear-gradient(125deg,#263e59,#446b79);--module-edge:#d8e5eb}
-.kiwi-calendar-view .module-hero::after{border-radius:14%;transform:rotate(15deg)}
+
 .kiwi-calendar-view .calendar-layout>.panel{border-radius:18px;border-color:var(--module-edge);min-width:0}
 .kiwi-calendar-view .calendar-layout>.panel:first-child{background:linear-gradient(145deg,#f7fbfe,#edf5f8)}
 .kiwi-calendar-view .calendar-toolbar{padding:7px;background:#f8fcff;border:1px solid #dce8ef;border-radius:12px}
@@ -1518,17 +1513,17 @@ h1{font-size:28px}
 .kiwi-travel-view .trip-kpi{background:#eff5ef;border-color:#dbe7de}
 .kiwi-travel-view .trip-today-hero{background:var(--module-gradient)}
 .kiwi-travel-view :is(.trip-today-next,.trip-today-agenda){border-radius:17px;border-color:var(--module-edge)}
-.kiwi-view-enter .module-hero,.kiwi-view-enter :is(.travel-hero,.trip-dashboard-head,.trip-today-hero){animation:kiwi-module-enter .32s cubic-bezier(.2,.75,.2,1) both}
+.kiwi-view-enter :is(.travel-hero,.trip-dashboard-head,.trip-today-hero){animation:kiwi-module-enter .32s cubic-bezier(.2,.75,.2,1) both}
 @keyframes kiwi-module-enter{from{opacity:.25;translate:0 8px}to{opacity:1;translate:0 0}}
 @media(max-width:700px){
- .module-hero,.kiwi-travel-view .travel-hero,.kiwi-travel-view .trip-dashboard-head{align-items:stretch;flex-direction:column;gap:9px}
- .module-hero .glass-create{align-self:flex-end}
- .module-hero-title{gap:8px}.module-hero-icon{flex-basis:36px;height:36px}
+ .kiwi-travel-view .travel-hero,.kiwi-travel-view .trip-dashboard-head{align-items:stretch;flex-direction:column;gap:9px}
+
+
  .kiwi-travel-view .trip-history-actions{width:100%;justify-content:flex-end}
  .kiwi-calendar-view .calendar-toolbar .btn{min-height:40px}
  .kiwi-calendar-view .calendar-stat{text-align:center;min-width:0}
 }
-@media(prefers-reduced-motion:reduce){.kiwi-view-enter .module-hero,.kiwi-view-enter :is(.travel-hero,.trip-dashboard-head,.trip-today-hero){animation:none}.glass-create.btn,.kiwi-travel-view .glass-create-inline,.kiwi-document-view .document-card{transition:none}.glass-create.btn:active,.kiwi-travel-view .glass-create-inline:active{transform:none}}
+@media(prefers-reduced-motion:reduce){.kiwi-view-enter :is(.travel-hero,.trip-dashboard-head,.trip-today-hero){animation:none}.glass-create.btn,.kiwi-travel-view .glass-create-inline,.kiwi-document-view .document-card{transition:none}.glass-create.btn:active,.kiwi-travel-view .glass-create-inline:active{transform:none}}
 .release-notice[data-theme="journey"] .release-hero{background:linear-gradient(125deg,#29464b,#506d63)}
 .release-card[data-theme="journey"]{--archive-bg:#e5eee9;--archive-ink:#2f5046}
 
@@ -1542,6 +1537,18 @@ h1{font-size:28px}
  .finance-quick-dialog .finance-quick-mobile-label{display:inline}
 }
 @media(prefers-reduced-motion:reduce){.finance-detail-view .finance-quick-toggle.btn{transition:none}.finance-detail-view .finance-quick-toggle.btn:active{transform:none}}
+
+.section-banner[data-banner="documents"]{background:linear-gradient(125deg,#284a41,#52725b)}
+.section-banner[data-banner="calendar"]{background:linear-gradient(125deg,#263e59,#446b79)}
+.section-banner[data-banner="shopping"]{background:linear-gradient(120deg,#204b3b,#3c6850)}
+.section-banner[data-banner="shopping-tools"]{background:linear-gradient(125deg,#253d56,#476a73)}
+.kiwi-view-enter .section-banner{animation:kiwi-module-enter .32s cubic-bezier(.2,.75,.2,1) both}
+.kiwi-document-view .documents-heading,.calendar-command-bar,.kiwi-travel-view .travel-plans-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px}
+.calendar-command-bar{margin-bottom:12px}
+.calendar-command-bar .calendar-stats{flex:1;min-width:0;margin:0}
+.kiwi-travel-view .travel-plans-heading>[data-action="travel-history"]{display:inline-flex;align-items:center;gap:7px;min-height:44px}
+@media(max-width:570px){.calendar-command-bar .calendar-stats{flex-basis:100%}.calendar-command-bar>.glass-create{margin-inline-start:auto}}
+@media(prefers-reduced-motion:reduce){.kiwi-view-enter .section-banner{animation:none}}
 </style>
 
 <link rel="manifest" href="./manifest.webmanifest">
@@ -1656,18 +1663,18 @@ h1{font-size:28px}
     </div>
   </header>
   <div id="pageContent"></div>
-  <footer>KiwiPath v<span id="appVersion">1.9.0</span> · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
+  <footer>KiwiPath v<span id="appVersion">1.9.1</span> · Vitor &amp; Zack · <span data-i18n="footer">Um passo de cada vez, juntos.</span></footer>
 </main>
 </div>
 <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./trip-guide.js?v=1.9.0"></script>
+<script src="./trip-guide.js?v=1.9.1"></script>
 <script src="./vendor/d3-7.9.0.min.js"></script>
 <script src="./vendor/topojson-client-3.1.0.min.js"></script>
 <script src="./vendor/memory-world-110m.js"></script>
-<script src="./memory-globe.js?v=1.9.0"></script>
-<script src="./flight-lookup.js?v=1.9.0"></script>
+<script src="./memory-globe.js?v=1.9.1"></script>
+<script src="./flight-lookup.js?v=1.9.1"></script>
 <script>
 (() => {
 "use strict";
@@ -2195,6 +2202,11 @@ function archiveRelease(theme,art,pt,en){
  return {theme,art,pt:{title:pt[0],items:[[art[0],'',pt[1]]]},en:{title:en[0],items:[[art[0],'',en[1]]]}};
 }
 const RELEASE_NOTES={
+ '1.9.1':{
+  theme:'journey',art:['docs','agenda','shopping','trips'],
+  pt:{title:'Cabeçalhos mais limpos',items:[['links','Um topo mais leve','Documentos, Cronograma e Lista de compras adotam o formato de Finanças. Em Viagens, Histórico fica junto aos planos.']]},
+  en:{title:'Cleaner page headers',items:[['links','A lighter header','Documents, Calendar and Shopping follow the Finance header layout. In Trips, History sits alongside your plans.']]}
+ },
  '1.9.0':{
   theme:'journey',art:['docs','agenda','trips','links'],
   pt:{title:'Cada etapa da jornada com sua cara',items:[['docs','Documentos mais claros','Seus arquivos, filtros e vencimentos ficam em destaque.'],['agenda','Um Cronograma mais visual','Calendário e próximos eventos ganham uma identidade própria.'],['trips','Viagens com um visual renovado','Planejamento, Histórico e Hoje seguem o novo estilo. O botão Adicionar de Finanças também ganhou a versão em vidro no desktop.']]},
@@ -2856,9 +2868,8 @@ function kiwiModuleClass(view){
 function glassCreate(label,action){
  return '<button type="button" class="btn glass-create" data-action="'+esc(action)+'"><span class="glass-create-mark" aria-hidden="true">+</span>'+esc(label)+'</button>';
 }
-function kiwiModuleHeader(icon,title,description,action){
- return '<header class="module-hero"><div class="module-hero-title"><span class="module-hero-icon" aria-hidden="true">'+navigationMenuIcon(icon)+'</span><div><h1>'+
-  esc(title)+'</h1><p>'+esc(description)+'</p></div></div>'+action+'</header>';
+function sectionBanner(theme,title,description){
+ return '<header class="section-banner" data-banner="'+esc(theme)+'"><h1>'+esc(title)+'</h1><p>'+esc(description)+'</p></header>';
 }
 function documentPage(){
  const list=data.documents||[],pt=data.language==="pt",infos=list.map(x=>documentExpiryInfo(x));
@@ -2868,7 +2879,7 @@ function documentPage(){
  if(expired)notices+='<div class="doc-reminder urgent">'+icon+'<div><strong>'+(pt?expired+' documento(s) vencido(s)':expired+' expired document(s)')+'</strong><p>'+(pt?window.KiwiI18n.text("Confira a renovação e atualize a validade."):"Check renewal and update the expiry date.")+'</p></div></div>';
  if(soon)notices+='<div class="doc-reminder soon">'+icon+'<div><strong>'+(pt?soon+window.KiwiI18n.text(' documento(s) vencem nos próximos 90 dias'):soon+' document(s) expire in the next 90 days')+'</strong><p>'+(pt?window.KiwiI18n.text("Planejem a renovação com antecedência."):"Plan renewals ahead of time.")+'</p></div></div>';
  if(!expired&&!soon)notices+='<div class="doc-reminder ok">'+icon+'<div><strong>'+(pt?window.KiwiI18n.text("Validades em dia"):"Expiry dates up to date")+'</strong><p>'+(pt?window.KiwiI18n.text("Nenhum documento com validade registrada está vencido ou vence nos próximos 90 dias."):"No recorded expiry date is expired or due within 90 days.")+'</p></div></div>';
- return '<div class="kiwi-module kiwi-document-view'+kiwiModuleClass('documents')+'">'+kiwiModuleHeader('documents',t('documents'),pt?'Organize seus arquivos e acompanhe os vencimentos.':'Organise your files and track expiry dates.',glassCreate(pt?'Novo documento':'New document','add-document'))+'<section class="panel documents-panel"><div class="documents-heading"><div><span class="documents-eyebrow">'+(pt?window.KiwiI18n.text("SEUS ARQUIVOS"):"YOUR FILES")+'</span><h2>'+(pt?window.KiwiI18n.text("Seus documentos"):"Your documents")+'</h2><p>'+list.length+' '+(pt?(list.length===1?"documento":window.KiwiI18n.text("documentos")):(list.length===1?"document":"documents"))+'</p></div></div><div class="doc-reminders">'+notices+'</div><div class="module-toolbar documents-toolbar"><div class="doc-filters"><input class="search-input" id="docSearch" placeholder="'+esc(t("search"))+'" aria-label="'+esc(t("search"))+'"><select class="search-input" id="docOwnerFilter" aria-label="'+(pt?window.KiwiI18n.text("Filtrar por responsável"):"Filter by owner")+'"><option value="all">'+(pt?window.KiwiI18n.text("Documentos de todos"):"All documents")+'</option><option value="vitor">Vitor</option><option value="zack">Zack</option><option value="both">'+(pt?window.KiwiI18n.text("De ambos"):"Both")+'</option></select></div></div><div id="docList" class="documents-grid">'+(list.length?list.map(docRow).join(""):empty())+'</div></section><div class="note">'+t("officialNote")+' '+t("privacy")+'</div></div>';
+ return '<div class="kiwi-module kiwi-document-view'+kiwiModuleClass('documents')+'">'+sectionBanner('documents',t('documents'),pt?'Organize seus arquivos e acompanhe os vencimentos.':'Organise your files and track expiry dates.')+'<section class="panel documents-panel"><div class="documents-heading"><div><span class="documents-eyebrow">'+(pt?window.KiwiI18n.text("SEUS ARQUIVOS"):"YOUR FILES")+'</span><h2>'+(pt?window.KiwiI18n.text("Seus documentos"):"Your documents")+'</h2><p>'+list.length+' '+(pt?(list.length===1?"documento":window.KiwiI18n.text("documentos")):(list.length===1?"document":"documents"))+'</p></div>'+glassCreate(pt?'Novo documento':'New document','add-document')+'</div><div class="doc-reminders">'+notices+'</div><div class="module-toolbar documents-toolbar"><div class="doc-filters"><input class="search-input" id="docSearch" placeholder="'+esc(t("search"))+'" aria-label="'+esc(t("search"))+'"><select class="search-input" id="docOwnerFilter" aria-label="'+(pt?window.KiwiI18n.text("Filtrar por responsável"):"Filter by owner")+'"><option value="all">'+(pt?window.KiwiI18n.text("Documentos de todos"):"All documents")+'</option><option value="vitor">Vitor</option><option value="zack">Zack</option><option value="both">'+(pt?window.KiwiI18n.text("De ambos"):"Both")+'</option></select></div></div><div id="docList" class="documents-grid">'+(list.length?list.map(docRow).join(""):empty())+'</div></section><div class="note">'+t("officialNote")+' '+t("privacy")+'</div></div>';
 }
 
 /* Shared calendar timelinePage defined above. */
@@ -3649,7 +3660,7 @@ function tripsOverview(){
   const linked=tripTransactions(trip),plannedCost=tripBudgetSummary(trip).planned,accent=trip.accent||"#47785c";
   return '<article class="trip-card" style="--trip-accent:'+esc(accent)+'" data-action="travel-open:'+esc(trip.id)+'" tabindex="0" role="button"><div class="trip-card-head">'+tripFlag(trip,"trip-card-flag")+'<div><h3>'+esc(trip.name||window.KiwiI18n.text("Viagem sem nome"))+'</h3><p>'+tripSvg("pin")+esc(trip.destination||window.KiwiI18n.text("Destino a definir"))+'</p></div></div><div class="trip-card-meta"><span class="trip-chip">'+esc(tripDates(trip))+'</span><span class="trip-chip">'+(trip.reservations||[]).length+' reservas</span><span class="trip-chip">'+tripMoney(plannedCost,trip.currency)+'</span></div></article>';
  }).join("");
- return window.KiwiI18n.text('<section class="travel-hero"><div class="travel-hero-copy"><div class="eyebrow">KIWIPATH / VIAGENS</div><h1>Viagens</h1><p class="subtitle">Planejem cada detalhe — do primeiro bilhete até a volta para casa.</p></div><div class="trip-history-actions"><button class="btn secondary" data-action="travel-history">Histórico</button>')+glassCreate(window.KiwiI18n.text('Nova viagem'),'travel-new')+window.KiwiI18n.text('</div></section><section class="panel"><div class="section-head"><div><h2>Seus planos</h2><p>')+planned+' viagem(ns) em planejamento</p></div></div>'+(cards?'<div class="travel-list">'+cards+'</div>':'<div class="trip-empty"><div class="trip-card-icon" style="margin:0 auto 12px">'+tripSvg("plane")+window.KiwiI18n.text('</div><h2>Para onde vamos?</h2><p class="subtitle">Crie uma viagem para organizar destino, reservas, roteiro, orçamento e tudo que precisa acompanhar.</p>')+glassCreate(window.KiwiI18n.text('Criar primeira viagem'),'travel-new')+window.KiwiI18n.text('</div>'))+'</section>';
+ return window.KiwiI18n.text('<section class="travel-hero"><div class="travel-hero-copy"><div class="eyebrow">KIWIPATH / VIAGENS</div><h1>Viagens</h1><p class="subtitle">Planejem cada detalhe — do primeiro bilhete até a volta para casa.</p></div><div class="trip-history-actions">')+glassCreate(window.KiwiI18n.text('Nova viagem'),'travel-new')+window.KiwiI18n.text('</div></section><section class="panel"><div class="section-head travel-plans-heading"><div><h2>Seus planos</h2><p>')+planned+' viagem(ns) em planejamento</p></div><button type="button" class="btn btn-soft" data-action="travel-history">'+navigationMenuIcon('timeline')+window.KiwiI18n.text('Histórico')+'</button></div>'+(cards?'<div class="travel-list">'+cards+'</div>':'<div class="trip-empty"><div class="trip-card-icon" style="margin:0 auto 12px">'+tripSvg("plane")+window.KiwiI18n.text('</div><h2>Para onde vamos?</h2><p class="subtitle">Crie uma viagem para organizar destino, reservas, roteiro, orçamento e tudo que precisa acompanhar.</p>')+glassCreate(window.KiwiI18n.text('Criar primeira viagem'),'travel-new')+window.KiwiI18n.text('</div>'))+'</section>';
 }
 const tripSelectedDays=new Map();
 const tripMapDays=new Map();
@@ -4556,9 +4567,9 @@ const tabsHtml='<nav class="shopping-tabs" aria-label="'+L('Lista de compras','S
  const active=id===(view==='lists'||view==='list'?'lists':'functions');
  return '<button type="button" class="shopping-tab'+(active?' active':'')+'" aria-pressed="'+active+'" data-action="shopping-tab:'+id+'">'+esc(label)+'</button>';
 }).join('')+'</nav>';
-const header=main?'<header class="shop-hero"><span class="shop-hero-icon" aria-hidden="true">'+navigationMenuIcon('shopping')+'</span><div><h1>'+
- (view==='functions'?L('Outras funções','Other functions'):L('Lista de compras','Shopping list'))+'</h1><p>'+
- (view==='functions'?L('Organize o catálogo e acompanhe os preços.','Organise your catalogue and track prices.'):L('Planeje e marque suas compras numa lista compartilhada.','Plan and check off your shopping in a shared list.'))+'</p></div></header>':'';
+const header=main?sectionBanner(view==='functions'?'shopping-tools':'shopping',
+ view==='functions'?L('Outras funções','Other functions'):L('Lista de compras','Shopping list'),
+ view==='functions'?L('Organize o catálogo e acompanhe os preços.','Organise your catalogue and track prices.'):L('Planeje e marque suas compras numa lista compartilhada.','Plan and check off your shopping in a shared list.')):'';
 return '<div class="shop-shell'+(enter?' shop-enter':'')+'" data-shop-view="'+esc(view)+'">'+header+tabsHtml+'<section class="panel shop-content">'+b+'</section></div>';
 }
 function editShoppingTaxonomy(kind,oldValue=""){ensureShoppingData();const pt=data.language==="pt",labels={brands:pt?window.KiwiI18n.text("Marca"):"Brand",units:pt?window.KiwiI18n.text("Unidade"):"Unit",categories:pt?window.KiwiI18n.text("Categoria"):"Category"},keys={brands:"shoppingBrands",units:"shoppingUnits",categories:"shoppingCategories"},key=keys[kind];if(!key)return;const values=data[key],prop=({brands:"brand",units:"unit",categories:"category"})[kind],existing=oldValue?values.find(x=>String(x).toLocaleLowerCase()===String(oldValue).toLocaleLowerCase()):null;if(oldValue&&!existing){notify(pt?window.KiwiI18n.text("Não foi possível localizar este cadastro. Atualize a página e tente novamente."):"Could not find this record. Refresh and try again.");return}const title=oldValue?(pt?window.KiwiI18n.text("Editar "):"Edit ")+labels[kind].toLowerCase():(pt?window.KiwiI18n.text("Cadastrar "):"Add ")+labels[kind].toLowerCase();modal(title,field("name",labels[kind],existing||oldValue,"text","full"),v=>{const name=String(v.name||"").trim();if(!name)return false;if(values.some(x=>String(x).toLocaleLowerCase()===name.toLocaleLowerCase()&&String(x).toLocaleLowerCase()!==String(existing||"").toLocaleLowerCase())){notify(pt?window.KiwiI18n.text("Esse cadastro já existe."):"This record already exists.");return false}if(existing){const i=values.findIndex(x=>String(x).toLocaleLowerCase()===String(existing).toLocaleLowerCase());if(i<0)return false;values[i]=name;(data.shoppingProducts||[]).forEach(p=>{if(String(p[prop]||"").trim().toLocaleLowerCase()===String(existing).toLocaleLowerCase())p[prop]=name})}else values.push(name)});}
@@ -4689,9 +4700,9 @@ function timelinePage(){
  const list=calendarFilter==="upcoming"&&items.length
   ? `<div class="calendar-upcoming-list" tabindex="0" role="region" aria-labelledby="calendar-events-heading">${items.map(card).join("")}</div>`
   : items.slice(0,12).map(card).join("");
- return `<div class="kiwi-module kiwi-calendar-view${kiwiModuleClass('timeline')}">${kiwiModuleHeader('timeline',pt?'Agenda compartilhada':'Shared calendar',pt?'Eventos, feriados e vencimentos no mesmo calendário.':'Events, holidays and expiry dates in one calendar.',glassCreate(pt?'Novo evento':'New event','add-event'))}
+ return `<div class="kiwi-module kiwi-calendar-view${kiwiModuleClass('timeline')}">${sectionBanner('calendar',pt?'Agenda compartilhada':'Shared calendar',pt?'Eventos, feriados e vencimentos no mesmo calendário.':'Events, holidays and expiry dates in one calendar.')}
 
- <div class="calendar-stats"><button class="calendar-stat ${calendarFilter==="today"?"active":""}" data-action="calendar-filter:today" aria-pressed="${calendarFilter==='today'}"><strong>${todayEvents.length}</strong><span>${pt?window.KiwiI18n.text("Hoje"):"Today"}</span></button><button class="calendar-stat ${calendarFilter==="upcoming"?"active":""}" data-action="calendar-filter:upcoming" aria-pressed="${calendarFilter==='upcoming'}"><strong>${upcoming.length}</strong><span>${pt?window.KiwiI18n.text("Próximos"):"Upcoming"}</span></button><button class="calendar-stat ${calendarFilter==="past"?"active":""}" data-action="calendar-filter:past" aria-pressed="${calendarFilter==='past'}"><strong>${past.length}</strong><span>${pt?window.KiwiI18n.text("Passados"):"Past"}</span></button></div>
+ <div class="calendar-command-bar"><div class="calendar-stats"><button class="calendar-stat ${calendarFilter==="today"?"active":""}" data-action="calendar-filter:today" aria-pressed="${calendarFilter==='today'}"><strong>${todayEvents.length}</strong><span>${pt?window.KiwiI18n.text("Hoje"):"Today"}</span></button><button class="calendar-stat ${calendarFilter==="upcoming"?"active":""}" data-action="calendar-filter:upcoming" aria-pressed="${calendarFilter==='upcoming'}"><strong>${upcoming.length}</strong><span>${pt?window.KiwiI18n.text("Próximos"):"Upcoming"}</span></button><button class="calendar-stat ${calendarFilter==="past"?"active":""}" data-action="calendar-filter:past" aria-pressed="${calendarFilter==='past'}"><strong>${past.length}</strong><span>${pt?window.KiwiI18n.text("Passados"):"Past"}</span></button></div>${glassCreate(pt?'Novo evento':'New event','add-event')}</div>
  <div class="calendar-layout"><section class="panel"><div class="calendar-toolbar"><button type="button" class="btn btn-soft btn-small" aria-label="${pt?'Mês anterior':'Previous month'}" data-action="calendar-prev">‹</button><strong class="calendar-month">${esc(label)}</strong><div style="display:flex;gap:6px"><button class="btn btn-soft btn-small" data-action="calendar-today">${pt?window.KiwiI18n.text("Hoje"):"Today"}</button><button type="button" class="btn btn-soft btn-small" aria-label="${pt?'Próximo mês':'Next month'}" data-action="calendar-next">›</button></div></div><div class="calendar-weekdays">${weekdays.map(d=>`<span>${d}</span>`).join("")}</div><div class="calendar-grid">${cells}</div><div class="calendar-legend"><span><i class="legend-dot"></i>${pt?window.KiwiI18n.text("Eventos"):"Events"}</span><span><i class="legend-dot holiday"></i>${pt?window.KiwiI18n.text("Feriados NZ"):"NZ holidays"}</span><span><i class="legend-dot document"></i>${pt?window.KiwiI18n.text("Validade de documentos"):"Document expiry"}</span></div><p class="file-hint" style="margin-top:12px">${pt?window.KiwiI18n.text("Selecione um dia para ver eventos, feriados e vencimentos. Fuso do dispositivo."):"Select a day to view events, holidays and document expiries. Device time zone."} ${esc(DEVICE_TIMEZONE)}</p></section><section class="panel"><div class="panel-head"><div><h2 id="calendar-events-heading">${heading}</h2><p>${calendarFilter==="selected"?esc(fmtDate(calendarSelectedDate)):(pt?window.KiwiI18n.text("Agenda compartilhada"):"Shared calendar")}</p></div>${button(pt?window.KiwiI18n.text("Feriados"):"Holidays","calendar-filter:holidays","btn-soft btn-small")}</div>${list||empty(calendarFilter==="today"?(pt?window.KiwiI18n.text("Nenhum evento para hoje."):"No events today."):calendarFilter==="past"?(pt?window.KiwiI18n.text("Nenhum evento passado."):"No past events."):(pt?window.KiwiI18n.text("Nenhum item nesta lista."):"No items in this list."))}</section></div><div class="note">${pt?window.KiwiI18n.text("Feriados nacionais e vencimentos de documentos aparecem automaticamente. Os lembretes dos eventos são agendados para 24 horas e 3 horas antes."):"National holidays and document expiries appear automatically. Event reminders are scheduled 24 hours and 3 hours beforehand."}</div></div>`;
 }
 function editTransaction(){modal(t("addTransaction"),field("title",t("transactionTitle"),"","text","full")+selectField("type",t("type"),[["expense",t("expense")],["income",t("income")]],"expense")+field("amount",t("amount"),"","number")+field("date",t("date"),today(),"date")+selectField("createdBy",data.language==='pt'?window.KiwiI18n.text('Lançado por'):'Entered by',[['vitor','Vitor'],['zack','Zack']],currentMemberKey()),v=>{const amount=parseAmount(v.amount);if(!v.title.trim()||!Number.isFinite(amount)||amount<=0)return notify(t("amount"));data.transactions.push({id:uid(),title:v.title.trim(),type:v.type,amount,date:v.date,createdBy:v.createdBy})})}
